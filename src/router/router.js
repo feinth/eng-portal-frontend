@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '../stores/user.store'
 import PortalLayout from '../layouts/portal-layout.vue'
+import TrainerLayout from '../layouts/trainer-layout.vue'
 
 export const router = createRouter({
   history: createWebHistory('/'),
@@ -16,9 +16,9 @@ export const router = createRouter({
     {
       path: '/training',
       name: 'training',
-      component: () => import('../components/test-micro.vue'),
+      component: () => import('../components/microphone-test.vue'),
       meta: {
-        layout: PortalLayout
+        layout: TrainerLayout
       }
     },
     {

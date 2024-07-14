@@ -13,7 +13,7 @@
     <div class="p-4">
       <TaskView :task="task" />
     </div>
-    <TaskFooter
+    <MicrophoneFooter
       :timeout="task.prepareTimeout"
       type="prepare"
       @stop="prepareStop"
@@ -22,11 +22,11 @@
 </template>
 
 <script>
-import TaskFooter from './task-footer.vue'
+import MicrophoneFooter from './microphone-footer.vue'
 import TaskView from './task-view.vue'
 export default {
   components: {
-    TaskFooter,
+    MicrophoneFooter,
     TaskView
   },
   data() {

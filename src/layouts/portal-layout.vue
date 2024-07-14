@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <q-layout view="lHh Lpr lFf">
       <q-header elevated>
-        <q-toolbar class="bg-gray-700">
+        <q-toolbar class="bg-teal-9">
           <div class="flex items-center justify-center text-center w-full">
             <q-tabs>
               <q-route-tab label="Главная" to="/" no-caps />
@@ -26,7 +26,7 @@
       </q-page-container>
       <q-footer reveal>
         <div
-          class="flex items-center justify-center text-center bg-gray-700 text-gray-400"
+          class="flex items-center justify-center text-center bg-teal-10 text-white-400"
         >
           <p class="m-2">Автор: Захарова Татьяна</p>
           <a class="mdi--vk" href="https://vk.ru" target="_blank" />
@@ -38,7 +38,7 @@
           <a class="mdi--youtube" href="https://youtube.com" target="_blank" />
         </div>
         <div
-          class="flex items-center justify-center text-center bg-gray-700 text-gray-400"
+          class="flex items-center justify-center text-center bg-teal-10 text-white-400"
         >
           <a
             @click="showAgreementDialog"

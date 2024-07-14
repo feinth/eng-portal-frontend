@@ -9,52 +9,43 @@
         </h1>
         <q-form @submit.stop="onSubmit">
           <q-input
-            v-model="email"
+            v-model="user.email"
             type="text"
             label="Email"
             lazy-rules
-            :rules="emailRules"
+            :rules="[emailRule]"
             class="no-autofill"
           />
           <q-input
-            v-model="firstName"
+            v-model="user.firstName"
             type="text"
             label="Имя"
             lazy-rules
-            :rules="defaultRules"
+            :rules="[requiredRule]"
             class="no-autofill"
           />
           <q-input
-            v-model="lastName"
+            v-model="user.lastName"
             type="text"
             label="Фамилия"
             lazy-rules
-            :rules="defaultRules"
+            :rules="[requiredRule]"
             class="no-autofill"
           />
-
           <q-input
-            v-model="birthday"
+            v-model="user.birthday"
             type="date"
             label="Дата рождения"
             lazy-rules
-            :rules="birthdayRules"
+            :rules="[birthdayRule]"
             class="no-autofill"
           />
-          <!-- <q-input
-        v-model="username"
-        type="text"
-        label="Логин"
-        lazy-rules
-        :rules="defaultRules"
-        class="no-autofill"
-      /> -->
           <q-input
-            v-model="password"
+            v-model="user.password"
             type="password"
             label="Пароль"
             lazy-rules
-            :rules="defaultRules"
+            :rules="[requiredRule]"
             class="no-autofill"
           />
           <q-btn
@@ -83,36 +74,26 @@ import { useUserStore } from '../stores/user.store'
 import { router } from '../router/router'
 import { useQuasar } from 'quasar'
 import Agreement from '../components/agreement-terms.vue'
+
 export default {
   name: 'Register',
   data() {
     return {
-      firstName: '',
-      lastName: '',
-      birthday: '',
-      email: '',
-      username: '',
-      password: '',
-      isPwd: true,
+      user: {
+        firstName: '',
+        lastName: '',
+        birthday: '',
+        email: '',
+        password: ''
+      },
       store: useUserStore(),
-      defaultRules: [(val) => (val && val.length > 0) || 'Обязательное поле'],
-      birthdayRules: [
-        (val) =>
-          (val && val.length > 0 && this.isValidDate(val)) ||
-          'Проверьте корректность введенного значения'
-      ],
-      emailRules: [
-        (val) =>
-          (val && val.length > 0 && this.isValidEmail(val)) ||
-          'Проверьте корректность введенного значения'
-      ],
-      $q: useQuasar
+      $q: useQuasar()
     }
   },
   methods: {
     onSubmit() {
       this.store
-        .registerUser()
+        .register(this.user)
         .then(() => {
           router.push('/')
         })
@@ -127,11 +108,23 @@ export default {
           })
         })
     },
-    isValidEmail(email) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    emailRule(val) {
+      return (
+        (val && val.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) ||
+        'Проверьте корректность введенного значения'
+      )
+    },
+    birthdayRule(val) {
+      return (
+        (val && val.length > 0 && this.isValidDate(val)) ||
+        'Проверьте корректность введенного значения'
+      )
+    },
+    requiredRule(val) {
+      return (val && val.length > 0) || 'Обязательное поле'
     },
     isValidDate(date) {
-      return true
+      return true // Здесь можно добавить проверку на корректность даты
     },
     showAgreementDialog() {
       this.$q.dialog({
@@ -141,4 +134,5 @@ export default {
   }
 }
 </script>
+
 <style></style>

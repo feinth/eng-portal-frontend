@@ -9,11 +9,11 @@
         </h1>
         <q-form @submit.stop="onSubmit">
           <q-input
-            v-model="username"
+            v-model="email"
             type="text"
-            label="Логин"
+            label="Почта"
             lazy-rules
-            :rules="usernameRules"
+            :rules="emailRules"
             class="no-autofill"
           />
           <q-input
@@ -42,7 +42,9 @@
           />
           <div class="mt-4 text-center">
             У вас нет учетной записи?
-            <a @click="registerAction()" class="text-blue-500 hover:text-blue-600"
+            <a
+              @click="registerAction()"
+              class="text-blue-500 hover:text-blue-600"
               >Зарегистрируйтесь!</a
             >
           </div>
@@ -52,10 +54,10 @@
   </q-dialog>
 </template>
 <script>
-import { useUserStore } from '../stores/user.store';
-import { router } from '../router/router';
-import { useQuasar } from 'quasar';
-import RegisterForm from '../views/register.vue';
+import { useUserStore } from '../stores/user.store'
+import { router } from '../router/router'
+import { useQuasar } from 'quasar'
+import RegisterForm from '../views/register.vue'
 export default {
   name: 'Login',
   components: {
@@ -63,11 +65,15 @@ export default {
   },
   data() {
     return {
-      username: '',
+      email: '',
       password: '',
       isPwd: true,
       store: useUserStore(),
-      usernameRules: [(val) => (val && val.length > 0) || 'Логин обязателен'],
+      emailRules: [
+        (val) =>
+          (val && val.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) ||
+          'Почта обязательна'
+      ],
       passwordRules: [(val) => (val && val.length > 0) || 'Пароль обязателен'],
       $q: useQuasar
     }
@@ -75,7 +81,7 @@ export default {
   methods: {
     onSubmit() {
       this.store
-        .login(this.username, this.password)
+        .login(this.email, this.password)
         .then(() => {
           router.push('/')
         })
@@ -93,7 +99,7 @@ export default {
     registerAction() {
       this.$q.dialog({
         component: RegisterForm
-      });
+      })
     }
   }
 }
