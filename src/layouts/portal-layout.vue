@@ -7,16 +7,27 @@
             <q-tabs>
               <q-route-tab label="Главная" to="/" no-caps />
               <q-route-tab label="Тренажер" to="/training" no-caps />
-              <q-route-tab label="Личный кабинет" to="/profile" no-caps />
+              <q-route-tab
+                v-if="isLoggedIn"
+                label="Личный кабинет"
+                to="/profile"
+                no-caps
+              />
             </q-tabs>
           </div>
-
-          <q-space />
-
           <div class="q-mr-md">
-            <q-btn @click="showLoginForm" label="Войти" no-caps>
+            <q-btn
+              v-if="!isLoggedIn"
+              flat
+              label="Войти"
+              @click="showLogin = true"
+            >
               <q-tooltip>Авторизация</q-tooltip>
             </q-btn>
+            <LoginForm
+              :is-visible="showLogin"
+              @update:isVisible="showLogin = false"
+            />
           </div>
         </q-toolbar>
       </q-header>
@@ -57,7 +68,6 @@
 <script>
 import { useUserStore } from '../stores/user.store'
 import LoginForm from '../views/login.vue'
-import { router } from '../router/router'
 import Agreement from '../components/agreement-terms.vue'
 
 export default {
@@ -70,19 +80,19 @@ export default {
   data() {
     return {
       store: useUserStore(),
-      showLoginDialog: false
+      showLogin: false
     }
   },
   methods: {
-    showLoginForm() {
-      this.$q.dialog({
-        component: LoginForm
-      })
-    },
     showAgreementDialog() {
       this.$q.dialog({
         component: Agreement
       })
+    }
+  },
+  computed: {
+    isLoggedIn() {
+      return !!this.store.user
     }
   }
 }

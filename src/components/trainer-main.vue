@@ -25,10 +25,14 @@
       />
     </div>
     <div
-      v-else-if="!selectedExamType && selectedTaskType.label === 'Экзамен'"
+      v-else-if="
+        !selectedExamType &&
+        selectedTaskType.label === 'Экзамен' &&
+        selectedMainType.label === 'ОГЭ'
+      "
       class="space-y-4 text-center"
     >
-      <h1 class="text-2xl font-bold mb-4">Выберите набор заданий</h1>
+      <h1 class="text-2xl font-bold mb-4">Выберите варианты</h1>
       <q-btn
         v-for="type in examTypes"
         :key="type.id"
@@ -44,7 +48,7 @@
       <q-btn
         @click="resetSelection"
         class="custom-secondary-button"
-        color="secondary"
+        color="red"
         label="Сбросить выбор"
         unelevated
       />
@@ -81,7 +85,7 @@ export default {
         { id: 2, label: 'По заданиям' }
       ],
       examTypes: [
-        { id: 1, label: 'Авторские' },
+        { id: 1, label: 'Авторские варианты' },
         { id: 2, label: 'На основе открытого банка ФИПИ' }
       ],
       selectedMainType: null,
@@ -96,8 +100,8 @@ export default {
     },
     selectTaskType(type) {
       this.selectedTaskType = type
-      if (type.label === 'По заданиям') {
-        this.fetchTasks(type.id)
+      if (this.selectedMainType?.id === 2 && this.selectedTaskType?.id === 1) {
+        this.fetchTasks(this.selectedMainType.id, this.selectedTaskType.id)
       }
     },
     selectExamType(type) {

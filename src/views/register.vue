@@ -1,5 +1,5 @@
 <template>
-  <q-dialog>
+  <q-dialog :model-value="localVisible" @update:modelValue="updateVisibility">
     <q-card>
       <div
         class="max-w-lg mx-auto bg-white rounded-lg shadow-md px-8 py-10 flex flex-col items-center"
@@ -71,7 +71,6 @@
 
 <script>
 import { useUserStore } from '../stores/user.store'
-import { router } from '../router/router'
 import { useQuasar } from 'quasar'
 import Agreement from '../components/agreement-terms.vue'
 
@@ -84,10 +83,17 @@ export default {
         lastName: '',
         birthday: '',
         email: '',
-        password: ''
+        password: '',
+        localVisible: this.isVisible
       },
       store: useUserStore(),
       $q: useQuasar()
+    }
+  },
+  props: {
+    isVisible: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {
@@ -95,7 +101,16 @@ export default {
       this.store
         .register(this.user)
         .then(() => {
-          router.push('/')
+          this.updateVisibility(false)
+          this.$emit('registration-success')
+          this.$q.notify({
+            progress: true,
+            position: 'top-right',
+            color: 'positive',
+            message: 'Регистрация прошла успешно!',
+            timeout: 1000,
+            icon: 'sym_o_check'
+          })
         })
         .catch((err) => {
           this.$q.notify({
@@ -130,6 +145,15 @@ export default {
       this.$q.dialog({
         component: Agreement
       })
+    },
+    updateVisibility(newValue) {
+      this.localVisible = newValue
+      this.$emit('update:isVisible', newValue)
+    }
+  },
+  watch: {
+    isVisible(newValue) {
+      this.localVisible = newValue
     }
   }
 }
