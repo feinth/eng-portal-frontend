@@ -16,7 +16,7 @@ export const router = createRouter({
     {
       path: '/training',
       name: 'training',
-      component: () => import('../components/microphone-test.vue'),
+      component: () => import('../components/trainer-main.vue'),
       meta: {
         layout: TrainerLayout
       }
