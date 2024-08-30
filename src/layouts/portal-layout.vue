@@ -6,7 +6,7 @@
           <div class="flex items-center justify-center text-center w-full">
             <q-tabs>
               <q-route-tab label="Главная" to="/" no-caps />
-              <q-route-tab label="Тренажер" to="/training" no-caps />
+              <q-route-tab label="Симулятор экзамена" to="/training" no-caps />
               <q-route-tab
                 v-if="isLoggedIn"
                 label="Личный кабинет"
@@ -35,7 +35,7 @@
       <q-page-container>
         <slot />
       </q-page-container>
-      <q-footer reveal>
+      <q-footer v-if="shouldShowFooter" reveal>
         <div
           class="flex items-center justify-center text-center bg-teal-10 text-white-400"
         >
@@ -80,6 +80,7 @@ export default {
   data() {
     return {
       store: useUserStore(),
+      footerPath: ['/', '/profile'],
       showLogin: false
     }
   },
@@ -93,6 +94,9 @@ export default {
   computed: {
     isLoggedIn() {
       return !!this.store.user
+    },
+    shouldShowFooter() {
+      return this.footerPath.includes(this.$route.path)
     }
   }
 }

@@ -1,5 +1,8 @@
 <template>
-  <div v-if="beforeTaskTimer > 0" class="countdown-container flex flex-col items-center justify-center h-screen">
+  <div
+    v-if="beforeTaskTimer > 0"
+    class="countdown-container flex flex-col items-center justify-center h-screen"
+  >
     <p class="mt-2 text-center">Be ready for the test</p>
 
     <p class="font-bold text-center">{{ beforeTaskTimer }}</p>
@@ -9,9 +12,7 @@
   <div v-else>
     <TaskFooter :task="prepareData" @stop="prepareStop" />
   </div>
-
 </template>
-
 
 <script>
 import TaskFooter from './task-footer.vue'
@@ -24,12 +25,12 @@ export default {
       prepareComplete: false,
       prepareTime: 0,
       prepareTimeout: 110, // Время подготовк в секундах
-      beforeTaskTimer: 5,
+      beforeTaskTimer: 5
     }
   },
   methods: {
     prepareStop() {
-      this.$emit('prepare-finished');
+      this.$emit('prepare-finished')
     }
   },
   props: {
@@ -40,11 +41,11 @@ export default {
   },
   computed: {
     prepareData() {
-      const item = {};
-      item.timeLeft = this.prepareTime;
-      item.timeout = this.prepareTimeout;
-      item.type = 'prepare';
-      return item;
+      const item = {}
+      item.timeLeft = this.prepareTime
+      item.timeout = this.prepareTimeout
+      item.type = 'prepare'
+      return item
     }
   },
   emits: ['prepareFinished'],

@@ -123,6 +123,13 @@ export default {
           })
         }
       }
+      this.completeTask
+    },
+    completeTask() {
+      this.$emit('taskCompleted', {
+        taskId: this.taskId,
+        assignmentId: this.assignmentId
+      })
     }
   },
   mounted() {

@@ -28,6 +28,14 @@ export const router = createRouter({
       meta: {
         layout: PortalLayout
       }
+    },
+    {
+      path: '/test',
+      name: 'test',
+      component: () => import('../components/microphone-test.vue'),
+      meta: {
+        layout: PortalLayout
+      }
     }
   ]
 })
