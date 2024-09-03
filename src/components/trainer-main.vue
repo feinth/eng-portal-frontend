@@ -60,15 +60,16 @@
 
       <!-- Слот для отображения списка заданий -->
       <div v-if="tasks" class="tasks-list-container">
-        <tasks-list :tasks="tasks" />
+        <tasks-list :tasks="tasks" @taskLoaded="onTaskLoaded" />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import tasksData from '../assets/tasks.json' // Путь к файлу с заглушкой данных заданий
-import TasksList from '../components/task-list.vue' // Импортируем компонент для отображения заданий
+import TasksList from '../components/task-list.vue'
+import { useUserStore } from '../stores/user.store'
+
 export default {
   name: 'TrainingPage',
   components: {
@@ -76,6 +77,7 @@ export default {
   },
   data() {
     return {
+      store: useUserStore(),
       mainTypes: [
         { id: 1, label: 'ОГЭ' },
         { id: 2, label: 'ЕГЭ' }
@@ -115,16 +117,13 @@ export default {
       this.tasks = null
     },
     fetchTasks(idTaskType) {
-      // Запрос к API для получения заданий на основе ФИПИ
-      // Вместо реального запроса используем заглушку
-      console.log(this.selectedMainType.id, idTaskType)
-      // В реальном приложении здесь будет axios или другой метод запроса
-      // Заглушка для демонстрации:
-      setTimeout(() => {
-        this.tasks = tasksData[this.selectedMainType.id] // Загружаем задания из заглушки
-        console.log('tasks loaded:', this.tasks)
-      }, 1000) // Имитация задержки загрузки
-    }
+      this.store
+        .getExams(this.selectedMainType.id, idTaskType)
+        .then((result) => {
+          this.tasks = result
+        })
+    },
+    onTaskLoaded(idTaskType) {}
   }
 }
 </script>

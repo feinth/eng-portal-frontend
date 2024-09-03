@@ -20,10 +20,17 @@ export default {
       default: () => []
     }
   },
+  data() {
+    return {
+      taskLoaded: false
+    }
+  },
   methods: {
     fetchTaskDetails(idTask) {
       // Здесь можно добавить логику для запроса детальной информации о задании по его idTask
       console.log('Fetching details for task with id:', idTask)
+      this.taskLoaded = true
+      this.$emit('taskLoaded')
     }
   }
 }

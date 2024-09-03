@@ -12,7 +12,7 @@
       <p>Если вы уже делали это, можете сразу перейти к выполнению задания.</p>
       <MicrophoneFooter
         :timeout="0"
-        type="recording"
+        type="prepare"
         @stop="stopRecording"
         @start="startRecording"
       />
@@ -45,7 +45,7 @@ export default {
         await navigator.mediaDevices.getUserMedia({ audio: true })
         this.microphonePermission = true
       } catch (e) {
-        console.error('Permission denied or no microphone found', e)
+        console.error('Микрофон не найден или нет доступа к микрофону', e)
       }
     },
     startRecording() {
@@ -80,6 +80,4 @@ export default {
 }
 </script>
 
-<style scoped>
-/* Добавьте стили при необходимости */
-</style>
+<style scoped></style>

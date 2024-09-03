@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PortalLayout from '../layouts/portal-layout.vue'
 import TrainerLayout from '../layouts/trainer-layout.vue'
+import { useUserStore } from '../stores/user.store'
 
 export const router = createRouter({
   history: createWebHistory('/'),
@@ -30,6 +31,14 @@ export const router = createRouter({
       }
     },
     {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/login.vue'),
+      meta: {
+        layout: PortalLayout
+      }
+    },
+    {
       path: '/test',
       name: 'test',
       component: () => import('../components/microphone-test.vue'),
@@ -40,11 +49,11 @@ export const router = createRouter({
   ]
 })
 
-// router.beforeEach(async (to) => {
-//   const publicPages = ['/login']
-//   const authRequired = !publicPages.includes(to.path)
-//   const store = useUserStore()
-//   if (authRequired && !store.user) {
-//     return '/login'
-//   }
-// })
+router.beforeEach(async (to) => {
+  const publicPages = ['/', '/training', '/login']
+  const authRequired = !publicPages.includes(to.path)
+  const store = useUserStore()
+  if (authRequired && !store.token) {
+    return '/login'
+  }
+})

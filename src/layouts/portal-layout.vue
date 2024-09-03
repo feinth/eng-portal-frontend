@@ -13,21 +13,14 @@
                 to="/profile"
                 no-caps
               />
+              <q-space />
+              <q-route-tab
+                v-if="!isLoggedIn"
+                label="Авторизация"
+                to="/login"
+                no-caps
+              />
             </q-tabs>
-          </div>
-          <div class="q-mr-md">
-            <q-btn
-              v-if="!isLoggedIn"
-              flat
-              label="Войти"
-              @click="showLogin = true"
-            >
-              <q-tooltip>Авторизация</q-tooltip>
-            </q-btn>
-            <LoginForm
-              :is-visible="showLogin"
-              @update:isVisible="showLogin = false"
-            />
           </div>
         </q-toolbar>
       </q-header>
@@ -43,7 +36,7 @@
           <a class="mdi--vk" href="https://vk.ru" target="_blank" />
           <a
             class="ic--baseline-telegram"
-            href="https://telegram.ru"
+            href="https://t.me/TA_eng_teacher"
             target="_blank"
           />
           <a class="mdi--youtube" href="https://youtube.com" target="_blank" />
@@ -93,10 +86,10 @@ export default {
   },
   computed: {
     isLoggedIn() {
-      return !!this.store.user
+      return !!this.store.token
     },
     shouldShowFooter() {
-      return this.footerPath.includes(this.$route.path)
+      return true
     }
   }
 }
