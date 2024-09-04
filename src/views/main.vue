@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import SubscriptionCard from '../components/subscription-card.vue'
+import SubscriptionCard from '../components/utils/subscription-card.vue'
 
 export default {
   name: 'MainPage',

@@ -10,29 +10,25 @@
 </template>
 
 <script>
-import Task1 from './task-1.vue'
-import Task2 from './task-2.vue'
-import Task3 from './task-3.vue'
-import Task4 from './task-4.vue'
+import Task1 from '../components/tasks/task-1.vue'
+import Task2 from '../components/tasks/task-2.vue'
+import Task3 from '../components/tasks/task-3.vue'
+import Task4 from '../components/tasks/task-4.vue'
+import { useExamStore } from '../stores/exam.store'
 
 export default {
-  props: {
-    tasks: {
-      type: Array,
-      required: true
-    }
-  },
   data() {
     return {
       currentTaskIndex: 0,
       recordings: [],
       mediaRecorder: null,
-      audioChunks: []
+      audioChunks: [],
+      examStore: useExamStore()
     }
   },
   computed: {
     currentTask() {
-      return this.tasks[this.currentTaskIndex]
+      return this.examStore.currentExamTask.tasks[this.currentTaskIndex]
     },
     currentTaskComponent() {
       switch (this.currentTask.type) {

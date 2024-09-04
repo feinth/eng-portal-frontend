@@ -12,6 +12,7 @@
 </template>
 
 <script>
+import { useExamStore } from '../stores/exam.store'
 export default {
   name: 'TasksList',
   props: {
@@ -22,15 +23,18 @@ export default {
   },
   data() {
     return {
+      examStore: useExamStore(),
       taskLoaded: false
     }
   },
   methods: {
     fetchTaskDetails(idTask) {
       // Здесь можно добавить логику для запроса детальной информации о задании по его idTask
-      console.log('Fetching details for task with id:', idTask)
-      this.taskLoaded = true
-      this.$emit('taskLoaded')
+      this.examStore.getExamTasks().then((task) => {
+        console.log(task)
+        this.taskLoaded = true
+        this.$emit('taskLoaded')
+      })
     }
   }
 }

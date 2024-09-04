@@ -1,0 +1,94 @@
+{
+    "number": 1,
+    "type": 1,
+    "tasks": [
+        {
+            "audio_guidance": "/media/audio_guidance/cfe082ffd080175276aeb5c7803d5127.mp3",
+            "id": 1,
+            "type": 1,
+            "header": "Imagine that you are preparing a project with your friend. You have found some interesting material for the presentation and you want to read this text to your friend. You have 1.5 minutes to read the text silently, then be ready to read it out aloud. You will not have more than 1.5 minutes to read it",
+            "description": "Soft skills are used for a wide range of tasks across many roles and professions, including interpersonal skills or “people skills” that let individuals work effectively in groups and organizations. Examples of soft skills include critical thinking, emotional intelligence, collaboration, creativity, problem solving, time management, flexibility and various communication skills. Hard skills, in contrast, involve specific knowledge and abilities that are unique to particular professions or roles.\r\nThe term ‘soft skills’ was first introduced in U.S. Army training courses in the early 1970s. Later the business and education sectors adopted it. Use of the term has been increasing from the early 1990s to the present. Soft skills have been the subject of many books. In the workplace there is evidence that soft skills lead to more productive collaboration. \r\nWhile hard skills are highly valued in today's economy, many employers recognize the importance of soft skills as well. For that reason, workers with both hard and soft skills may find it easier to get hired and rise through the ranks.",
+            "audio": null,
+            "preparation_seconds": 80,
+            "execution_seconds": 80,
+            "images": [],
+            "questions": [],
+            "audio_after_execution": "/media/audio_guidance/1cbd9b5f44f3fed9ecc83e3393b6fed2.mp3"
+        },
+        {
+            "audio_guidance": "/media/audio_guidance/08acb66ecd420986a2869c795677b521.mp3",
+            "id": 2,
+            "type": 2,
+            "header": "Study the advertisement. You are considering attending a swimming pool and now you’d like to get more information. In 1.5 minutes you are to ask five questions to find out the following:\r\n\r\n1)  location\r\n2)  working hours\r\n3)  one visit price\r\n4)  things to take with oneself\r\n\r\nYou have 20 seconds to ask each question.",
+            "description": "",
+            "audio": null,
+            "preparation_seconds": 20,
+            "execution_seconds": null,
+            "images": [
+                {
+                    "header": "Attending a swimming pool",
+                    "image": "/media/image_task/7ffa38309651638aca355144e701d1ae.jpg"
+                }
+            ],
+            "questions": [
+                {
+                    "audio_guidance": "/media/audio_guidance/ea332a50fac73022234d0aab0f7b5802.mp3",
+                    "description": "location",
+                    "audio": null,
+                    "execution_seconds": 20
+                },
+                {
+                    "audio_guidance": "/media/audio_guidance/be6b27ef01456b9c1b747e36f7ec1f5e.mp3",
+                    "description": "working hours",
+                    "audio": null,
+                    "execution_seconds": 20
+                }
+            ],
+            "audio_after_execution": "/media/audio_guidance/1cbd9b5f44f3fed9ecc83e3393b6fed2.mp3"
+        },
+        {
+            "audio_guidance": "/media/audio_guidance/31d2f91fe040b2e87f33a0813362ff9c.mp3",
+            "id": 3,
+            "type": 3,
+            "header": "You are going to give an interview. You have to answer five questions. Give full answers to the questions (2–3 sentences). Remember that you have 40 seconds to answer each question.",
+            "description": "",
+            "audio": "/media/audio_task/e029747d1e759512360601d134ffdbdf.mp3",
+            "preparation_seconds": 10,
+            "execution_seconds": null,
+            "images": [],
+            "questions": [
+                {
+                    "audio_guidance": "/media/audio_guidance/ea332a50fac73022234d0aab0f7b5802.mp3",
+                    "description": "",
+                    "audio": "/media/audio_task/7c91acc08c81ddd1fb37738be5b4fcf4.mp3",
+                    "execution_seconds": 10
+                }
+            ],
+            "audio_before_execution": "/media/audio_guidance/6f6f373eee43f4448f2bc21c2f3ed448.mp3"
+        },
+        {
+            "audio_guidance": "/media/audio_guidance/10a50377bd87db520be02e5efa26d568.mp3",
+            "id": 4,
+            "type": 4,
+            "header": "Imagine that you and your friend are doing a school project “Styles of Clothes”. You have found some photos to illustrate it but for technical reasons you cannot send them now. Leave a voice message to your friend explaining your choice of the photos and sharing some ideas about the project. In 2.5 minutes be ready to: (З)",
+            "description": "explain the choice of the illustrations for the project by briefly describing them and noting the differences;\r\nmention the advantages (1–2) of the two different styles to dress;\r\nmention the disadvantages (1–2) of the two different styles to dress;\r\nexpress your opinion on the subject of the project – which style of clothes you prefer and why.\r\n\r\nYou will speak for not more than 3 minutes (12–15 sentences). You have to talk continuously",
+            "audio": null,
+            "preparation_seconds": 10,
+            "execution_seconds": 10,
+            "images": [
+                {
+                    "header": "task 4 - 1",
+                    "image": "/media/image_task/14ab67b8f3c30b926cb1a099b47f283f.jpg"
+                },
+                {
+                    "header": "task 4 - 2",
+                    "image": "/media/image_task/e365beefb3534c6a9d052adbbebe8c45.jpg"
+                }
+            ],
+            "questions": [],
+            "audio_after_execution": "/media/audio_guidance/1cbd9b5f44f3fed9ecc83e3393b6fed2.mp3"
+        }
+    ],
+    "begin_audio_guidance": "/media/audio_guidance/ad30c20a96f13810522672c2ac7f21cd.mp3",
+    "end_audio_guidance": "/media/audio_guidance/c05662b694fbec2592567097b7fee4ef.mp3"
+}

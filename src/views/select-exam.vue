@@ -68,8 +68,8 @@
 
 <script>
 import TasksList from '../components/task-list.vue'
-import { useUserStore } from '../stores/user.store'
-
+import { useExamStore } from '../stores/exam.store'
+import { router } from '../router/router'
 export default {
   name: 'TrainingPage',
   components: {
@@ -77,7 +77,7 @@ export default {
   },
   data() {
     return {
-      store: useUserStore(),
+      store: useExamStore(),
       mainTypes: [
         { id: 1, label: 'ОГЭ' },
         { id: 2, label: 'ЕГЭ' }
@@ -93,7 +93,8 @@ export default {
       selectedMainType: null,
       selectedTaskType: null,
       selectedExamType: null,
-      tasks: null
+      tasks: null,
+      router: router
     }
   },
   methods: {
@@ -123,7 +124,9 @@ export default {
           this.tasks = result
         })
     },
-    onTaskLoaded(idTaskType) {}
+    onTaskLoaded() {
+      this.router.push('/microphone-test')
+    }
   }
 }
 </script>

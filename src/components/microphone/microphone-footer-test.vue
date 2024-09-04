@@ -1,15 +1,15 @@
 <template>
   <div class="fixed bottom-0 left-0 w-full border border-gray-300">
     <q-toolbar>
+      <!-- иконка -->
       <div class="flex items-center">
-        <div class="mr-4 flex items-center" v-if="!timeout">
+        <div class="mr-4 flex items-center">
           <q-btn
             :color="footerColor"
             icon="sym_o_mic"
             :label="footerLabel"
             no-caps
             class="w-32"
-            @click="start"
           />
         </div>
       </div>
@@ -28,14 +28,39 @@
           </div>
         </q-linear-progress>
       </div>
-
+      <!-- прогресс -->
       <div class="flex items-center ml-4">
         <q-btn
+          v-if="!isRecording && !audioUrl"
           :color="footerColor"
-          @click="stop"
-          label="Завершить"
+          @click="startRecord"
+          label="Проверить микрофон"
           no-caps
           class="w-32"
+        />
+        <q-btn
+          v-else-if="isRecording"
+          :color="footerColor"
+          @click="stopRecord"
+          label="Завершить проверку"
+          no-caps
+          class="w-32"
+        />
+        <q-btn
+          v-else-if="!isRecording && audioUrl && !isListening"
+          :color="footerColor"
+          @click="startPlayAudio"
+          label="Прослушать"
+          no-caps
+          class="w-32 ml-4"
+        />
+        <q-btn
+          v-else-if="!isRecording && audioUrl && isListening"
+          :color="footerColor"
+          @click="stopPlayAudio"
+          label="Остановить"
+          no-caps
+          class="w-32 ml-4"
         />
       </div>
     </q-toolbar>
@@ -44,34 +69,21 @@
 
 <script>
 import { mapActions } from 'pinia'
-import { useUserStore } from '@/stores/user.store'
+import { useExamStore } from '../../stores/exam.store'
 
 export default {
-  props: {
-    timeout: {
-      type: Number,
-      required: true,
-      default: 60
-    },
-    type: {
-      type: String,
-      required: true
-    },
-    taskId: {
-      type: String,
-      required: false
-    },
-    assignmentId: {
-      type: String,
-      required: false
-    }
-  },
   data() {
     return {
       timeLeft: 0,
       timer: null,
       mediaRecorder: null,
-      audioChunks: []
+      audioChunks: [],
+      audioUrl: null,
+      currentAudioPlay: null,
+      isRecording: false,
+      timeout: 20,
+      isListening: false,
+      type: 'prepare'
     }
   },
   computed: {
@@ -89,10 +101,12 @@ export default {
     }
   },
   methods: {
-    ...mapActions(useUserStore, ['addAudioFile']),
-    start() {
+    startRecord() {
       this.timeLeft = 0
       this.audioChunks = []
+      this.audioUrl = null
+      this.isRecording = true
+      this.type = 'record'
       navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
         this.mediaRecorder = new MediaRecorder(stream)
         this.mediaRecorder.ondataavailable = (event) => {
@@ -104,37 +118,42 @@ export default {
       this.timer = setInterval(() => {
         this.timeLeft += 1
         if (this.timeLeft >= this.timeout) {
-          this.stop()
+          this.stopRecord()
         }
       }, 1000)
     },
-    stop() {
+    stopRecord() {
       clearInterval(this.timer)
       if (this.mediaRecorder) {
         this.mediaRecorder.stop()
         this.mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(this.audioChunks, { type: 'audio/mpeg' })
-          const audioUrl = URL.createObjectURL(audioBlob)
-          this.addAudioFile({
-            taskId: this.taskId,
-            assignmentId: this.assignmentId,
-            audioBlob,
-            audioUrl
-          })
+          const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' })
+          this.audioUrl = URL.createObjectURL(audioBlob)
+          console.log(this.audioUrl)
+          this.isRecording = false
+          this.type = 'prepare'
+          // this.examStore.addAudioFile({
+          //   taskId: this.taskId,
+          //   assignmentId: this.assignmentId,
+          //   audioBlob,
+          //   audioUrl: this.audioUrl
+          // })
         }
       }
-      this.completeTask
     },
-    completeTask() {
-      this.$emit('taskCompleted', {
-        taskId: this.taskId,
-        assignmentId: this.assignmentId
-      })
-    }
-  },
-  mounted() {
-    if (this.timeout) {
-      this.start()
+    startPlayAudio() {
+      console.log(this.audioUrl)
+      if (this.audioUrl) {
+        this.currentAudioPlay = new Audio(this.audioUrl)
+        this.currentAudioPlay.play()
+        this.isListening = true
+      }
+    },
+    stopPlayAudio() {
+      if (this.currentAudioPlay) {
+        this.currentAudioPlay.pause()
+        this.isListening = false
+      }
     }
   }
 }

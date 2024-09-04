@@ -10,8 +10,15 @@
         запись, затем попробуйте воспроизвести.
       </p>
       <p>Если вы уже делали это, можете сразу перейти к выполнению задания.</p>
-      <MicrophoneFooter
-        :timeout="0"
+      <q-btn-group spread>
+        <q-btn
+          label="Перейти к выполнению задания"
+          color="primary"
+          @click="goToExam"
+        />
+      </q-btn-group>
+      <MicrophoneFooterTest
+        :timeout="10"
         type="prepare"
         @stop="stopRecording"
         @start="startRecording"
@@ -24,11 +31,11 @@
 </template>
 
 <script>
-import MicrophoneFooter from './microphone-footer.vue'
+import MicrophoneFooterTest from '../components/microphone/microphone-footer-test.vue'
 
 export default {
   components: {
-    MicrophoneFooter
+    MicrophoneFooterTest
   },
   data() {
     return {

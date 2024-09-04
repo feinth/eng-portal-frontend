@@ -6,7 +6,7 @@
           <div class="flex items-center justify-center text-center w-full">
             <q-tabs>
               <q-route-tab label="Главная" to="/" no-caps />
-              <q-route-tab label="Симулятор экзамена" to="/training" no-caps />
+              <q-route-tab label="Симулятор экзамена" to="/select" no-caps />
               <q-route-tab
                 v-if="isLoggedIn"
                 label="Личный кабинет"
@@ -61,7 +61,7 @@
 <script>
 import { useUserStore } from '../stores/user.store'
 import LoginForm from '../views/login.vue'
-import Agreement from '../components/agreement-terms.vue'
+import Agreement from '../components/utils/agreement-terms.vue'
 
 export default {
   name: 'PortalLayout',

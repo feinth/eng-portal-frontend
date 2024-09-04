@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import api from '../api/api'
-import tasksData from '../assets/tasks.json'
 
 export const useUserStore = defineStore({
   id: 'user',
@@ -38,8 +37,8 @@ export const useUserStore = defineStore({
               email: user.email,
               password: user.password,
               first_name: user.firstName,
-              second_name: user.secondName,
-              birthdate: user.birthdate,
+              second_name: user.lastName,
+              birthdate: user.birthday,
               phone: user.phone
             }
           })
@@ -104,36 +103,5 @@ export const useUserStore = defineStore({
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     },
-
-    addAudioFile(audioFile) {
-      this.audioFiles.push(audioFile)
-    },
-    clearAudioFiles() {
-      this.audioFiles = []
-    },
-    getAudioFiles() {
-      return this.audioFiles
-    },
-    getExams(examId, typeId) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          resolve(tasksData[examId])
-        }, 1000);
-      });
-    },
-    getExamTasks(examId) {
-      return new Promise(async (resolve, reject) => {
-        try {
-          let res = await api({
-            method: 'get',
-            url: 'ege/exams/${examId}',
-          })
-          this.currentExamTask = res
-          resolve()
-        } catch (err) {
-          reject(err)
-        }
-      })
-    }
   }
 })

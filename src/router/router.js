@@ -15,9 +15,9 @@ export const router = createRouter({
       }
     },
     {
-      path: '/training',
-      name: 'training',
-      component: () => import('../components/trainer-main.vue'),
+      path: '/select',
+      name: 'select',
+      component: () => import('../views/select-exam.vue'),
       meta: {
         layout: TrainerLayout
       }
@@ -25,7 +25,7 @@ export const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: () => import('../components/user-profile.vue'),
+      component: () => import('../views/user-profile.vue'),
       meta: {
         layout: PortalLayout
       }
@@ -39,11 +39,11 @@ export const router = createRouter({
       }
     },
     {
-      path: '/test',
-      name: 'test',
-      component: () => import('../components/microphone-test.vue'),
+      path: '/microphone-test',
+      name: 'microphone-test',
+      component: () => import('../views/microphone-test.vue'),
       meta: {
-        layout: PortalLayout
+        layout: TrainerLayout
       }
     }
   ]

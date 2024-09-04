@@ -72,6 +72,7 @@ export default {
       isPwd: true,
       localVisible: this.isVisible,
       store: useUserStore(),
+      router: router,
       emailRules: [
         (val) =>
           (val && val.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) ||
@@ -104,7 +105,7 @@ export default {
             timeout: 1000,
             icon: 'sym_o_check'
           })
-          router.push('/')
+          this.router.push('/')
         })
         .catch((err) => {
           this.$q.notify({
@@ -120,14 +121,8 @@ export default {
     registerAction() {
       this.$q.dialog({
         component: RegisterForm,
-        parent: this,
-        on: {
-          'registration-success': this.closeBothDialogs
-        }
+        parent: this
       })
-    },
-    closeBothDialogs() {
-      this.updateVisibility(false)
     }
   }
 }
