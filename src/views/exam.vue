@@ -1,11 +1,14 @@
 <template>
-  <div>
+  <div v-if="examData && examData.tasks.length > 0">
     <!-- Отображение текущего задания -->
     <component
       :is="currentTaskComponent"
       :task="currentTask"
       @next-task="nextTask"
-    ></component>
+    />
+  </div>
+  <div v-else>
+    <p>No exam data available or exam has no tasks.</p>
   </div>
 </template>
 
@@ -17,69 +20,62 @@ import Task4 from '../components/tasks/task-4.vue'
 import { useExamStore } from '../stores/exam.store'
 
 export default {
+  components: {
+    Task1,
+    Task2,
+    Task3,
+    Task4
+  },
   data() {
     return {
       currentTaskIndex: 0,
-      recordings: [],
-      mediaRecorder: null,
-      audioChunks: [],
+      examData: null,
       examStore: useExamStore()
     }
   },
   computed: {
     currentTask() {
-      return this.examStore.currentExamTask.tasks[this.currentTaskIndex]
+      return this.examData?.tasks[this.currentTaskIndex] || null
     },
     currentTaskComponent() {
-      switch (this.currentTask.type) {
-        case 'Reading':
+      switch (this.currentTask?.type) {
+        case 1:
           return 'Task1'
-        case 'StudyTheAdvertisement':
+        case 2:
           return 'Task2'
-        case 'Interview':
+        case 3:
           return 'Task3'
-        case 'Speaking':
+        case 4:
           return 'Task4'
         default:
           return null
       }
     }
   },
-  mounted() {
-    this.startTask()
-  },
   methods: {
+    startExam() {
+      const examData = this.examStore.currentExam
+      if (examData && examData.tasks && examData.tasks.length > 0) {
+        this.examData = examData
+      } else {
+        console.error('No exam data available or exam has no tasks.')
+      }
+    },
     nextTask() {
-      this.currentTaskIndex++
-      if (this.currentTaskIndex < this.tasks.length) {
+      if (this.currentTaskIndex < this.examData.tasks.length - 1) {
+        this.currentTaskIndex++
       } else {
         this.finishExam()
       }
     },
-    finishExam() {}
+    finishExam() {
+      console.log('Exam finished')
+    }
   },
-  components: {
-    Task1,
-    Task2,
-    Task3,
-    Task4
+  mounted() {
+    this.startExam()
   }
 }
 </script>
 
-<style scoped>
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background-color: #f8f9fa;
-  padding: 10px;
-  text-align: center;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-}
-</style>
+<style scoped></style>

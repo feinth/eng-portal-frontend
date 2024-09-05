@@ -13,7 +13,7 @@
       <q-btn-group spread>
         <q-btn
           label="Перейти к выполнению задания"
-          color="primary"
+          color="red"
           @click="goToExam"
         />
       </q-btn-group>
@@ -32,7 +32,7 @@
 
 <script>
 import MicrophoneFooterTest from '../components/microphone/microphone-footer-test.vue'
-
+import { router } from '../router/router.js'
 export default {
   components: {
     MicrophoneFooterTest
@@ -43,7 +43,8 @@ export default {
       mediaRecorder: null,
       audioChunks: [],
       audioBlob: null,
-      audioUrl: null
+      audioUrl: null,
+      router: router
     }
   },
   methods: {
@@ -52,7 +53,14 @@ export default {
         await navigator.mediaDevices.getUserMedia({ audio: true })
         this.microphonePermission = true
       } catch (e) {
-        console.error('Микрофон не найден или нет доступа к микрофону', e)
+        this.$q.notify({
+          progress: true,
+          position: 'top-right',
+          color: 'negative',
+          message: 'Микрофон не найден или нет доступа к микрофону',
+          timeout: 2000,
+          icon: 'sym_o_warning'
+        })
       }
     },
     startRecording() {
@@ -79,6 +87,9 @@ export default {
         const audio = new Audio(this.audioUrl)
         audio.play()
       }
+    },
+    goToExam() {
+      this.router.push('/exam')
     }
   },
   mounted() {

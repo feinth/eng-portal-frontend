@@ -8,7 +8,7 @@ export const useExamStore = defineStore({
   state: () => ({
     audioFiles: [],
     tasks: null,
-    currentExamTask: null
+    currentExam: null
   }),
   actions: {
     addAudioFile(audioFile) {
@@ -32,7 +32,7 @@ export const useExamStore = defineStore({
           //   method: 'get',
           //   url: 'ege/exams/${examId}'
           // })
-          this.currentExamTask = tasksData
+          this.currentExam = tasksData
           resolve(tasksData)
         } catch (err) {
           reject(err)

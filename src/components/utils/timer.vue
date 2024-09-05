@@ -1,28 +1,57 @@
 <template>
-  <div v-if="countdown > 0" class="countdown-container">
-    <p>Be ready for the test</p>
-
-    <p>{{ countdown }}</p>
-
-    <p>seconds</p>
+  <div class="timer-container">
+    <p class="timer-header">{{ `Be ready for the ${type} ` }}</p>
+    <div class="timer-countdown">
+      <span class="timer-number">{{ timeLeft }}</span>
+    </div>
+    <p class="timer-footer">seconds</p>
   </div>
 </template>
 
 <script>
 export default {
+  props: {
+    duration: {
+      type: Number,
+      default: 5 // По умолчанию 5 секунд
+    },
+    audioSrc: {
+      type: String,
+      required: false
+    },
+    type: {
+      type: String,
+      required: true
+    }
+  },
   data() {
     return {
-      countdown: 5,
-    };
+      timeLeft: this.duration,
+      audio: new Audio(this.audioSrc)
+    }
+  },
+  methods: {
+    startCountdown() {
+      try {
+        this.audio.play()
+      } catch (e) {
+        console.log(e)
+      }
+
+      const countdown = setInterval(() => {
+        this.timeLeft--
+        if (this.timeLeft <= 0) {
+          clearInterval(countdown)
+          this.$emit('countdown-finished')
+          this.audio.pause()
+        }
+      }, 1000)
+    }
   },
   mounted() {
-    setInterval(() => {
-      if (this.countdown > 0) {
-        this.countdown--;
-      }
-    }, 1000);
-  },
-};
+    this.startCountdown()
+  }
+}
 </script>
 
 <style>
@@ -32,5 +61,35 @@ export default {
   align-items: center;
   height: 100vh;
   font-size: 2rem;
+}
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.timer-header {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+.timer-countdown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3em;
+  font-weight: bold;
+}
+
+.timer-number {
+  font-size: 3em;
+  font-weight: bold;
+}
+
+.timer-footer {
+  font-size: 1.5em;
+  margin-top: 10px;
 }
 </style>

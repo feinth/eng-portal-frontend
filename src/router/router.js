@@ -45,13 +45,22 @@ export const router = createRouter({
       meta: {
         layout: TrainerLayout
       }
+    },
+    {
+      path: '/exam',
+      name: 'exam',
+      component: () => import('../views/exam.vue'),
+      meta: {
+        layout: TrainerLayout
+      }
     }
   ]
 })
 
 router.beforeEach(async (to) => {
   const publicPages = ['/', '/training', '/login']
-  const authRequired = !publicPages.includes(to.path)
+  const authPages = ['/profile']
+  const authRequired = authPages.includes(to.path)
   const store = useUserStore()
   if (authRequired && !store.token) {
     return '/login'
