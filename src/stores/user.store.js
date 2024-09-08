@@ -5,10 +5,7 @@ export const useUserStore = defineStore({
   id: 'user',
   state: () => ({
     token: localStorage.getItem('token'),
-    user: JSON.parse(localStorage.getItem('user')),
-    audioFiles: [],
-    tasks: null,
-    currentExamTask: null
+    user: JSON.parse(localStorage.getItem('user'))
   }),
   actions: {
     login(email, password) {
@@ -20,7 +17,7 @@ export const useUserStore = defineStore({
             data: { email: email, password: password }
           })
           this.token = response.data
-          localStorage.setItem('token', this.token )
+          localStorage.setItem('token', this.token)
           resolve()
         } catch (err) {
           reject(err)
@@ -55,7 +52,7 @@ export const useUserStore = defineStore({
         try {
           let response = await api({
             method: 'get',
-            url: 'users/me/', 
+            url: 'users/me/'
           })
           this.user = response.data
           localStorage.setItem('user', JSON.stringify(this.user))
@@ -98,10 +95,10 @@ export const useUserStore = defineStore({
       })
     },
     clearAuth() {
-      this.token = '';
-      this.user = null;
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-    },
+      this.token = ''
+      this.user = null
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+    }
   }
 })

@@ -112,7 +112,7 @@ export default {
             progress: true,
             position: 'top-right',
             color: 'negative',
-            message: err.response.data,
+            message: 'Неправильный логин или пароль',
             timeout: 1000,
             icon: 'sym_o_warning'
           })

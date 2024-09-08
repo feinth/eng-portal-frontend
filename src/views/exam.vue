@@ -1,15 +1,19 @@
 <template>
   <div v-if="examData && examData.tasks.length > 0">
-    <!-- Отображение текущего задания -->
-    <component
-      :is="currentTaskComponent"
-      :task="currentTask"
-      @next-task="nextTask"
-    />
+    <div v-if="startAudioEnded">
+      <!-- Отображение текущего задания -->
+      <component
+        :is="currentTaskComponent"
+        :task="currentTask"
+        @next-task="nextTask"
+      />
+    </div>
   </div>
-  <div v-else>
-    <p>No exam data available or exam has no tasks.</p>
-  </div>
+  <q-inner-loading
+    v-if="!examData"
+    :showing="!examData"
+    label="Идет загрузка заданий..."
+  />
 </template>
 
 <script>
@@ -30,7 +34,8 @@ export default {
     return {
       currentTaskIndex: 0,
       examData: null,
-      examStore: useExamStore()
+      examStore: useExamStore(),
+      startAudioEnded: false
     }
   },
   computed: {
@@ -57,9 +62,23 @@ export default {
       const examData = this.examStore.currentExam
       if (examData && examData.tasks && examData.tasks.length > 0) {
         this.examData = examData
-      } else {
-        console.error('No exam data available or exam has no tasks.')
+        this.playIntroAudio()
       }
+    },
+    playIntroAudio() {
+      const audio = new Audio(
+        'http://localhost:80' + this.examData.begin_audio_guidance
+      )
+      audio.play()
+      audio.onended = () => {
+        this.startAudioEnded = true
+      }
+    },
+    playEndAudio() {
+      const audio = new Audio(
+        'http://localhost:80' + this.examData.end_audio_guidance
+      )
+      audio.play()
     },
     nextTask() {
       if (this.currentTaskIndex < this.examData.tasks.length - 1) {
@@ -69,6 +88,7 @@ export default {
       }
     },
     finishExam() {
+      this.playEndAudio()
       console.log('Exam finished')
     }
   },

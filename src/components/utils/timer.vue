@@ -27,23 +27,21 @@ export default {
   data() {
     return {
       timeLeft: this.duration,
-      audio: new Audio(this.audioSrc)
+      audio: null
     }
   },
   methods: {
     startCountdown() {
-      try {
-        this.audio.play()
-      } catch (e) {
-        console.log(e)
-      }
-
       const countdown = setInterval(() => {
         this.timeLeft--
         if (this.timeLeft <= 0) {
           clearInterval(countdown)
-          this.$emit('countdown-finished')
-          this.audio.pause()
+
+          const audio = new Audio('http://localhost:80' + this.audioSrc)
+          audio.play()
+          audio.onended = () => {
+            this.$emit('countdown-finished')
+          }
         }
       }, 1000)
     }

@@ -2,11 +2,11 @@
   <div class="tasks-list">
     <q-btn
       v-for="task in tasks"
-      :key="task.idTask"
-      :label="task.NameTask"
+      :key="task.id"
+      :label="`Вариант ${task.number}`"
       color="teal-8"
       class="custom-task-button"
-      @click="fetchTaskDetails(task.idTask)"
+      @click="fetchTaskDetails(task.id)"
     />
   </div>
 </template>
@@ -28,10 +28,8 @@ export default {
     }
   },
   methods: {
-    fetchTaskDetails(idTask) {
-      // Здесь можно добавить логику для запроса детальной информации о задании по его idTask
-      this.examStore.getExamTasks().then((task) => {
-        console.log(task)
+    fetchTaskDetails(id) {
+      this.examStore.getExamTasks(id).then((result) => {
         this.taskLoaded = true
         this.$emit('taskLoaded')
       })

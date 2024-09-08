@@ -79,8 +79,8 @@ export default {
     return {
       store: useExamStore(),
       mainTypes: [
-        { id: 1, label: 'ОГЭ' },
-        { id: 2, label: 'ЕГЭ' }
+        { id: 1, label: 'ОГЭ', type: 'oge' },
+        { id: 2, label: 'ЕГЭ', type: 'ege' }
       ],
       taskTypes: [
         { id: 1, label: 'Экзамен' },
@@ -119,7 +119,7 @@ export default {
     },
     fetchTasks(idTaskType) {
       this.store
-        .getExams(this.selectedMainType.id, idTaskType)
+        .getExams(this.selectedMainType.type, idTaskType)
         .then((result) => {
           this.tasks = result
         })

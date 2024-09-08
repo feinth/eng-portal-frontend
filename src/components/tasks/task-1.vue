@@ -1,12 +1,19 @@
 <template>
   <Timer
-    v-if="!taskStarted"
+    v-if="showTimerPrepare"
     :duration="5"
     :audioSrc="task.audio_guidance"
     :type="'test'"
     @countdown-finished="startTask"
   />
-  <div v-else class="bg-gray-100 p-4 rounded-lg shadow-md">
+  <Timer
+    v-if="showTimerAnswer"
+    :duration="5"
+    :audioSrc="task.audio_before_execution"
+    :type="'answer'"
+    @countdown-finished="startRecord"
+  />
+  <div v-show="showTask" class="bg-gray-100 p-4 rounded-lg shadow-md">
     <p class="text-lg font-bold text-gray-800 mt-4">Task {{ task.type }}</p>
     <h2 class="text-lg font-bold text-gray-800 mt-4">
       {{ task.header }}
@@ -15,23 +22,14 @@
     <MarkdownView :content="task.description" />
     <p class="text-gray-700 mt-2 text-base">{{ task.text }}</p>
   </div>
-  <button @click="startReading">Start Reading</button>
 
   <MicrophoneFooterPrepare
     v-if="currentState === 'prepare' && taskStarted"
     :timeout="task.preparation_seconds"
     @prepare-completed="prepareStop"
   />
-  <div v-else-if="currentState === 'record'">
-    <Timer
-      v-if="!recordStarted"
-      :duration="5"
-      :audioSrc="task.audio_guidance"
-      :type="'test'"
-      @countdown-finished="startRecord"
-    />
+  <div v-else-if="currentState === 'record' && recordStarted">
     <MicrophoneFooterRecord
-      v-else
       :timeout="task.execution_seconds"
       :taskId="task.id"
       @record-completed="recordStop"
@@ -61,26 +59,38 @@ export default {
     return {
       taskStarted: false,
       recordStarted: false,
-      currentState: 'prepare'
+      currentState: 'prepare',
+      showTimerPrepare: false,
+      showTimerAnswer: false,
+      showTask: false
     }
   },
   methods: {
     startTask() {
+      this.showTimerPrepare = false
       this.taskStarted = true
+      this.showTask = true
     },
     startRecord() {
+      this.showTimerAnswer = false
+      this.showTask = true
       this.recordStarted = true
     },
     startReading() {
       this.$emit('next-task')
     },
     prepareStop() {
+      this.showTask = false
+      this.showTimerAnswer = true
       this.currentState = 'record'
     },
     recordStop() {
       this.startReading()
     }
   },
-  emits: ['next-task']
+  emits: ['next-task'],
+  mounted() {
+    this.showTimerPrepare = true
+  }
 }
 </script>

@@ -22,7 +22,7 @@
         ОГЭ/ЕГЭ, напишут комментарии и дадут рекомендации. В будущем наш сайт
         сможет принимать на проверку и письменные работы: письма и эссе.
       </p>
-      <h1 class="text-3xl font-extrabold mb-6 text-teal-800 text-left">
+      <!-- <h1 class="text-3xl font-extrabold mb-6 text-teal-800 text-left">
         Платные услуги
       </h1>
       <div class="my-8 bg-gray-100 rounded-lg shadow-md p-6 flex items-center">
@@ -45,7 +45,7 @@
             </div>
           </q-card-section>
         </q-card-section>
-      </div>
+      </div> -->
       <div class="my-8 bg-gray-100 rounded-lg shadow-md p-6 flex items-center">
         <q-card-section horizontal>
           <q-card-section class="q-pt-xs">

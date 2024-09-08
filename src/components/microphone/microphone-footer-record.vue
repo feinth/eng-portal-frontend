@@ -53,12 +53,13 @@ export default {
       default: 60
     },
     taskId: {
-      type: String,
-      required: false
+      type: Number,
+      required: true
     },
     assignmentId: {
       type: String,
-      required: false
+      required: false,
+      default: null
     }
   },
   data() {
@@ -113,7 +114,6 @@ export default {
           this.examStore.addAudioFile({
             taskId: this.taskId,
             assignmentId: this.assignmentId,
-            audioBlob: this.audioBlob,
             audioUrl: this.audioUrl
           })
         }

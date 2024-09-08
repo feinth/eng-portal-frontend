@@ -1,39 +1,44 @@
 import { defineStore } from 'pinia'
 import api from '../api/api'
-import examsData from '../assets/tasks.json'
-import tasksData from '../assets/exam_.json'
 
 export const useExamStore = defineStore({
   id: 'exam',
   state: () => ({
-    audioFiles: [],
-    tasks: null,
-    currentExam: null
+    taskAnswers: [],
+    exams: JSON.parse(localStorage.getItem('exams')),
+    currentExam: JSON.parse(localStorage.getItem('currentExam'))
   }),
   actions: {
-    addAudioFile(audioFile) {
-      this.audioFiles.push(audioFile)
+    addAudioFile(taskAnswer) {
+      this.taskAnswers.push(taskAnswer)
     },
     clearAudioFiles() {
-      this.audioFiles = []
+      this.taskAnswers = []
     },
     getAudioFiles() {
       return this.audioFiles
     },
-    getExams() {
+    getExams(typeExam) {
       return new Promise(async (resolve, reject) => {
-        resolve(examsData)
+        let res = await api({
+          method: 'get',
+          url: `${typeExam}/exams/`
+        })
+        this.exams = res.data
+        localStorage.setItem('exams', JSON.stringify(this.exams))
+        resolve(this.exams)
       })
     },
     getExamTasks(examId) {
       return new Promise(async (resolve, reject) => {
         try {
-          // let res = await api({
-          //   method: 'get',
-          //   url: 'ege/exams/${examId}'
-          // })
-          this.currentExam = tasksData
-          resolve(tasksData)
+          let res = await api({
+            method: 'get',
+            url: `ege/exams/${examId}`
+          })
+          this.currentExam = res.data
+          localStorage.setItem('currentExam', JSON.stringify(this.currentExam))
+          resolve(this.currentExam)
         } catch (err) {
           reject(err)
         }
