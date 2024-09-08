@@ -21,7 +21,7 @@
 <script>
 import { useUserStore } from '../stores/user.store'
 export default {
-  name: 'MicrophoneLayout',
+  name: 'TrainerLayout',
   data() {
     return {
       store: useUserStore()

@@ -5,9 +5,9 @@
       <div class="flex items-center">
         <div class="mr-4 flex items-center">
           <q-btn
-            :color="footerColor"
+            color="red"
             icon="sym_o_mic"
-            :label="footerLabel"
+            label="Recording"
             no-caps
             class="w-32"
           />
@@ -19,9 +19,9 @@
           stripe
           class="q-my-md"
           size="25px"
-          :value="(timeLeft / timeout) * 100"
+          :value="timeLeft / timeout"
           :max="100"
-          :color="footerColor"
+          color="red"
         >
           <div class="absolute-full flex flex-center">
             <q-badge color="white" text-color="black" :label="countdown" />
@@ -31,28 +31,11 @@
       <!-- прогресс -->
       <div class="flex items-center ml-4">
         <q-btn
-          v-if="testMicro && props.type === 'prepare'"
-          :color="footerColor"
-          @click="startRecord"
-          label="Проверить микрофон"
-          no-caps
-          class="w-32"
-        />
-        <q-btn
-          v-else-if="testMicro && isRecording"
-          :color="footerColor"
+          color="red"
           @click="stopRecord"
-          label="Завершить проверку"
+          label="Завершить"
           no-caps
           class="w-32"
-        />
-        <q-btn
-          v-else-if="testMicro && audioUrl"
-          :color="footerColor"
-          @click="playAudio"
-          label="Прослушать"
-          no-caps
-          class="w-32 ml-4"
         />
       </div>
     </q-toolbar>
@@ -60,7 +43,6 @@
 </template>
 
 <script>
-import { mapActions } from 'pinia'
 import { useExamStore } from '../../stores/exam.store'
 
 export default {
@@ -70,10 +52,6 @@ export default {
       required: true,
       default: 60
     },
-    type: {
-      type: String,
-      required: true
-    },
     taskId: {
       type: String,
       required: false
@@ -81,10 +59,6 @@ export default {
     assignmentId: {
       type: String,
       required: false
-    },
-    testMicro: {
-      type: Boolean,
-      default: false
     }
   },
   data() {
@@ -105,12 +79,6 @@ export default {
       const minutes = Math.floor(remainingSeconds / 60)
       const seconds = remainingSeconds % 60
       return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
-    },
-    footerColor() {
-      return this.type === 'prepare' ? 'blue' : 'red'
-    },
-    footerLabel() {
-      return this.type === 'prepare' ? 'Preparation' : 'Recording'
     }
   },
   methods: {
@@ -130,7 +98,7 @@ export default {
       this.timer = setInterval(() => {
         this.timeLeft += 1
         if (this.timeLeft >= this.timeout) {
-          this.stop()
+          this.stopRecord()
         }
       }, 1000)
     },
@@ -142,12 +110,12 @@ export default {
           const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' })
           this.audioUrl = URL.createObjectURL(audioBlob)
           this.isRecording = false
-          // this.examStore.addAudioFile({
-          //   taskId: this.taskId,
-          //   assignmentId: this.assignmentId,
-          //   audioBlob,
-          //   audioUrl: this.audioUrl
-          // })
+          this.examStore.addAudioFile({
+            taskId: this.taskId,
+            assignmentId: this.assignmentId,
+            audioBlob: this.audioBlob,
+            audioUrl: this.audioUrl
+          })
         }
       }
       this.completeTask()
@@ -164,17 +132,12 @@ export default {
       }
     },
     completeTask() {
-      this.$emit('taskCompleted', {
-        taskId: this.taskId,
-        assignmentId: this.assignmentId
-      })
+      this.$emit('record-completed')
     }
+  },
+  mounted() {
+    this.startRecord()
   }
-  // mounted() {
-  //   if (this.timeout) {
-  //     this.start()
-  //   }
-  // }
 }
 </script>
 
