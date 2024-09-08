@@ -57,7 +57,7 @@ export default {
       required: true
     },
     assignmentId: {
-      type: String,
+      type: Number,
       required: false,
       default: null
     }
