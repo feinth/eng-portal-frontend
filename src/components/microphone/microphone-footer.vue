@@ -5,9 +5,9 @@
       <div class="flex items-center">
         <div class="mr-4 flex items-center">
           <q-btn
-            color="red"
+            :color="buttonColor"
             icon="sym_o_mic"
-            label="Recording"
+            :label="buttonLabel"
             no-caps
             class="w-32"
           />
@@ -21,22 +21,22 @@
           size="25px"
           :value="timeLeft / timeout"
           :max="100"
-          color="red"
+          :color="buttonColor"
         >
           <div class="absolute-full flex flex-center">
             <q-badge color="white" text-color="black" :label="countdown" />
           </div>
         </q-linear-progress>
       </div>
-      <!-- прогресс -->
+
+      <!-- кнопка завершения -->
       <div class="flex items-center ml-4">
         <q-btn
-          color="red"
-          @click="stopRecord"
-          label="Завершить"
+          :color="buttonColor"
+          @click="completeTask"
+          :label="buttonLabelComplete"
           no-caps
           class="w-32"
-          :disable="isAudioPlaying"
         />
       </div>
     </q-toolbar>
@@ -53,17 +53,16 @@ export default {
       required: true,
       default: 60
     },
+    isRecording: {
+      type: Boolean,
+      default: false
+    },
     taskId: {
       type: Number,
       required: true
     },
     assignmentId: {
       type: Number,
-      required: false,
-      default: null
-    },
-    audioBeforeSource: {
-      type: String,
       required: false,
       default: null
     }
@@ -76,12 +75,19 @@ export default {
       audioChunks: [],
       audioUrl: null,
       examStore: useExamStore(),
-      currentAudioPlay: null,
-      isRecording: false,
-      isAudioPlaying: false
+      currentAudioPlay: null
     }
   },
   computed: {
+    buttonColor() {
+      return this.isRecording ? 'red' : 'blue' // Цвет кнопки в зависимости от режима
+    },
+    buttonLabel() {
+      return this.isRecording ? 'Recording' : 'Preparation' // Лейбл кнопки
+    },
+    buttonLabelComplete() {
+      return this.isRecording ? 'Завершить запись' : 'Завершить подготовку' // Лейбл завершения
+    },
     countdown() {
       const remainingSeconds = this.timeout - this.timeLeft
       const minutes = Math.floor(remainingSeconds / 60)
@@ -90,11 +96,27 @@ export default {
     }
   },
   methods: {
-    startRecord() {
+    startTimer() {
       this.timeLeft = 0
+      this.timer = setInterval(() => {
+        this.timeLeft += 1
+        if (this.timeLeft >= this.timeout) {
+          this.completeTask()
+        }
+      }, 1000)
+    },
+    completeTask() {
+      clearInterval(this.timer)
+
+      if (this.isRecording) {
+        this.stopRecord() // Завершить запись
+      } else {
+        this.$emit('prepare-completed') // Завершить подготовку
+      }
+    },
+    startRecord() {
       this.audioChunks = []
       this.audioUrl = null
-      this.isRecording = true
       navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
         this.mediaRecorder = new MediaRecorder(stream)
         this.mediaRecorder.ondataavailable = (event) => {
@@ -102,23 +124,13 @@ export default {
         }
         this.mediaRecorder.start()
       })
-
-      this.timer = setInterval(() => {
-        this.timeLeft += 1
-        if (this.timeLeft >= this.timeout) {
-          this.stopRecord()
-        }
-      }, 1000)
     },
-
     stopRecord() {
-      clearInterval(this.timer)
       if (this.mediaRecorder) {
         this.mediaRecorder.stop()
         this.mediaRecorder.onstop = () => {
           const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' })
           this.audioUrl = URL.createObjectURL(audioBlob)
-          this.isRecording = false
           this.examStore.addAudioFile({
             taskId: this.taskId,
             assignmentId: this.assignmentId,
@@ -126,64 +138,40 @@ export default {
           })
         }
       }
-      this.completeTask()
-    },
-
-    startPlayAudioBefore() {
-      if (this.audioBeforeSource) {
-        const audio = new Audio(this.audioBeforeSource)
-        this.isAudioPlaying = true
-        audio.play()
-
-        // Событие окончания аудиозаписи
-        audio.onended = () => {
-          this.isAudioPlaying = false
-          this.startRecord()
-        }
-      } else {
-        // Если аудиофайла нет, сразу запускаем запись
-        this.startRecord()
-      }
-    },
-
-    completeTask() {
       this.$emit('record-completed')
     }
   },
-
   mounted() {
-    // Убираем автоматический запуск записи на монтировании компонента
-    this.startPlayAudioBefore()
+    this.startTimer()
+    if (this.isRecording) {
+      this.startRecord() // Запускаем запись, если это режим записи
+    }
   }
 }
 </script>
 
 <style scoped>
-.text-teal-700 {
-  color: #285e61;
+.fixed {
+  position: fixed;
 }
 
-.text-teal-900 {
-  color: #1c3d45;
+.bottom-0 {
+  bottom: 0;
 }
 
-.text-gray-800 {
-  color: #2d3748;
+.left-0 {
+  left: 0;
 }
 
-.list-disc {
-  list-style-type: disc;
+.w-full {
+  width: 100%;
 }
 
-.list-inside {
-  list-style-position: inside;
+.border {
+  border-style: solid;
 }
 
-.h-full {
-  height: 100%;
-}
-
-.flex-grow {
-  flex-grow: 1;
+.border-gray-300 {
+  border-color: #d1d5db;
 }
 </style>

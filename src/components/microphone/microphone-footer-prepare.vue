@@ -33,6 +33,7 @@
         <q-btn
           color="blue"
           @click="stopPrepare"
+          :disable="isAudioPlaying"
           label="Завершить"
           no-caps
           class="w-32"
@@ -49,12 +50,18 @@ export default {
       type: Number,
       required: true,
       default: 60
+    },
+    audioSrc: {
+      type: String,
+      required: false,
+      default: null
     }
   },
   data() {
     return {
       timeLeft: 0,
-      timer: null
+      timer: null,
+      isAudioPlaying: false
     }
   },
   computed: {
@@ -76,16 +83,35 @@ export default {
         }
       }, 1000)
     },
+
     stopPrepare() {
       clearInterval(this.timer)
       this.completeTask()
     },
+
     completeTask() {
       this.$emit('prepare-completed')
+    },
+
+    startPlayAudioBefore() {
+      if (this.audioSrc) {
+        const audio = new Audio(this.audioSrc)
+        audio.play()
+        this.isAudioPlaying = true
+        // Запускаем таймер после завершения воспроизведения аудио
+        audio.onended = () => {
+          this.isAudioPlaying = false
+          this.startPrepare()
+        }
+      } else {
+        // Если аудиофайла нет, сразу запускаем таймер
+        this.startPrepare()
+      }
     }
   },
+
   mounted() {
-    this.startPrepare()
+    this.startPlayAudioBefore()
   }
 }
 </script>

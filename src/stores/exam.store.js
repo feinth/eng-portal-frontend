@@ -43,6 +43,21 @@ export const useExamStore = defineStore({
           reject(err)
         }
       })
+    },
+    setExamAnswers(examId) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          let res = await api({
+            method: 'POST',
+            url: `answers/`
+          })
+          this.currentExam = res.data
+          localStorage.setItem('currentExam', JSON.stringify(this.currentExam))
+          resolve(this.currentExam)
+        } catch (err) {
+          reject(err)
+        }
+      })
     }
   }
 })

@@ -96,7 +96,6 @@ export default {
     playRecording() {
       let audio = new Audio(this.audioUrl)
       audio.play()
-      console.log(this.audioUrl)
     }
   },
   computed: {

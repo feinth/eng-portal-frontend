@@ -142,7 +142,6 @@ export default {
       }
     },
     startPlayAudio() {
-      console.log(this.audioUrl)
       if (this.audioUrl) {
         this.currentAudioPlay = new Audio(this.audioUrl)
         this.currentAudioPlay.play()

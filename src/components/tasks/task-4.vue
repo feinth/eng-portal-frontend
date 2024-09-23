@@ -1,4 +1,11 @@
 <template>
+  <Timer
+    v-if="showTimerPrepare"
+    :duration="5"
+    :audioSrc="task.audio_guidance"
+    :type="'test'"
+    @countdown-finished="startPrepare"
+  />
   <h2>{{ task.header }}</h2>
   <!-- <MarkdownView :content="task.description" /> -->
   <div v-if="task.images">
@@ -18,8 +25,17 @@
 </template>
 
 <script>
-// import MarkdownView from 'src/components/markdown-view.vue'
+import Timer from '../utils/timer.vue'
+import MarkdownView from '../utils/markdown-view.vue'
+import MicrophoneFooterPrepare from '../microphone/microphone-footer-prepare.vue'
+import MicrophoneFooterRecord from '../microphone/microphone-footer-record.vue'
 export default {
+  components: {
+    Timer,
+    MarkdownView,
+    MicrophoneFooterPrepare,
+    MicrophoneFooterRecord
+  },
   props: {
     task: {
       type: Object,

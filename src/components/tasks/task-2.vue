@@ -13,24 +13,36 @@
     :type="'answer'"
     @countdown-finished="startRecord"
   />
+
   <div
     v-show="currentState === 'prepare' && taskStarted"
     class="bg-gray-100 p-4 rounded-lg shadow-md"
   >
     <div class="row q-col-gutter-lg">
       <div class="col-6">
-        <p class="text-lg font-bold text-gray-800 mt-4">
-          Task {{ task.type + ' Study the advertisement.' }}
+        <p class="text-h4 font-bold text-gray-800 mt-4">
+          {{ `Task ${task.type}.` }}
+        </p>
+        <p class="text-h5 text-gray-800 mt-4">
+          {{ 'Study the advertisement.' }}
         </p>
         <q-separator spaced class="my-2" />
-        <MarkdownView :content="task.header" />
+        <MarkdownView
+          class="text-h5 font-bold text-gray-800 mt-4"
+          :content="task.header"
+        />
         <ul>
-          <li v-for="(question, index) in task.questions" :key="index">
+          <li
+            v-for="(question, index) in task.questions"
+            :key="index"
+            class="text-h5 font-bold text-gray-800 mt-4"
+          >
             {{ `${index + 1}) ` + question.description }}
           </li>
         </ul>
         <br />
         <MarkdownView
+          class="text-h5 font-bold text-gray-800 mt-4"
           :content="'**You have 20 seconds to ask each question.**'"
         />
       </div>
@@ -38,7 +50,10 @@
       <div class="col-6 text-gray-800 my-card">
         <q-item>
           <q-item-section>
-            <MarkdownView :content="task.images[0].header" />
+            <MarkdownView
+              class="markdown-content"
+              :content="task.images[0].header"
+            />
             <q-img :src="imgSrc + task.images[0].image" />
           </q-item-section>
         </q-item>
@@ -51,33 +66,41 @@
     :timeout="task.preparation_seconds"
     @prepare-completed="prepareStop"
   />
+
   <div v-else-if="currentState === 'record' && recordStarted">
-    <div v-for="(question, index) in questions" :key="index">
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md">
-        <div class="row q-col-gutter-lg">
-          <div class="col-6">
-            <p class="text-lg font-bold text-gray-800 mt-4">
-              Task {{ task.type + ' Study the advertisement.' }}
-            </p>
-            <q-separator spaced class="my-2" />
+    <div class="bg-gray-100 p-4 rounded-lg shadow-md">
+      <div class="row q-col-gutter-lg">
+        <div class="text-h5 col-6">
+          <p class="text-h4 font-bold text-gray-800 mt-4">
+            {{ `Task ${task.type}.` }}
+          </p>
+          <p class="text-h5 text-gray-800 mt-4">
+            {{ 'Study the advertisement.' }}
+          </p>
+          <q-separator spaced class="text-h5 text-gray-800 mt-4 my-2" />
+          {{
+            `Question ${currentQuestionIndex + 1}: ${currentQuestion.description}`
+          }}
+        </div>
 
-            {{ `Question ${index}: ${question.description}` }}
-          </div>
-
-          <div class="col-6 text-gray-800 my-card">
-            <q-item>
-              <q-item-section>
-                <MarkdownView :content="task.images[0].header" />
-                <q-img :src="imgSrc + task.images[0].image" />
-              </q-item-section>
-            </q-item>
-          </div>
+        <div class="col-6 text-gray-800 my-card">
+          <q-item>
+            <q-item-section>
+              <MarkdownView
+                class="markdown-content"
+                :content="task.images[0].header"
+              />
+              <q-img :src="imgSrc + task.images[0].image" />
+            </q-item-section>
+          </q-item>
         </div>
       </div>
       <MicrophoneFooterRecord
+        :key="currentQuestionIndex"
         :timeout="20"
         :taskId="task.id"
-        :assignmentId="index"
+        :assignmentId="currentQuestion.id"
+        :audioBeforeSource="imgSrc + currentQuestion.audio_guidance"
         @record-completed="recordStop"
       />
     </div>
@@ -89,6 +112,7 @@ import Timer from '../utils/timer.vue'
 import MarkdownView from '../utils/markdown-view.vue'
 import MicrophoneFooterPrepare from '../microphone/microphone-footer-prepare.vue'
 import MicrophoneFooterRecord from '../microphone/microphone-footer-record.vue'
+
 export default {
   components: {
     Timer,
@@ -111,7 +135,12 @@ export default {
       showTimerAnswer: false,
       showTask: false,
       imgSrc: `http://localhost:80`,
-      questions: this.task.questions
+      currentQuestionIndex: 0 // текущий вопрос
+    }
+  },
+  computed: {
+    currentQuestion() {
+      return this.task.questions[this.currentQuestionIndex]
     }
   },
   methods: {
@@ -125,21 +154,29 @@ export default {
       this.showTask = true
       this.recordStarted = true
     },
-    startReading() {
-      this.$emit('next-task')
-    },
     prepareStop() {
       this.showTask = false
       this.showTimerAnswer = true
       this.currentState = 'record'
     },
     recordStop() {
-      this.startReading()
+      if (this.currentQuestionIndex < this.task.questions.length - 1) {
+        this.currentQuestionIndex++
+      } else {
+        this.$emit('next-task')
+      }
     }
   },
   emits: ['next-task'],
+
   mounted() {
     this.showTimerPrepare = true
   }
 }
 </script>
+<style>
+.markdown-content {
+  color: #01695c; /* Переопределение цвета текста */
+  font-weight: bold;
+}
+</style>
