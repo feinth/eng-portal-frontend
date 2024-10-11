@@ -33,7 +33,7 @@
         <q-btn
           color="red"
           @click="stopRecord"
-          label="Завершить"
+          label="Далее"
           no-caps
           class="w-32"
           :disable="isAudioPlaying"
@@ -119,12 +119,17 @@ export default {
           const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' })
           this.audioUrl = URL.createObjectURL(audioBlob)
           this.isRecording = false
-          this.examStore.addAudioFile({
-            taskId: this.taskId,
-            assignmentId: this.assignmentId,
-            audioUrl: this.audioUrl
+          // Преобразуем аудио в base64 и только после этого сохраняем его
+          this.blobToBase64(audioBlob).then((audioBase64) => {
+            this.examStore.addAudioFile({
+              taskId: this.taskId,
+              assignmentId: this.assignmentId,
+              audioUrl: this.audioUrl,
+              audioBase64: audioBase64
+            })
           })
         }
+        this.audioChunks = []
       }
       this.completeTask()
     },
@@ -145,7 +150,14 @@ export default {
         this.startRecord()
       }
     },
-
+    blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result.split(',')[1]) // Извлекаем только base64
+        reader.onerror = reject
+        reader.readAsDataURL(blob) // Преобразуем Blob в DataURL
+      })
+    },
     completeTask() {
       this.$emit('record-completed')
     }

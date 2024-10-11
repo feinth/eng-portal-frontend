@@ -47,14 +47,14 @@
         />
       </div>
 
-      <div class="col-6 text-gray-800 my-card">
+      <div class="col-6 text-gray-800 my-card image-container">
         <q-item>
           <q-item-section>
-            <MarkdownView
-              class="markdown-content"
-              :content="task.images[0].header"
+            <MarkdownView lass="text-h5" :content="task.images[0].header" />
+            <q-img
+              :src="imgSrc + task.images[0].image"
+              class="image-max-size"
             />
-            <q-img :src="imgSrc + task.images[0].image" />
           </q-item-section>
         </q-item>
       </div>
@@ -83,14 +83,14 @@
           }}
         </div>
 
-        <div class="col-6 text-gray-800 my-card">
+        <div class="col-6 text-gray-800 my-card image-container">
           <q-item>
             <q-item-section>
-              <MarkdownView
-                class="markdown-content"
-                :content="task.images[0].header"
+              <MarkdownView :content="task.images[0].header" />
+              <q-img
+                :src="imgSrc + task.images[0].image"
+                class="image-max-size"
               />
-              <q-img :src="imgSrc + task.images[0].image" />
             </q-item-section>
           </q-item>
         </div>
@@ -175,8 +175,18 @@ export default {
 }
 </script>
 <style>
+.image-max-size {
+  max-width: 500px;
+  max-height: 500px;
+  object-fit: contain;
+}
 .markdown-content {
   color: #01695c; /* Переопределение цвета текста */
   font-weight: bold;
+}
+.image-container {
+  justify-content: center; /* Горизонтальное выравнивание по центру */
+  align-items: center; /* Вертикальное выравнивание по центру */
+  gap: 20px; /* Отступ между изображениями */
 }
 </style>

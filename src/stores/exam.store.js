@@ -6,11 +6,13 @@ export const useExamStore = defineStore({
   state: () => ({
     taskAnswers: [],
     exams: JSON.parse(localStorage.getItem('exams')),
-    currentExam: JSON.parse(localStorage.getItem('currentExam'))
+    currentExam: JSON.parse(localStorage.getItem('currentExam')),
+    answerParams: null
   }),
   actions: {
     addAudioFile(taskAnswer) {
       this.taskAnswers.push(taskAnswer)
+      console.log(this.transformSavedAnswers(this.taskAnswers))
     },
     clearAudioFiles() {
       this.taskAnswers = []
@@ -44,20 +46,74 @@ export const useExamStore = defineStore({
         }
       })
     },
-    setExamAnswers(examId) {
+    setExamAnswers() {
       return new Promise(async (resolve, reject) => {
         try {
+          const answers = this.transformSavedAnswers(this.taskAnswers)
+
           let res = await api({
             method: 'POST',
-            url: `answers/`
+            url: `answers/`,
+            data: answers
           })
-          this.currentExam = res.data
-          localStorage.setItem('currentExam', JSON.stringify(this.currentExam))
-          resolve(this.currentExam)
+
+          this.answerParams = res.data
+          localStorage.setItem(
+            'answerParams',
+            JSON.stringify(this.answerParams)
+          )
+          resolve(this.answerParams)
         } catch (err) {
           reject(err)
         }
       })
+    },
+    getExamAnswers(id) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const answers = this.transformSavedAnswers(this.taskAnswers)
+
+          let res = await api({
+            method: 'GET',
+            url: `answers/${id}`
+          })
+
+          this.answerParams = res.data
+          localStorage.setItem(
+            'answerParams',
+            JSON.stringify(this.answerParams)
+          )
+          resolve(this.answerParams)
+        } catch (err) {
+          reject(err)
+        }
+      })
+    },
+    transformSavedAnswers(savedAnswers) {
+      const result = []
+
+      savedAnswers.forEach((file) => {
+        let task = result.find((item) => item.task_id === file.taskId)
+
+        if (!task) {
+          task = {
+            task_id: file.taskId,
+            audio: null,
+            questions: []
+          }
+          result.push(task)
+        }
+
+        if (file.assignmentId) {
+          task.questions.push({
+            question_id: file.assignmentId,
+            audio: file.audioBase64
+          })
+        } else {
+          task.audio = file.audioBase64
+        }
+      })
+      return result
     }
   }
 })

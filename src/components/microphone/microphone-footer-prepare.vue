@@ -34,7 +34,7 @@
           color="blue"
           @click="stopPrepare"
           :disable="isAudioPlaying"
-          label="Завершить"
+          label="Далее"
           no-caps
           class="w-32"
         />
