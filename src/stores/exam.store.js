@@ -119,7 +119,6 @@ export const useExamStore = defineStore({
     getAudioGuidance() {
       return new Promise(async (resolve, reject) => {
         try {
-
           let res = await api({
             method: 'GET',
             url: `/audio-guidance`
@@ -140,9 +139,29 @@ export const useExamStore = defineStore({
       this.currentExamID = id
       localStorage.setItem('currentExamID', this.currentExamID)
     },
-    getExamData() {
-      this.getExamTasks()
-      this.getAudioGuidance()
+    getAnswers(id = null, withTasks = false) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          // Формируем URL в зависимости от переданных параметров
+          let url = '/answers/'
+          if (id) {
+            url += `${id}`
+          }
+          if (withTasks) {
+            url += '?with_tasks=1'
+          }
+
+          // Выполняем запрос к API
+          const res = await api({
+            method: 'GET',
+            url
+          })
+
+          resolve(res.data)
+        } catch (err) {
+          reject(err)
+        }
+      })
     }
   }
 })
