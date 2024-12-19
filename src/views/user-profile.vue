@@ -66,7 +66,7 @@ export default {
             position: 'top-right',
             color: 'negative',
             message:
-              'Ошибка при получении данных о пользователе, попробуйте позже',
+              'Ошибка при получении данных, попробуйте позже',
             timeout: 2000,
             icon: 'sym_o_warning'
           })

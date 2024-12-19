@@ -38,7 +38,7 @@ export default {
           clearInterval(countdown)
 
           if (this.audioSrc) {
-            const audio = new Audio('http://localhost:80' + this.audioSrc)
+            const audio = new Audio(this.audioSrc)
             audio.play()
             audio.onended = () => {
               this.$emit('countdown-finished')

@@ -89,11 +89,10 @@
         unelevated
       />
     </div>
-
     <div>
       <!-- Слот для отображения списка заданий -->
       <div v-if="tasks" class="tasks-list-container">
-        <tasks-list :tasks="tasks" @taskLoaded="onTaskLoaded" />
+        <tasks-list :tasks="tasks"/>
       </div>
     </div>
   </div>
@@ -102,7 +101,6 @@
 <script>
 import TasksList from '../components/task-list.vue'
 import { useExamStore } from '../stores/exam.store'
-import { router } from '../router/router'
 export default {
   name: 'TrainingPage',
   components: {
@@ -137,8 +135,7 @@ export default {
       selectedMainType: null,
       selectedTaskType: null,
       selectedExamType: null,
-      tasks: null,
-      router: router
+      tasks: null
     }
   },
   methods: {
@@ -167,9 +164,6 @@ export default {
         .then((result) => {
           this.tasks = result
         })
-    },
-    onTaskLoaded() {
-      this.router.push('/microphone-test')
     }
   }
 }

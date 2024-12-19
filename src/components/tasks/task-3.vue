@@ -1,51 +1,38 @@
 <template>
-  <Timer
-    v-if="showTimerPrepare"
-    :duration="5"
-    :audioSrc="task.audio_guidance"
-    :type="'test'"
-    @countdown-finished="startPrepare"
-  />
-  <div class="bg-gray-100 p-4 rounded-lg shadow-md" v-if="prepareStarted">
-    <p class="text-h4 font-bold text-gray-800 mt-4">
-      {{ `Task ${task.type}.` }}
-    </p>
-    <p class="text-h5 font-bold text-gray-800 mt-4">
-      {{ task.header }}
-    </p>
-    <MicrophoneFooterPrepare :timeout="20" @prepare-completed="prepareStop" />
-  </div>
-  <div class="bg-gray-100 p-4 rounded-lg shadow-md" v-if="interviewStarted">
-    <p class="text-h4 font-bold text-gray-800 mt-4">
-      {{ `Task ${task.type}.` }}
-    </p>
-    <p class="text-h4 font-bold text-gray-800 mt-4">
-      {{ `Interviewer` }}
-    </p>
-  </div>
-
-  <Timer
-    v-if="showTimerAnswer"
-    :duration="5"
-    :type="'answer'"
-    @countdown-finished="startRecord"
-  />
-  <div v-else-if="questionStarted">
-    <div class="bg-gray-100 p-4 rounded-lg shadow-md">
+  <div>
+    <Timer v-if="showTimerPrepare" :duration="5" :audioSrc="task.audio_guidance" :type="'test'"
+      @countdown-finished="startPrepare" />
+    <div class="bg-gray-100 p-4 rounded-lg shadow-md" v-if="prepareStarted">
+      <p class="text-h4 font-bold text-gray-800 mt-4">
+        {{ `Task ${task.type}.` }}
+      </p>
+      <p class="text-h5 font-bold text-gray-800 mt-4">
+        {{ task.header }}
+      </p>
+      <MicrophoneFooterPrepare :timeout="20" @prepare-completed="prepareStop" />
+    </div>
+    <div class="bg-gray-100 p-4 rounded-lg shadow-md" v-if="interviewStarted">
       <p class="text-h4 font-bold text-gray-800 mt-4">
         {{ `Task ${task.type}.` }}
       </p>
       <p class="text-h4 font-bold text-gray-800 mt-4">
-        {{ `Interviewer: question ${currentQuestionIndex + 1}` }}
+        {{ `Interviewer` }}
       </p>
-      <MicrophoneFooterRecord
-        :key="currentQuestionIndex"
-        :timeout="task.execution_seconds"
-        :taskId="task.id"
-        :assignmentId="currentQuestion.id"
-        :audioBeforeSource="imgSrc + currentQuestion.audio"
-        @record-completed="stopRecord"
-      />
+    </div>
+
+    <Timer v-if="showTimerAnswer" :duration="5" :type="'answer'" @countdown-finished="startRecord" />
+    <div v-else-if="questionStarted">
+      <div class="bg-gray-100 p-4 rounded-lg shadow-md">
+        <p class="text-h4 font-bold text-gray-800 mt-4">
+          {{ `Task ${task.type}.` }}
+        </p>
+        <p class="text-h4 font-bold text-gray-800 mt-4">
+          {{ `Interviewer: question ${currentQuestionIndex + 1}` }}
+        </p>
+        <MicrophoneFooterRecord :key="currentQuestionIndex" :timeout="task.execution_seconds" :taskId="task.id"
+          :assignmentId="currentQuestion.id" :audioBeforeSource="currentQuestion.audio"
+          @record-completed="stopRecord" />
+      </div>
     </div>
   </div>
 </template>
@@ -71,7 +58,6 @@ export default {
   },
   data() {
     return {
-      imgSrc: `http://localhost:80`,
       currentQuestionIndex: 0,
       showTimerPrepare: false,
       interviewStarted: false,
@@ -99,7 +85,7 @@ export default {
     startInterview() {
       this.interviewStarted = true
       if (this.task.audio) {
-        const audio = new Audio(this.imgSrc + this.task.audio)
+        const audio = new Audio(this.task.audio)
         audio.play()
         this.isAudioPlaying = true
         // Запускаем таймер после завершения воспроизведения аудио
@@ -123,7 +109,7 @@ export default {
         this.currentQuestionIndex++
       } else {
         if (this.task.audio_after_execution) {
-          const audio = new Audio(this.imgSrc + this.task.audio_after_execution)
+          const audio = new Audio(this.task.audio_after_execution)
           audio.play()
           // Запускаем таймер после завершения воспроизведения аудио
           audio.onended = () => {

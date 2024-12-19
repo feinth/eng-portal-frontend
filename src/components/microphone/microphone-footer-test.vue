@@ -68,8 +68,6 @@
 </template>
 
 <script>
-import { mapActions } from 'pinia'
-import { useExamStore } from '../../stores/exam.store'
 
 export default {
   data() {
@@ -132,12 +130,6 @@ export default {
           console.log(this.audioUrl)
           this.isRecording = false
           this.type = 'prepare'
-          // this.examStore.addAudioFile({
-          //   taskId: this.taskId,
-          //   assignmentId: this.assignmentId,
-          //   audioBlob,
-          //   audioUrl: this.audioUrl
-          // })
         }
       }
     },

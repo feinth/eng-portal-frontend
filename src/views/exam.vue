@@ -1,26 +1,21 @@
 <template>
-  <q-inner-loading
-    v-if="!examData"
-    :showing="!examData"
-    label="Идет загрузка заданий..."
-  />
-  <div v-else>
-    <div v-if="currentTaskComponent">
-      <!-- Отображение текущего задания -->
-      <component
-        v-show="!createdAnswerData"
-        :is="currentTaskComponent"
-        :task="currentTask"
-        @next-task="nextTask"
-      />
+
+  <div class="container mx-auto p-4">
+    <q-btn v-if="!examStarted" color="red" label="Начать экзамен" no-caps class="flex justify-center full-width"
+      @click="startExam">
+    </q-btn>
+    <q-inner-loading v-if="examStarted && !examData && !audioGuidance" :showing="!examData"
+      label="Идет загрузка заданий..." />
+    <div v-else>
+      <div v-if="currentTaskComponent">
+        <!-- Отображение текущего задания -->
+        <component v-show="!createdAnswerData" :is="currentTaskComponent" :task="currentTask" @next-task="nextTask" />
+      </div>
     </div>
   </div>
 
-  <q-inner-loading
-    v-if="createdAnswerData && !createdArchiveUrl"
-    :showing="!createdArchiveUrl"
-    label="Сохранение задания, пожалуйста, подождите..."
-  />
+  <q-inner-loading v-if="createdAnswerData && !createdArchiveUrl" :showing="!createdArchiveUrl"
+    label="Сохранение задания, пожалуйста, подождите..." />
 
   <q-card v-if="createdArchiveUrl">
     <q-card-section class="bg-teal-6 text-white">
@@ -35,16 +30,11 @@
     </q-card-section>
 
     <q-card-actions vertical align="center">
-      <q-btn
-        flat
-        color="teal-8"
-        @click="loadAnswers()"
-        icon="cloud_upload"
-        style="width: 100px"
-        >Сохранить результаты</q-btn
-      >
+      <q-btn flat color="teal-8" @click="loadAnswers()" icon="cloud_upload" style="width: 100px">Сохранить
+        результаты</q-btn>
     </q-card-actions>
   </q-card>
+
 </template>
 
 <script>
@@ -65,14 +55,16 @@ export default {
     return {
       currentTaskIndex: 0,
       examData: null,
+      audioGuidance: null,
       examStore: useExamStore(),
       savingTask: null,
-      createdAnswerData: false
+      createdAnswerData: false,
+      examStarted: false
     }
   },
   computed: {
     currentTask() {
-      return this.examData?.tasks[this.currentTaskIndex] || null
+      return this.examData?.[this.currentTaskIndex] || null
     },
     currentTaskComponent() {
       switch (this.currentTask?.type) {
@@ -94,27 +86,25 @@ export default {
   },
   methods: {
     startExam() {
-      const examData = this.examStore.currentExam
-      if (examData && examData.tasks && examData.tasks.length > 0) {
-        this.examStore.taskAnswers = []
-        this.examData = examData
+      this.examStarted = true
+      this.examStore.taskAnswers = []
+
+      this.examStore.getAudioGuidance().then((response) => {
+        this.audioGuidance = response
         this.playIntroAudio()
-      }
+      })
+      this.examStore.getExamTasks().then(() => { this.examData = this.examStore.currentExam.sort((a, b) => a.type - b.type) })
     },
     playIntroAudio() {
-      const audio = new Audio(
-        'http://localhost:80' + this.examData.begin_audio_guidance
-      )
+      const audio = new Audio(this.audioGuidance.start_exam_audio)
       audio.play()
     },
     playEndAudio() {
-      const audio = new Audio(
-        'http://localhost:80' + this.examData.end_audio_guidance
-      )
+      const audio = new Audio(this.audioGuidance.end_exam_audio)
       audio.play()
     },
     nextTask() {
-      if (this.currentTaskIndex < this.examData.tasks.length - 1) {
+      if (this.currentTaskIndex < this.examData.length - 1) {
         this.currentTaskIndex++
       } else {
         this.finishExam()
@@ -127,9 +117,6 @@ export default {
         this.createdAnswerData = result
         this.pollForAnswerArchive(this.createdAnswerData.id)
       })
-    },
-    saveAnswers() {
-      this.currentTaskIndex = 3
     },
     pollForAnswerArchive(id) {
       this.pollingInterval = setInterval(async () => {
@@ -147,7 +134,7 @@ export default {
       if (archiveUrl) {
         // Создаем временный элемент <a>
         const link = document.createElement('a')
-        link.href = 'http://localhost:80' + archiveUrl // Устанавливаем URL для скачивания
+        link.href = archiveUrl // Устанавливаем URL для скачивания
         link.download = '' // Имя файла можно оставить пустым, если сервер сам возвращает имя файла
         link.target = '_blank' // Открыть ссылку в новом окне/вкладке, если нужно
 
@@ -160,9 +147,6 @@ export default {
       }
     }
   },
-  mounted() {
-    this.startExam()
-  }
 }
 </script>
 

@@ -7,12 +7,13 @@ export const useExamStore = defineStore({
     taskAnswers: [],
     exams: JSON.parse(localStorage.getItem('exams')),
     currentExam: JSON.parse(localStorage.getItem('currentExam')),
-    answerParams: null
+    currentExamID: localStorage.getItem('currentExamID'),
+    answerParams: null,
+    audioGuidance: null
   }),
   actions: {
     addAudioFile(taskAnswer) {
       this.taskAnswers.push(taskAnswer)
-      console.log(this.transformSavedAnswers(this.taskAnswers))
     },
     clearAudioFiles() {
       this.taskAnswers = []
@@ -31,12 +32,12 @@ export const useExamStore = defineStore({
         resolve(this.exams)
       })
     },
-    getExamTasks(examId) {
+    getExamTasks() {
       return new Promise(async (resolve, reject) => {
         try {
           let res = await api({
             method: 'get',
-            url: `ege/exams/${examId}`
+            url: `ege/tasks/?exam_id=${this.currentExamID}`
           })
           this.currentExam = res.data
           localStorage.setItem('currentExam', JSON.stringify(this.currentExam))
@@ -114,6 +115,34 @@ export const useExamStore = defineStore({
         }
       })
       return result
+    },
+    getAudioGuidance() {
+      return new Promise(async (resolve, reject) => {
+        try {
+
+          let res = await api({
+            method: 'GET',
+            url: `/audio-guidance`
+          })
+
+          this.audioGuidance = res.data
+          localStorage.setItem(
+            'audioGuidance',
+            JSON.stringify(this.audioGuidance)
+          )
+          resolve(this.audioGuidance)
+        } catch (err) {
+          reject(err)
+        }
+      })
+    },
+    setExamId(id) {
+      this.currentExamID = id
+      localStorage.setItem('currentExamID', this.currentExamID)
+    },
+    getExamData() {
+      this.getExamTasks()
+      this.getAudioGuidance()
     }
   }
 })

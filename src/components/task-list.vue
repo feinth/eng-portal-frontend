@@ -13,6 +13,7 @@
 
 <script>
 import { useExamStore } from '../stores/exam.store'
+import { router } from '../router/router'
 export default {
   name: 'TasksList',
   props: {
@@ -24,15 +25,13 @@ export default {
   data() {
     return {
       examStore: useExamStore(),
-      taskLoaded: false
+      router: router
     }
   },
   methods: {
     fetchTaskDetails(id) {
-      this.examStore.getExamTasks(id).then((result) => {
-        this.taskLoaded = true
-        this.$emit('taskLoaded')
-      })
+      this.examStore.setExamId(id)
+      this.router.push('/microphone-test')
     }
   }
 }
