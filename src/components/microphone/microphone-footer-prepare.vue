@@ -1,15 +1,15 @@
 <template>
   <div class="fixed bottom-0 left-0 w-full border border-gray-300">
     <q-toolbar>
+      <!-- иконка -->
       <div class="flex items-center">
-        <div class="mr-4 flex items-center" v-if="!timeout">
+        <div class="mr-4 flex items-center">
           <q-btn
-            :color="footerColor"
+            color="blue"
             icon="sym_o_mic"
-            :label="footerLabel"
+            label="Preparation"
             no-caps
             class="w-32"
-            @click="start"
           />
         </div>
       </div>
@@ -21,19 +21,20 @@
           size="25px"
           :value="timeLeft / timeout"
           :max="100"
-          :color="footerColor"
+          color="blue"
         >
           <div class="absolute-full flex flex-center">
             <q-badge color="white" text-color="black" :label="countdown" />
           </div>
         </q-linear-progress>
       </div>
-
+      <!-- прогресс -->
       <div class="flex items-center ml-4">
         <q-btn
-          :color="footerColor"
-          @click="stop"
-          label="Завершить"
+          color="blue"
+          @click="stopPrepare"
+          :disable="isAudioPlaying"
+          label="Далее"
           no-caps
           class="w-32"
         />
@@ -43,9 +44,6 @@
 </template>
 
 <script>
-import { mapActions } from 'pinia'
-import { useUserStore } from '@/stores/user.store'
-
 export default {
   props: {
     timeout: {
@@ -53,25 +51,17 @@ export default {
       required: true,
       default: 60
     },
-    type: {
+    audioSrc: {
       type: String,
-      required: true
-    },
-    taskId: {
-      type: String,
-      required: false
-    },
-    assignmentId: {
-      type: String,
-      required: false
+      required: false,
+      default: null
     }
   },
   data() {
     return {
       timeLeft: 0,
       timer: null,
-      mediaRecorder: null,
-      audioChunks: []
+      isAudioPlaying: false
     }
   },
   computed: {
@@ -80,55 +70,48 @@ export default {
       const minutes = Math.floor(remainingSeconds / 60)
       const seconds = remainingSeconds % 60
       return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
-    },
-    footerColor() {
-      return this.type === 'prepare' ? 'blue' : 'red'
-    },
-    footerLabel() {
-      return this.type === 'prepare' ? 'Preparation' : 'Recording'
     }
   },
   methods: {
-    ...mapActions(useUserStore, ['addAudioFile']),
-    start() {
+    startPrepare() {
       this.timeLeft = 0
-      this.audioChunks = []
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-        this.mediaRecorder = new MediaRecorder(stream)
-        this.mediaRecorder.ondataavailable = (event) => {
-          this.audioChunks.push(event.data)
-        }
-        this.mediaRecorder.start()
-      })
 
       this.timer = setInterval(() => {
         this.timeLeft += 1
         if (this.timeLeft >= this.timeout) {
-          this.stop()
+          this.stopPrepare()
         }
       }, 1000)
     },
-    stop() {
+
+    stopPrepare() {
       clearInterval(this.timer)
-      if (this.mediaRecorder) {
-        this.mediaRecorder.stop()
-        this.mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(this.audioChunks, { type: 'audio/mpeg' })
-          const audioUrl = URL.createObjectURL(audioBlob)
-          this.addAudioFile({
-            taskId: this.taskId,
-            assignmentId: this.assignmentId,
-            audioBlob,
-            audioUrl
-          })
+      this.completeTask()
+    },
+
+    completeTask() {
+      this.$emit('prepare-completed')
+    },
+
+    startPlayAudioBefore() {
+      if (this.audioSrc) {
+        const audio = new Audio(this.audioSrc)
+        audio.play()
+        this.isAudioPlaying = true
+        // Запускаем таймер после завершения воспроизведения аудио
+        audio.onended = () => {
+          this.isAudioPlaying = false
+          this.startPrepare()
         }
+      } else {
+        // Если аудиофайла нет, сразу запускаем таймер
+        this.startPrepare()
       }
     }
   },
+
   mounted() {
-    if (this.timeout) {
-      this.start()
-    }
+    this.startPlayAudioBefore()
   }
 }
 </script>

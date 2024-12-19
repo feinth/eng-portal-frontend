@@ -6,28 +6,21 @@
           <div class="flex items-center justify-center text-center w-full">
             <q-tabs>
               <q-route-tab label="Главная" to="/" no-caps />
-              <q-route-tab label="Тренажер" to="/training" no-caps />
+              <q-route-tab label="Симулятор экзамена" to="/select" no-caps />
               <q-route-tab
                 v-if="isLoggedIn"
                 label="Личный кабинет"
                 to="/profile"
                 no-caps
               />
+              <q-space />
+              <q-route-tab
+                v-if="!isLoggedIn"
+                label="Авторизация"
+                to="/login"
+                no-caps
+              />
             </q-tabs>
-          </div>
-          <div class="q-mr-md">
-            <q-btn
-              v-if="!isLoggedIn"
-              flat
-              label="Войти"
-              @click="showLogin = true"
-            >
-              <q-tooltip>Авторизация</q-tooltip>
-            </q-btn>
-            <LoginForm
-              :is-visible="showLogin"
-              @update:isVisible="showLogin = false"
-            />
           </div>
         </q-toolbar>
       </q-header>
@@ -35,7 +28,7 @@
       <q-page-container>
         <slot />
       </q-page-container>
-      <q-footer reveal>
+      <q-footer v-if="shouldShowFooter" reveal>
         <div
           class="flex items-center justify-center text-center bg-teal-10 text-white-400"
         >
@@ -43,7 +36,7 @@
           <a class="mdi--vk" href="https://vk.ru" target="_blank" />
           <a
             class="ic--baseline-telegram"
-            href="https://telegram.ru"
+            href="https://t.me/TA_eng_teacher"
             target="_blank"
           />
           <a class="mdi--youtube" href="https://youtube.com" target="_blank" />
@@ -68,7 +61,7 @@
 <script>
 import { useUserStore } from '../stores/user.store'
 import LoginForm from '../views/login.vue'
-import Agreement from '../components/agreement-terms.vue'
+import Agreement from '../components/utils/agreement-terms.vue'
 
 export default {
   name: 'PortalLayout',
@@ -80,6 +73,7 @@ export default {
   data() {
     return {
       store: useUserStore(),
+      footerPath: ['/', '/profile'],
       showLogin: false
     }
   },
@@ -92,7 +86,10 @@ export default {
   },
   computed: {
     isLoggedIn() {
-      return !!this.store.user
+      return !!this.store.token
+    },
+    shouldShowFooter() {
+      return true
     }
   }
 }

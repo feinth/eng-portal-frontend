@@ -10,9 +10,16 @@
         запись, затем попробуйте воспроизвести.
       </p>
       <p>Если вы уже делали это, можете сразу перейти к выполнению задания.</p>
-      <MicrophoneFooter
-        :timeout="0"
-        type="recording"
+      <q-btn-group spread>
+        <q-btn
+          label="Перейти к выполнению задания"
+          color="red"
+          @click="goToExam"
+        />
+      </q-btn-group>
+      <MicrophoneFooterTest
+        :timeout="10"
+        type="prepare"
         @stop="stopRecording"
         @start="startRecording"
       />
@@ -24,11 +31,11 @@
 </template>
 
 <script>
-import MicrophoneFooter from './microphone-footer.vue'
-
+import MicrophoneFooterTest from '../components/microphone/microphone-footer-test.vue'
+import { router } from '../router/router.js'
 export default {
   components: {
-    MicrophoneFooter
+    MicrophoneFooterTest
   },
   data() {
     return {
@@ -36,7 +43,8 @@ export default {
       mediaRecorder: null,
       audioChunks: [],
       audioBlob: null,
-      audioUrl: null
+      audioUrl: null,
+      router: router
     }
   },
   methods: {
@@ -45,7 +53,14 @@ export default {
         await navigator.mediaDevices.getUserMedia({ audio: true })
         this.microphonePermission = true
       } catch (e) {
-        console.error('Permission denied or no microphone found', e)
+        this.$q.notify({
+          progress: true,
+          position: 'top-right',
+          color: 'negative',
+          message: 'Микрофон не найден или нет доступа к микрофону',
+          timeout: 2000,
+          icon: 'sym_o_warning'
+        })
       }
     },
     startRecording() {
@@ -72,6 +87,9 @@ export default {
         const audio = new Audio(this.audioUrl)
         audio.play()
       }
+    },
+    goToExam() {
+      this.router.push('/exam')
     }
   },
   mounted() {
@@ -80,6 +98,4 @@ export default {
 }
 </script>
 
-<style scoped>
-/* Добавьте стили при необходимости */
-</style>
+<style scoped></style>

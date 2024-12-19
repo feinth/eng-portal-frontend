@@ -1,0 +1,134 @@
+<template>
+  <div>
+    <Timer v-if="showTimerPrepare" :duration="5" :audioSrc="task.audio_guidance" :type="'test'"
+      @countdown-finished="startPrepare" />
+    <div class="bg-gray-100 p-4 rounded-lg shadow-md" v-if="prepareStarted">
+      <p class="text-h4 font-bold text-gray-800 mt-4">
+        {{ `Task ${task.type}.` }}
+      </p>
+      <p class="text-h5 font-bold text-gray-800 mt-4">
+        {{ task.header }}
+      </p>
+      <MicrophoneFooterPrepare :timeout="20" @prepare-completed="prepareStop" />
+    </div>
+    <div class="bg-gray-100 p-4 rounded-lg shadow-md" v-if="interviewStarted">
+      <p class="text-h4 font-bold text-gray-800 mt-4">
+        {{ `Task ${task.type}.` }}
+      </p>
+      <p class="text-h4 font-bold text-gray-800 mt-4">
+        {{ `Interviewer` }}
+      </p>
+    </div>
+
+    <Timer v-if="showTimerAnswer" :duration="5" :type="'answer'" @countdown-finished="startRecord" />
+    <div v-else-if="questionStarted">
+      <div class="bg-gray-100 p-4 rounded-lg shadow-md">
+        <p class="text-h4 font-bold text-gray-800 mt-4">
+          {{ `Task ${task.type}.` }}
+        </p>
+        <p class="text-h4 font-bold text-gray-800 mt-4">
+          {{ `Interviewer: question ${currentQuestionIndex + 1}` }}
+        </p>
+        <MicrophoneFooterRecord :key="currentQuestionIndex" :timeout="task.execution_seconds" :taskId="task.id"
+          :assignmentId="currentQuestion.id" :audioBeforeSource="currentQuestion.audio"
+          @record-completed="stopRecord" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import Timer from '../utils/timer.vue'
+import MarkdownView from '../utils/markdown-view.vue'
+import MicrophoneFooterPrepare from '../microphone/microphone-footer-prepare.vue'
+import MicrophoneFooterRecord from '../microphone/microphone-footer-record.vue'
+
+export default {
+  components: {
+    Timer,
+    MarkdownView,
+    MicrophoneFooterPrepare,
+    MicrophoneFooterRecord
+  },
+  props: {
+    task: {
+      type: Object,
+      required: true
+    }
+  },
+  data() {
+    return {
+      currentQuestionIndex: 0,
+      showTimerPrepare: false,
+      interviewStarted: false,
+      prepareStarted: false,
+      questionStarted: false,
+      showTimerAnswer: false
+    }
+  },
+  methods: {
+    finishInterview() {
+      // Логика завершения интервью
+      this.$emit('next-task')
+    },
+    startTask() {
+      this.prepareStarted = true
+    },
+    startPrepare() {
+      this.showTimerPrepare = false
+      this.startTask()
+    },
+    prepareStop() {
+      this.prepareStarted = false
+      this.startInterview()
+    },
+    startInterview() {
+      this.interviewStarted = true
+      if (this.task.audio) {
+        const audio = new Audio(this.task.audio)
+        audio.play()
+        this.isAudioPlaying = true
+        // Запускаем таймер после завершения воспроизведения аудио
+        audio.onended = () => {
+          this.startTimerAnswer()
+        }
+      } else {
+        this.startTimerAnswer()
+      }
+    },
+    startTimerAnswer() {
+      this.interviewStarted = false
+      this.showTimerAnswer = true
+    },
+    startRecord() {
+      this.questionStarted = true
+      this.showTimerAnswer = false
+    },
+    stopRecord() {
+      if (this.currentQuestionIndex < this.task.questions.length - 1) {
+        this.currentQuestionIndex++
+      } else {
+        if (this.task.audio_after_execution) {
+          const audio = new Audio(this.task.audio_after_execution)
+          audio.play()
+          // Запускаем таймер после завершения воспроизведения аудио
+          audio.onended = () => {
+            this.$emit('next-task')
+          }
+        } else {
+          this.$emit('next-task')
+        }
+      }
+    }
+  },
+  computed: {
+    currentQuestion() {
+      return this.task.questions[this.currentQuestionIndex]
+    }
+  },
+  emits: ['next-task'],
+  mounted() {
+    this.showTimerPrepare = true
+  }
+}
+</script>

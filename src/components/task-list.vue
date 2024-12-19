@@ -2,16 +2,18 @@
   <div class="tasks-list">
     <q-btn
       v-for="task in tasks"
-      :key="task.idTask"
-      :label="task.NameTask"
+      :key="task.id"
+      :label="`Вариант ${task.number}`"
       color="teal-8"
       class="custom-task-button"
-      @click="fetchTaskDetails(task.idTask)"
+      @click="fetchTaskDetails(task.id)"
     />
   </div>
 </template>
 
 <script>
+import { useExamStore } from '../stores/exam.store'
+import { router } from '../router/router'
 export default {
   name: 'TasksList',
   props: {
@@ -20,10 +22,16 @@ export default {
       default: () => []
     }
   },
+  data() {
+    return {
+      examStore: useExamStore(),
+      router: router
+    }
+  },
   methods: {
-    fetchTaskDetails(idTask) {
-      // Здесь можно добавить логику для запроса детальной информации о задании по его idTask
-      console.log('Fetching details for task with id:', idTask)
+    fetchTaskDetails(id) {
+      this.examStore.setExamId(id)
+      this.router.push('/microphone-test')
     }
   }
 }

@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import MicrophoneFooter from './microphone-footer.vue'
+import MicrophoneFooter from './microphone/microphone-footer.vue'
 import TaskView from './task-view.vue'
 export default {
   components: {
@@ -96,7 +96,6 @@ export default {
     playRecording() {
       let audio = new Audio(this.audioUrl)
       audio.play()
-      console.log(this.audioUrl)
     }
   },
   computed: {

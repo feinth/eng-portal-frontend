@@ -1,32 +1,21 @@
 <template>
   <q-page class="p-6 bg-white">
     <div class="max-w-4xl mx-auto">
-      <h1 class="text-3xl font-extrabold mb-6 text-teal-800 text-left">
-        Сайт-тренажер по подготовке к ЕГЭ и ОГЭ по английскому языку
-      </h1>
       <p class="text-lg mb-6 leading-relaxed text-gray-700 text-justify">
-        Здравствуйте, дорогие выпускники и уважаемые коллеги! На этом сайте вы
-        найдёте онлайн-тренажёр для отработки устной части Основного
+        Здравствуйте, дорогие выпускники и уважаемые коллеги!
+      </p>
+      <p class="text-lg mb-6 leading-relaxed text-gray-700 text-justify">
+        На этом сайте вы найдёте симулятор устного экзамена для Основного
         государственного экзамена (ОГЭ) и Единого государственного экзамена
         (ЕГЭ). Вы сможете воссоздать атмосферу настоящего экзамена у себя дома
-        или на уроке в школе. Для этого мы подготовили авторские варианты
-        различной тематики, согласно темам кодификатора ОГЭ/ЕГЭ.
+        или на уроке в школе. Для этого мы подготовили авторские варианты по
+        различной тематике, согласно темам кодификатора ОГЭ/ЕГЭ.
       </p>
       <p class="text-lg mb-6 leading-relaxed text-gray-700 text-justify">
-        Вы можете работать в Тренажёре в нескольких режимах: экзамен, по
-        заданиям, по темам, на основе открытого банка заданий ФИПИ (для ОГЭ).
-        Для тех ребят, кто готовится самостоятельно и хочет, чтобы их устные
-        ответы проверили, мы предлагаем подписку на месяц, в рамках которой ваши
-        устные ответы будут проверять Эксперты региональной комиссии по проверке
-        развернутых ответов письменной и устной частей ОГЭ/ЕГЭ с многолетним
-        опытом работы.
+        Вы можете работать в нескольких режимах: экзамен, по заданиям, по темам,
+        на основе открытого банка заданий ФИПИ (для ОГЭ).
       </p>
-      <p class="text-lg mb-6 leading-relaxed text-gray-700 text-justify">
-        Наши эксперты внимательно проверят ваши работы согласно критериям
-        ОГЭ/ЕГЭ, напишут комментарии и дадут рекомендации. В будущем наш сайт
-        сможет принимать на проверку и письменные работы: письма и эссе.
-      </p>
-      <h1 class="text-3xl font-extrabold mb-6 text-teal-800 text-left">
+      <!-- <h1 class="text-3xl font-extrabold mb-6 text-teal-800 text-left">
         Платные услуги
       </h1>
       <div class="my-8 bg-gray-100 rounded-lg shadow-md p-6 flex items-center">
@@ -49,7 +38,7 @@
             </div>
           </q-card-section>
         </q-card-section>
-      </div>
+      </div> -->
       <div class="my-8 bg-gray-100 rounded-lg shadow-md p-6 flex items-center">
         <q-card-section horizontal>
           <q-card-section class="q-pt-xs">
@@ -74,7 +63,7 @@
 </template>
 
 <script>
-import SubscriptionCard from '../components/subscription-card.vue'
+import SubscriptionCard from '../components/utils/subscription-card.vue'
 
 export default {
   name: 'MainPage',

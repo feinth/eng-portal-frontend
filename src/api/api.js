@@ -6,8 +6,8 @@ const api = axios.create({ baseURL: `${import.meta.env.VITE_API_URL}/api` })
 api.interceptors.request.use(
   (config) => {
     const store = useUserStore()
-    if (store.user) {
-      config.headers.authorization = `Bearer ${store.user.accessToken}`
+    if (store.token) {
+      config.headers.Authorization = `Token ${store.token}`
     }
     return config
   },

@@ -72,7 +72,8 @@
 <script>
 import { useUserStore } from '../stores/user.store'
 import { useQuasar } from 'quasar'
-import Agreement from '../components/agreement-terms.vue'
+import Agreement from '../components/utils/agreement-terms.vue'
+import { router } from '../router/router'
 
 export default {
   name: 'Register',
@@ -83,11 +84,12 @@ export default {
         lastName: '',
         birthday: '',
         email: '',
-        password: '',
-        localVisible: this.isVisible
+        password: ''
       },
+      localVisible: this.isVisible,
       store: useUserStore(),
-      $q: useQuasar()
+      $q: useQuasar(),
+      router: router
     }
   },
   props: {
@@ -102,7 +104,7 @@ export default {
         .register(this.user)
         .then(() => {
           this.updateVisibility(false)
-          this.$emit('registration-success')
+          this.localVisible = false
           this.$q.notify({
             progress: true,
             position: 'top-right',
@@ -111,6 +113,7 @@ export default {
             timeout: 1000,
             icon: 'sym_o_check'
           })
+          this.router.push('/profile')
         })
         .catch((err) => {
           this.$q.notify({
@@ -148,7 +151,6 @@ export default {
     },
     updateVisibility(newValue) {
       this.localVisible = newValue
-      this.$emit('update:isVisible', newValue)
     }
   },
   watch: {

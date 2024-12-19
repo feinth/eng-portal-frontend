@@ -1,4 +1,20 @@
 <template>
+  <div class="top text-center">
+    <!-- <h1 class="text-2xl font-bold mb-4">Ваш выбор</h1> -->
+    <q-btn
+      @click="resetSelection"
+      class="custom-secondary-button"
+      color="red"
+      label="Сбросить выбор"
+      unelevated
+    />
+    <p class="mb-2">Экзамен: {{ selectedMainType?.label }}</p>
+    <p class="mb-2">Тип задания: {{ selectedTaskType?.label }}</p>
+
+    <p v-if="selectedExamType !== null" class="mb-2">
+      Набор заданий: {{ selectedExamType?.label }}
+    </p>
+  </div>
   <div class="flex justify-center min-h-screen">
     <div v-if="!selectedMainType" class="space-y-4 text-center">
       <h1 class="text-2xl font-bold mb-4">Выберите тип экзамена</h1>
@@ -25,6 +41,36 @@
       />
     </div>
     <div
+      v-else-if="selectedMainType.id === 1 && selectedTaskType.id === 2"
+      class="space-y-4 text-center"
+    >
+      <h1 class="text-2xl font-bold mb-4">Выберите тип задания</h1>
+      <q-btn
+        v-for="subtype in ogeTaskSubTypes"
+        :key="subtype.id"
+        @click="selectTaskType(subtype)"
+        class="custom-button"
+        color="primary"
+        :label="subtype.label"
+        unelevated
+      />
+    </div>
+    <div
+      v-else-if="selectedMainType.id === 2 && selectedTaskType.id === 2"
+      class="space-y-4 text-center"
+    >
+      <h1 class="text-2xl font-bold mb-4">Выберите тип задания</h1>
+      <q-btn
+        v-for="subtype in egeTaskSubTypes"
+        :key="subtype.id"
+        @click="selectTaskType(subtype)"
+        class="custom-button"
+        color="primary"
+        :label="subtype.label"
+        unelevated
+      />
+    </div>
+    <div
       v-else-if="
         !selectedExamType &&
         selectedTaskType.label === 'Экзамен' &&
@@ -43,32 +89,18 @@
         unelevated
       />
     </div>
-    <div v-else class="text-center">
-      <h1 class="text-2xl font-bold mb-4">Ваш выбор</h1>
-      <q-btn
-        @click="resetSelection"
-        class="custom-secondary-button"
-        color="red"
-        label="Сбросить выбор"
-        unelevated
-      />
-      <p class="mb-2">Экзамен: {{ selectedMainType.label }}</p>
-      <p class="mb-2">Тип задания: {{ selectedTaskType.label }}</p>
-      <p v-if="selectedExamType !== null" class="mb-2">
-        Набор заданий: {{ selectedExamType.label }}
-      </p>
-
+    <div>
       <!-- Слот для отображения списка заданий -->
       <div v-if="tasks" class="tasks-list-container">
-        <tasks-list :tasks="tasks" />
+        <tasks-list :tasks="tasks"/>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import tasksData from '../assets/tasks.json' // Путь к файлу с заглушкой данных заданий
-import TasksList from '../components/task-list.vue' // Импортируем компонент для отображения заданий
+import TasksList from '../components/task-list.vue'
+import { useExamStore } from '../stores/exam.store'
 export default {
   name: 'TrainingPage',
   components: {
@@ -76,9 +108,10 @@ export default {
   },
   data() {
     return {
+      store: useExamStore(),
       mainTypes: [
-        { id: 1, label: 'ОГЭ' },
-        { id: 2, label: 'ЕГЭ' }
+        { id: 1, label: 'ОГЭ', type: 'oge' },
+        { id: 2, label: 'ЕГЭ', type: 'ege' }
       ],
       taskTypes: [
         { id: 1, label: 'Экзамен' },
@@ -87,6 +120,17 @@ export default {
       examTypes: [
         { id: 1, label: 'Авторские варианты' },
         { id: 2, label: 'На основе открытого банка ФИПИ' }
+      ],
+      ogeTaskSubTypes: [
+        { id: 1, label: 'Задание 1' },
+        { id: 2, label: 'Задание 2' },
+        { id: 3, label: 'Экзамен 3' }
+      ],
+      egeTaskSubTypes: [
+        { id: 1, label: 'Задание 1' },
+        { id: 2, label: 'Задание 2' },
+        { id: 3, label: 'Экзамен 3' },
+        { id: 4, label: 'Экзамен 4' }
       ],
       selectedMainType: null,
       selectedTaskType: null,
@@ -115,15 +159,11 @@ export default {
       this.tasks = null
     },
     fetchTasks(idTaskType) {
-      // Запрос к API для получения заданий на основе ФИПИ
-      // Вместо реального запроса используем заглушку
-      console.log(this.selectedMainType.id, idTaskType)
-      // В реальном приложении здесь будет axios или другой метод запроса
-      // Заглушка для демонстрации:
-      setTimeout(() => {
-        this.tasks = tasksData[this.selectedMainType.id] // Загружаем задания из заглушки
-        console.log('tasks loaded:', this.tasks)
-      }, 1000) // Имитация задержки загрузки
+      this.store
+        .getExams(this.selectedMainType.type, idTaskType)
+        .then((result) => {
+          this.tasks = result
+        })
     }
   }
 }
