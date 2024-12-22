@@ -12,10 +12,10 @@
             {{ `Task ${task.type}.` }}
           </p>
           <p class="text-h5 text-gray-800 mt-4">
-            {{ 'Study the advertisement.' }}
+            {{ task.header }}
           </p>
           <q-separator spaced class="my-2" />
-          <MarkdownView class="text-h5 font-bold text-gray-800 mt-4" :content="task.header" />
+          <MarkdownView class="text-h5 font-bold text-gray-800 mt-4" :content="task.description" />
           <ul>
             <li v-for="(question, index) in task.questions" :key="index" class="text-h5 font-bold text-gray-800 mt-4">
               {{ `${index + 1}) ` + question.description }}
@@ -29,7 +29,7 @@
         <div class="col-6 text-gray-800 my-card image-container">
           <q-item>
             <q-item-section>
-              <MarkdownView lass="text-h5" :content="task.images[0].header" />
+              <MarkdownView class="text-h5" :content="task.images[0].header" />
               <q-img :src="task.images[0].image" class="image-max-size" />
             </q-item-section>
           </q-item>
@@ -59,7 +59,7 @@
           <div class="col-6 text-gray-800 my-card image-container">
             <q-item>
               <q-item-section>
-                <MarkdownView :content="task.images[0].header" />
+                <MarkdownView class="text-h5" :content="task.images[0].header" />
                 <q-img :src="task.images[0].image" class="image-max-size" />
               </q-item-section>
             </q-item>

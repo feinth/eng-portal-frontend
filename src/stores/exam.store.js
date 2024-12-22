@@ -32,7 +32,7 @@ export const useExamStore = defineStore({
         resolve(this.exams)
       })
     },
-    getExamTasks() {
+    getEgeExamTasks() {
       return new Promise(async (resolve, reject) => {
         try {
           let res = await api({
@@ -155,6 +155,20 @@ export const useExamStore = defineStore({
           const res = await api({
             method: 'GET',
             url
+          })
+
+          resolve(res.data)
+        } catch (err) {
+          reject(err)
+        }
+      })
+    },
+    getTasksByType(typeExam = null, taskType = false) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const res = await api({
+            method: 'GET',
+            url: `${typeExam}/tasks/?task_type=${taskType}`
           })
 
           resolve(res.data)

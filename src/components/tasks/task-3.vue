@@ -42,6 +42,7 @@ import Timer from '../utils/timer.vue'
 import MarkdownView from '../utils/markdown-view.vue'
 import MicrophoneFooterPrepare from '../microphone/microphone-footer-prepare.vue'
 import MicrophoneFooterRecord from '../microphone/microphone-footer-record.vue'
+import { useExamStore } from '../../stores/exam.store'
 
 export default {
   components: {
@@ -63,7 +64,8 @@ export default {
       interviewStarted: false,
       prepareStarted: false,
       questionStarted: false,
-      showTimerAnswer: false
+      showTimerAnswer: false,
+      examStore: useExamStore(),
     }
   },
   methods: {
@@ -109,7 +111,7 @@ export default {
         this.currentQuestionIndex++
       } else {
         if (this.task.audio_after_execution) {
-          const audio = new Audio(this.task.audio_after_execution)
+          const audio = new Audio(this.examStore.audioGuidance.end_interview_audio)
           audio.play()
           // Запускаем таймер после завершения воспроизведения аудио
           audio.onended = () => {

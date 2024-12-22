@@ -39,12 +39,11 @@ export default {
 
 <style scoped>
 .tasks-list {
-  display: flex;
-  flex-wrap: wrap; /* Перенос кнопок на следующую строку */
-  justify-content: center; /* Выравнивание кнопок по центру */
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* Два столбца */
+  gap: 1rem; /* Расстояние между кнопками */
 }
 .custom-task-button {
-  width: 200px; /* Ширина кнопок */
   margin: 0.5rem; /* Отступы между кнопками */
   font-size: 1.25rem; /* Размер шрифта */
   color: #ffffff; /* Цвет текста */

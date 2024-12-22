@@ -124,13 +124,13 @@ export default {
       ogeTaskSubTypes: [
         { id: 1, label: 'Задание 1' },
         { id: 2, label: 'Задание 2' },
-        { id: 3, label: 'Экзамен 3' }
+        { id: 3, label: 'Задание 3' }
       ],
       egeTaskSubTypes: [
         { id: 1, label: 'Задание 1' },
         { id: 2, label: 'Задание 2' },
-        { id: 3, label: 'Экзамен 3' },
-        { id: 4, label: 'Экзамен 4' }
+        { id: 3, label: 'Задание 3' },
+        { id: 4, label: 'Задание 4' }
       ],
       selectedMainType: null,
       selectedTaskType: null,

@@ -7,7 +7,7 @@
       <q-intersection v-for="answer in answers" :key="answer.id">
         <q-item clickable v-ripple>
           <q-item-section>
-            <q-item-label class="text-xl">Ответы на экзамен #{{ answer.id }} от {{ formatDate(answer.created_at) }}</q-item-label>
+            <q-item-label class="text-xl">Ответы на экзамен от {{ formatDate(answer.created_at) }}</q-item-label>
           </q-item-section>
 
           <q-item-section>
