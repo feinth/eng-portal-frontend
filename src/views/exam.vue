@@ -93,7 +93,7 @@ export default {
         this.audioGuidance = response
         this.playIntroAudio()
       })
-      this.examStore.getExamTasks().then(() => { this.examData = this.examStore.currentExam.sort((a, b) => a.type - b.type) })
+      this.examStore.getEgeExamTasks().then(() => { this.examData = this.examStore.currentExam.sort((a, b) => a.type - b.type) })
     },
     playIntroAudio() {
       const audio = new Audio(this.audioGuidance.start_exam_audio)
