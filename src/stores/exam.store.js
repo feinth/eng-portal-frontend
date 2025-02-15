@@ -9,9 +9,22 @@ export const useExamStore = defineStore({
     currentExam: JSON.parse(localStorage.getItem('currentExam')),
     currentExamID: localStorage.getItem('currentExamID'),
     answerParams: null,
-    audioGuidance: null
+    audioGuidance: null,
+    isIntroAudioPlayed: false, 
   }),
   actions: {
+    async playIntroAudio() {
+      if (!this.isIntroAudioPlayed && this.audioGuidance?.start_exam_audio) {
+        const audio = new Audio(this.audioGuidance.start_exam_audio)
+        await new Promise((resolve) => {
+          audio.play()
+          audio.onended = () => {
+            this.isIntroAudioPlayed = true 
+            resolve()
+          }
+        })
+      }
+    },
     addAudioFile(taskAnswer) {
       this.taskAnswers.push(taskAnswer)
     },

@@ -1,6 +1,5 @@
 <template>
   <div class="top text-center">
-    <!-- <h1 class="text-2xl font-bold mb-4">Ваш выбор</h1> -->
     <q-btn
       @click="resetSelection"
       class="custom-secondary-button"
@@ -18,57 +17,65 @@
   <div class="flex justify-center min-h-screen">
     <div v-if="!selectedMainType" class="space-y-4 text-center">
       <h1 class="text-2xl font-bold mb-4">Выберите тип экзамена</h1>
-      <q-btn
-        v-for="type in mainTypes"
-        :key="type.id"
-        @click="selectMainType(type)"
-        class="custom-button"
-        color="primary"
-        :label="type.label"
-        unelevated
-      />
+      <div class="button-container">
+        <q-btn
+          v-for="type in mainTypes"
+          :key="type.id"
+          @click="selectMainType(type)"
+          class="custom-button"
+          color="primary"
+          :label="type.label"
+          unelevated
+        />
+      </div>
     </div>
     <div v-else-if="!selectedTaskType" class="space-y-4 text-center">
       <h1 class="text-2xl font-bold mb-4">Выберите тип задания</h1>
-      <q-btn
-        v-for="type in taskTypes"
-        :key="type.id"
-        @click="selectTaskType(type)"
-        class="custom-button"
-        color="primary"
-        :label="type.label"
-        unelevated
-      />
+      <div class="button-container">
+        <q-btn
+          v-for="type in taskTypes"
+          :key="type.id"
+          @click="selectTaskType(type)"
+          class="custom-button"
+          color="primary"
+          :label="type.label"
+          unelevated
+        />
+      </div>
     </div>
     <div
       v-else-if="selectedMainType.id === 1 && selectedTaskType.id === 2"
       class="space-y-4 text-center"
     >
       <h1 class="text-2xl font-bold mb-4">Выберите тип задания</h1>
-      <q-btn
-        v-for="subtype in ogeTaskSubTypes"
-        :key="subtype.id"
-        @click="selectTaskType(subtype)"
-        class="custom-button"
-        color="primary"
-        :label="subtype.label"
-        unelevated
-      />
+      <div class="button-container">
+        <q-btn
+          v-for="subtype in ogeTaskSubTypes"
+          :key="subtype.id"
+          @click="selectTaskType(subtype)"
+          class="custom-button"
+          color="primary"
+          :label="subtype.label"
+          unelevated
+        />
+      </div>
     </div>
     <div
       v-else-if="selectedMainType.id === 2 && selectedTaskType.id === 2"
       class="space-y-4 text-center"
     >
       <h1 class="text-2xl font-bold mb-4">Выберите тип задания</h1>
-      <q-btn
-        v-for="subtype in egeTaskSubTypes"
-        :key="subtype.id"
-        @click="selectTaskType(subtype)"
-        class="custom-button"
-        color="primary"
-        :label="subtype.label"
-        unelevated
-      />
+      <div class="button-container">
+        <q-btn
+          v-for="subtype in egeTaskSubTypes"
+          :key="subtype.id"
+          @click="selectTaskType(subtype)"
+          class="custom-button"
+          color="primary"
+          :label="subtype.label"
+          unelevated
+        />
+      </div>
     </div>
     <div
       v-else-if="
@@ -79,18 +86,19 @@
       class="space-y-4 text-center"
     >
       <h1 class="text-2xl font-bold mb-4">Выберите варианты</h1>
-      <q-btn
-        v-for="type in examTypes"
-        :key="type.id"
-        @click="selectExamType(type)"
-        class="custom-button"
-        color="primary"
-        :label="type.label"
-        unelevated
-      />
+      <div class="button-container">
+        <q-btn
+          v-for="type in examTypes"
+          :key="type.id"
+          @click="selectExamType(type)"
+          class="custom-button"
+          color="primary"
+          :label="type.label"
+          unelevated
+        />
+      </div>
     </div>
     <div>
-      <!-- Слот для отображения списка заданий -->
       <div v-if="tasks" class="tasks-list-container">
         <tasks-list :tasks="tasks"/>
       </div>
@@ -170,19 +178,44 @@ export default {
 </script>
 
 <style scoped>
-/* Дополнительные стили */
+/* Общие стили */
 .space-y-4 > * + * {
   margin-top: 1rem;
 }
+
+.button-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
 .custom-button {
-  width: 200px; /* Ширина кнопок */
-  margin: 0 0.5rem; /* Отступы между кнопками */
-  font-size: 1.25rem; /* Размер шрифта */
-  color: #ffffff; /* Цвет текста */
+  flex: 1 1 45%; /* Кнопки занимают 45% ширины контейнера */
+  max-width: 200px; /* Максимальная ширина кнопки */
+  margin: 0.25rem;
+  font-size: 1rem;
+  color: #ffffff;
 }
 
 .custom-secondary-button {
-  color: #ffffff; /* Цвет текста */
-  flex-wrap: wrap; /* Добавлено для переноса кнопок на следующую строку */
+  color: #ffffff;
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 600px) {
+  .custom-button {
+    flex: 1 1 100%; /* Кнопки занимают всю ширину на мобильных устройствах */
+    max-width: 100%;
+    font-size: 0.875rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  p {
+    font-size: 0.875rem;
+  }
 }
 </style>

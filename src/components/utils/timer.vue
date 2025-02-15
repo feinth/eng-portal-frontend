@@ -9,6 +9,7 @@
 </template>
 
 <script>
+import { useExamStore } from '../../stores/exam.store'
 export default {
   props: {
     duration: {
@@ -31,18 +32,19 @@ export default {
     }
   },
   methods: {
-    startCountdown() {
-      const countdown = setInterval(() => {
+    async startCountdown() {
+      const countdown = setInterval(async () => {
         this.timeLeft--
         if (this.timeLeft <= 0) {
           clearInterval(countdown)
 
+          const examStore = useExamStore()
+          await examStore.playIntroAudio() 
+
           if (this.audioSrc) {
+            this.$emit('countdown-finished')
             const audio = new Audio(this.audioSrc)
             audio.play()
-            audio.onended = () => {
-              this.$emit('countdown-finished')
-            }
           } else {
             this.$emit('countdown-finished')
           }

@@ -2,7 +2,7 @@
   <div>
     <Timer v-if="showTimerPrepare" :duration="5" :audioSrc="task.audio_guidance" :type="'test'"
       @countdown-finished="startPrepare" />
-    <Timer v-if="showTimerAnswer" :duration="5" :audioSrc="this.examStore.audioGuidance.before_task_audio"
+    <Timer v-if="showTimerAnswer" :duration="5" :audioSrc="examStore.audioGuidance.before_task_audio"
       :type="'answer'" @countdown-finished="startRecord" />
 
     <div v-if="prepareStarted || recordStarted" class="bg-gray-100 p-4 rounded-lg shadow-md">
