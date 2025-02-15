@@ -4,25 +4,12 @@
       <!-- иконка -->
       <div class="flex items-center">
         <div class="mr-4 flex items-center">
-          <q-btn
-            color="red"
-            icon="sym_o_mic"
-            label="Recording"
-            no-caps
-            class="w-32"
-          />
+          <q-btn color="red" icon="sym_o_mic" label="Recording" no-caps class="w-32" />
         </div>
       </div>
 
       <div class="flex-grow flex items-center justify-center">
-        <q-linear-progress
-          stripe
-          class="q-my-md"
-          size="25px"
-          :value="timeLeft / timeout"
-          :max="100"
-          color="red"
-        >
+        <q-linear-progress stripe class="q-my-md" size="25px" :value="timeLeft / timeout" :max="100" color="red">
           <div class="absolute-full flex flex-center">
             <q-badge color="white" text-color="black" :label="countdown" />
           </div>
@@ -30,14 +17,7 @@
       </div>
       <!-- прогресс -->
       <div class="flex items-center ml-4">
-        <q-btn
-          color="red"
-          @click="stopRecord"
-          label="Далее"
-          no-caps
-          class="w-32"
-          :disable="isAudioPlaying"
-        />
+        <q-btn color="red" @click="finish" label="Далее" no-caps class="w-32" :disable="isAudioPlaying" />
       </div>
     </q-toolbar>
   </div>
@@ -106,33 +86,47 @@ export default {
       this.timer = setInterval(() => {
         this.timeLeft += 1
         if (this.timeLeft >= this.timeout) {
-          this.stopRecord()
+          this.finish()
         }
       }, 1000)
     },
-
-    stopRecord() {
-      clearInterval(this.timer)
-      if (this.mediaRecorder) {
-        this.mediaRecorder.stop()
-        this.mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' })
-          this.audioUrl = URL.createObjectURL(audioBlob)
-          this.isRecording = false
-          // Преобразуем аудио в base64 и только после этого сохраняем его
-          this.blobToBase64(audioBlob).then((audioBase64) => {
-            this.examStore.addAudioFile({
-              taskId: this.taskId,
-              assignmentId: this.assignmentId,
-              audioUrl: this.audioUrl,
-              audioBase64: audioBase64
-            })
-          })
-        }
-        this.audioChunks = []
-      }
-      this.completeTask()
+    finish() {
+      this.stopRecord().then(() => {
+        this.completeTask() // Вызываем после завершения сохранения
+      })
     },
+    stopRecord() {
+      return new Promise((resolve) => {
+        clearInterval(this.timer)
+
+        if (this.mediaRecorder) {
+          this.mediaRecorder.stop()
+          this.mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' })
+            this.audioUrl = URL.createObjectURL(audioBlob)
+            this.isRecording = false
+
+            // Преобразуем аудио в base64 и сохраняем его
+            this.blobToBase64(audioBlob).then((audioBase64) => {
+              this.examStore.addAudioFile({
+                taskId: this.taskId,
+                assignmentId: this.assignmentId,
+                audioUrl: this.audioUrl,
+                audioBase64: audioBase64
+              })
+
+              resolve() // Разрешаем Promise после сохранения
+            })
+          }
+          this.audioChunks = []
+        }
+      })
+    },
+
+    completeTask() {
+      this.$emit('record-completed')
+    },
+
 
     startPlayAudioBefore() {
       if (this.audioBeforeSource) {
@@ -158,9 +152,6 @@ export default {
         reader.readAsDataURL(blob) // Преобразуем Blob в DataURL
       })
     },
-    completeTask() {
-      this.$emit('record-completed')
-    }
   },
 
   mounted() {

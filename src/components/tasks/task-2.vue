@@ -6,8 +6,8 @@
       @countdown-finished="startRecord" />
 
     <div v-show="currentState === 'prepare' && taskStarted" class="bg-gray-100 p-4 rounded-lg shadow-md">
-      <div class="row q-col-gutter-lg">
-        <div class="col-6">
+      <div class="row q-col-gutter-lg responsive-layout">
+        <div class="col-12 col-md-6">
           <p class="text-h4 font-bold text-gray-800 mt-4">
             {{ `Task ${task.type}.` }}
           </p>
@@ -26,7 +26,7 @@
             :content="'**You have 20 seconds to ask each question.**'" />
         </div>
 
-        <div class="col-6 text-gray-800 my-card image-container">
+        <div class="col-12 col-md-6 text-gray-800 my-card image-container">
           <q-item>
             <q-item-section>
               <MarkdownView class="text-h5" :content="task.images[0].header" />
@@ -56,7 +56,7 @@
             }}
           </div>
 
-          <div class="col-6 text-gray-800 my-card image-container">
+          <div class="col-12 col-md-6 text-gray-800 my-card image-container">
             <q-item>
               <q-item-section>
                 <MarkdownView class="text-h5" :content="task.images[0].header" />
@@ -139,25 +139,45 @@ export default {
   }
 }
 </script>
+
 <style>
 .image-max-size {
-  max-width: 500px;
+  max-width: 100%; /* Изображение занимает всю доступную ширину */
   max-height: 500px;
   object-fit: contain;
 }
 
 .markdown-content {
   color: #01695c;
-  /* Переопределение цвета текста */
   font-weight: bold;
 }
 
 .image-container {
   justify-content: center;
-  /* Горизонтальное выравнивание по центру */
   align-items: center;
-  /* Вертикальное выравнивание по центру */
   gap: 20px;
-  /* Отступ между изображениями */
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 768px) {
+  .responsive-layout {
+    flex-direction: column; /* Элементы располагаются вертикально */
+  }
+
+  .col-12 {
+    width: 100%; /* Элементы занимают всю ширину */
+  }
+
+  .text-h4 {
+    font-size: 1.5rem; /* Уменьшаем размер шрифта заголовков */
+  }
+
+  .text-h5 {
+    font-size: 1rem; /* Уменьшаем размер шрифта текста */
+  }
+
+  .image-max-size {
+    max-height: 300px; /* Уменьшаем максимальную высоту изображения */
+  }
 }
 </style>

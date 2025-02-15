@@ -43,7 +43,6 @@ import Task2 from '../components/tasks/task-2.vue'
 import Task3 from '../components/tasks/task-3.vue'
 import Task4 from '../components/tasks/task-4.vue'
 import { useExamStore } from '../stores/exam.store'
-
 export default {
   components: {
     Task1,
@@ -91,13 +90,8 @@ export default {
 
       this.examStore.getAudioGuidance().then((response) => {
         this.audioGuidance = response
-        this.playIntroAudio()
       })
       this.examStore.getEgeExamTasks().then(() => { this.examData = this.examStore.currentExam.sort((a, b) => a.type - b.type) })
-    },
-    playIntroAudio() {
-      const audio = new Audio(this.audioGuidance.start_exam_audio)
-      audio.play()
     },
     playEndAudio() {
       const audio = new Audio(this.audioGuidance.end_exam_audio)
@@ -111,6 +105,7 @@ export default {
       }
     },
     finishExam() {
+      console.log('конец')
       this.playEndAudio()
       this.currentTaskIndex++
       this.examStore.setExamAnswers().then((result) => {
