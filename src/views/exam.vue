@@ -33,6 +33,13 @@
       <q-btn flat color="teal-8" @click="loadAnswers()" icon="cloud_upload" style="width: 100px">Сохранить
         результаты</q-btn>
     </q-card-actions>
+    <div v-for="(task, index) in completedTasks" :key="index"
+      class="my-8 bg-gray-100 rounded-lg shadow-md p-6 flex items-center">
+
+      <component :is="getTaskContent(task)" :task="task" />
+
+    </div>
+
   </q-card>
 
 </template>
@@ -42,13 +49,22 @@ import Task1 from '../components/tasks/task-1.vue'
 import Task2 from '../components/tasks/task-2.vue'
 import Task3 from '../components/tasks/task-3.vue'
 import Task4 from '../components/tasks/task-4.vue'
+
+import Task1Content from '../components/tasks/Task1Content.vue'
+import Task2Content from '../components/tasks/Task2Content.vue'
+import Task3Content from '../components/tasks/Task3Content.vue'
+import Task4Content from '../components/tasks/Task4Content.vue'
 import { useExamStore } from '../stores/exam.store'
 export default {
   components: {
     Task1,
     Task2,
     Task3,
-    Task4
+    Task4,
+    Task1Content,
+    Task2Content,
+    Task3Content,
+    Task4Content,
   },
   data() {
     return {
@@ -58,7 +74,8 @@ export default {
       examStore: useExamStore(),
       savingTask: null,
       createdAnswerData: false,
-      examStarted: false
+      examStarted: false,
+      completedTasks: []
     }
   },
   computed: {
@@ -98,6 +115,9 @@ export default {
       audio.play()
     },
     nextTask() {
+      if (!this.completedTasks.includes(this.currentTask)) {
+        this.completedTasks.push(this.currentTask)
+      }
       if (this.currentTaskIndex < this.examData.length - 1) {
         this.currentTaskIndex++
       } else {
@@ -105,7 +125,6 @@ export default {
       }
     },
     finishExam() {
-      console.log('конец')
       this.playEndAudio()
       this.currentTaskIndex++
       this.examStore.setExamAnswers().then((result) => {
@@ -140,7 +159,17 @@ export default {
         // Удаляем элемент <a> после клика
         document.body.removeChild(link)
       }
-    }
+    },
+    getTaskContent(task) {
+      if (!task) return null
+      switch (task.type) {
+        case 1: return 'Task1Content'
+        case 2: return 'Task2Content'
+        case 3: return 'Task3Content'
+        case 4: return 'Task4Content'
+        default: return null
+      }
+    },
   },
 }
 </script>
