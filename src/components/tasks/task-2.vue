@@ -5,37 +5,7 @@
     <Timer v-if="showTimerAnswer" :duration="5" :audioSrc="task.audio_before_execution" :type="'answer'"
       @countdown-finished="startRecord" />
 
-    <div v-show="currentState === 'prepare' && taskStarted" class="bg-gray-100 p-4 rounded-lg shadow-md">
-      <div class="row q-col-gutter-lg responsive-layout">
-        <div class="col-12 col-md-6">
-          <p class="text-h4 font-bold text-gray-800 mt-4">
-            {{ `Task ${task.type}.` }}
-          </p>
-          <p class="text-h5 text-gray-800 mt-4">
-            {{ task.header }}
-          </p>
-          <q-separator spaced class="my-2" />
-          <MarkdownView class="text-h5 font-bold text-gray-800 mt-4" :content="task.description" />
-          <ul>
-            <li v-for="(question, index) in task.questions" :key="index" class="text-h5 font-bold text-gray-800 mt-4">
-              {{ `${index + 1}) ` + question.description }}
-            </li>
-          </ul>
-          <br />
-          <MarkdownView class="text-h5 font-bold text-gray-800 mt-4"
-            :content="'**You have 20 seconds to ask each question.**'" />
-        </div>
-
-        <div class="col-12 col-md-6 text-gray-800 my-card image-container">
-          <q-item>
-            <q-item-section>
-              <MarkdownView class="text-h5" :content="task.images[0].header" />
-              <q-img :src="task.images[0].image" class="image-max-size" />
-            </q-item-section>
-          </q-item>
-        </div>
-      </div>
-    </div>
+    <Task2Content v-if="currentState === 'prepare' && taskStarted" :task="task" />
 
     <MicrophoneFooterPrepare v-if="currentState === 'prepare' && taskStarted" :timeout="task.preparation_seconds"
       @prepare-completed="prepareStop" />
@@ -76,6 +46,7 @@
 <script>
 import Timer from '../utils/timer.vue'
 import MarkdownView from '../utils/markdown-view.vue'
+import Task2Content from '../tasks/Task2Content.vue'
 import MicrophoneFooterPrepare from '../microphone/microphone-footer-prepare.vue'
 import MicrophoneFooterRecord from '../microphone/microphone-footer-record.vue'
 
@@ -83,6 +54,7 @@ export default {
   components: {
     Timer,
     MarkdownView,
+    Task2Content,
     MicrophoneFooterPrepare,
     MicrophoneFooterRecord
   },
@@ -133,51 +105,8 @@ export default {
     }
   },
   emits: ['next-task'],
-
   mounted() {
     this.showTimerPrepare = true
   }
 }
 </script>
-
-<style>
-.image-max-size {
-  max-width: 100%; /* Изображение занимает всю доступную ширину */
-  max-height: 500px;
-  object-fit: contain;
-}
-
-.markdown-content {
-  color: #01695c;
-  font-weight: bold;
-}
-
-.image-container {
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-}
-
-/* Адаптивные стили для мобильных устройств */
-@media (max-width: 768px) {
-  .responsive-layout {
-    flex-direction: column; /* Элементы располагаются вертикально */
-  }
-
-  .col-12 {
-    width: 100%; /* Элементы занимают всю ширину */
-  }
-
-  .text-h4 {
-    font-size: 1.5rem; /* Уменьшаем размер шрифта заголовков */
-  }
-
-  .text-h5 {
-    font-size: 1rem; /* Уменьшаем размер шрифта текста */
-  }
-
-  .image-max-size {
-    max-height: 300px; /* Уменьшаем максимальную высоту изображения */
-  }
-}
-</style>
