@@ -10,7 +10,8 @@ export const useExamStore = defineStore({
     currentExamID: localStorage.getItem('currentExamID'),
     answerParams: null,
     audioGuidance: null,
-    isIntroAudioPlayed: false, 
+    isIntroAudioPlayed: false,
+    typeExam: null
   }),
   actions: {
     async playIntroAudio() {
@@ -19,7 +20,7 @@ export const useExamStore = defineStore({
         await new Promise((resolve) => {
           audio.play()
           audio.onended = () => {
-            this.isIntroAudioPlayed = true 
+            this.isIntroAudioPlayed = true
             resolve()
           }
         })
@@ -34,23 +35,38 @@ export const useExamStore = defineStore({
     getAudioFiles() {
       return this.audioFiles
     },
-    getExams(typeExam) {
+    getExams(typeExam, fipi = null) {
       return new Promise(async (resolve, reject) => {
-        let res = await api({
-          method: 'get',
-          url: `${typeExam}/exams/`
-        })
-        this.exams = res.data
-        localStorage.setItem('exams', JSON.stringify(this.exams))
-        resolve(this.exams)
+        try {
+          // Формируем URL в зависимости от переданных параметров
+          let url = `${typeExam}/exams/`
+          if (fipi !== null) {
+            url += `?fipi=${fipi}` // Добавляем параметр fipi, если он передан
+          }
+
+          // Выполняем запрос к API
+          let res = await api({
+            method: 'get',
+            url: url
+          })
+
+          // Сохраняем данные в хранилище
+          this.exams = res.data
+          this.typeExam = typeExam
+          localStorage.setItem('exams', JSON.stringify(this.exams))
+
+          resolve(this.exams)
+        } catch (err) {
+          reject(err)
+        }
       })
     },
-    getEgeExamTasks() {
+    getExamTasks() {
       return new Promise(async (resolve, reject) => {
         try {
           let res = await api({
             method: 'get',
-            url: `ege/tasks/?exam_id=${this.currentExamID}`
+            url: `${this.typeExam}/tasks/?exam_id=${this.currentExamID}`
           })
           this.currentExam = res.data
           localStorage.setItem('currentExam', JSON.stringify(this.currentExam))
@@ -149,8 +165,15 @@ export const useExamStore = defineStore({
       })
     },
     setExamId(id) {
-      this.currentExamID = id
-      localStorage.setItem('currentExamID', this.currentExamID)
+      return new Promise(async (resolve, reject) => {
+        try {
+          this.currentExamID = id
+          localStorage.setItem('currentExamID', this.currentExamID)
+          resolve()
+        } catch (err) {
+          reject(err)
+        }
+      })
     },
     getAnswers(id = null, withTasks = false) {
       return new Promise(async (resolve, reject) => {

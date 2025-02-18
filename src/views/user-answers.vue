@@ -7,7 +7,7 @@
       <q-intersection v-for="answer in answers" :key="answer.id">
         <q-item clickable v-ripple>
           <q-item-section>
-            <q-item-label class="text-xl">Ответы на экзамен от {{ formatDate(answer.created_at) }}</q-item-label>
+            <q-item-label class="text-xl">{{ `Ответы на экзамен от ${formatDate(answer.created_at)}` }}</q-item-label>
           </q-item-section>
 
           <q-item-section>
@@ -86,7 +86,75 @@ export default {
 </script>
 
 <style scoped>
+/* Общие стили */
 .q-card-section {
   padding: 16px;
+}
+
+.q-item {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.q-item:nth-child(even) {
+  background-color: #8d2828; /* Серый фон для четных элементов */
+}
+
+.q-item__section--side {
+  flex: 0 0 auto; /* Фиксированная ширина для кнопок */
+}
+
+audio {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+/* Адаптивность для маленьких экранов */
+@media (max-width: 600px) {
+  .q-item-label {
+    font-size: 14px;
+  }
+
+  audio {
+    max-width: 100%; /* Полная ширина на мобильных устройствах */
+  }
+
+  .q-btn {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+}
+
+/* Адаптивность для средних экранов */
+@media (min-width: 601px) and (max-width: 1024px) {
+  .q-item-label {
+    font-size: 16px;
+  }
+
+  audio {
+    max-width: 250px;
+  }
+
+  .q-btn {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+}
+
+/* Адаптивность для больших экранов */
+@media (min-width: 1025px) {
+  .q-item-label {
+    font-size: 18px;
+  }
+
+  audio {
+    max-width: 300px;
+  }
+
+  .q-btn {
+    font-size: 16px;
+    padding: 8px 16px;
+  }
 }
 </style>

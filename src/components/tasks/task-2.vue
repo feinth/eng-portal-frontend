@@ -6,9 +6,9 @@
       @countdown-finished="startRecord" />
 
     <Task2Content v-if="currentState === 'prepare' && taskStarted" :task="task" />
-
-    <MicrophoneFooterPrepare v-if="currentState === 'prepare' && taskStarted" :timeout="task.preparation_seconds"
-      @prepare-completed="prepareStop" />
+    <div v-if="currentState === 'prepare' && taskStarted" class="pt-10">
+      <MicrophoneFooterPrepare :timeout="task.preparation_seconds" @prepare-completed="prepareStop" />
+    </div>
 
     <div v-else-if="currentState === 'record' && recordStarted">
       <div class="bg-gray-100 p-4 rounded-lg shadow-md">
@@ -35,9 +35,11 @@
             </q-item>
           </div>
         </div>
-        <MicrophoneFooterRecord :key="currentQuestionIndex" :timeout="20" :taskId="task.id"
+        <div class="pt-10">
+          <MicrophoneFooterRecord :key="currentQuestionIndex" :timeout="20" :taskId="task.id"
           :assignmentId="currentQuestion.id" :audioBeforeSource="currentQuestion.audio_guidance"
           @record-completed="recordStop" />
+        </div>
       </div>
     </div>
   </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed bottom-0 left-0 w-full border border-gray-300">
+  <div class="fixed-footer px-4">
     <q-toolbar>
       <!-- иконка -->
       <div class="flex items-center">
@@ -49,99 +49,74 @@ export default {
     timeout: {
       type: Number,
       required: true,
-      default: 60
+      default: 60,
     },
     audioSrc: {
       type: String,
       required: false,
-      default: null
-    }
+      default: null,
+    },
   },
   data() {
     return {
       timeLeft: 0,
       timer: null,
-      isAudioPlaying: false
-    }
+      isAudioPlaying: false,
+    };
   },
   computed: {
     countdown() {
-      const remainingSeconds = this.timeout - this.timeLeft
-      const minutes = Math.floor(remainingSeconds / 60)
-      const seconds = remainingSeconds % 60
-      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
-    }
+      const remainingSeconds = this.timeout - this.timeLeft;
+      const minutes = Math.floor(remainingSeconds / 60);
+      const seconds = remainingSeconds % 60;
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    },
   },
   methods: {
     startPrepare() {
-      this.timeLeft = 0
-
+      this.timeLeft = 0;
       this.timer = setInterval(() => {
-        this.timeLeft += 1
+        this.timeLeft += 1;
         if (this.timeLeft >= this.timeout) {
-          this.stopPrepare()
+          this.stopPrepare();
         }
-      }, 1000)
+      }, 1000);
     },
-
     stopPrepare() {
-      clearInterval(this.timer)
-      this.completeTask()
+      clearInterval(this.timer);
+      this.completeTask();
     },
-
     completeTask() {
-      this.$emit('prepare-completed')
+      this.$emit("prepare-completed");
     },
-
     startPlayAudioBefore() {
       if (this.audioSrc) {
-        const audio = new Audio(this.audioSrc)
-        audio.play()
-        this.isAudioPlaying = true
-        // Запускаем таймер после завершения воспроизведения аудио
+        const audio = new Audio(this.audioSrc);
+        audio.play();
+        this.isAudioPlaying = true;
         audio.onended = () => {
-          this.isAudioPlaying = false
-          this.startPrepare()
-        }
+          this.isAudioPlaying = false;
+          this.startPrepare();
+        };
       } else {
-        // Если аудиофайла нет, сразу запускаем таймер
-        this.startPrepare()
+        this.startPrepare();
       }
-    }
+    },
   },
-
   mounted() {
-    this.startPlayAudioBefore()
-  }
-}
+    this.startPlayAudioBefore();
+  },
+};
 </script>
 
 <style scoped>
-.text-teal-700 {
-  color: #285e61;
+.fixed-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgb(232, 238, 255);
+  border-top: 1px solid #ccc;
 }
 
-.text-teal-900 {
-  color: #1c3d45;
-}
-
-.text-gray-800 {
-  color: #2d3748;
-}
-
-.list-disc {
-  list-style-type: disc;
-}
-
-.list-inside {
-  list-style-position: inside;
-}
-
-.h-full {
-  height: 100%;
-}
-
-.flex-grow {
-  flex-grow: 1;
-}
 </style>

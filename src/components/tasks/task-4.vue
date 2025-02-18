@@ -8,10 +8,13 @@
     <div v-if="prepareStarted || recordStarted" class="bg-gray-100 p-4 rounded-lg shadow-md">
       <Task4Content :task="task" />
     </div>
-    <MicrophoneFooterPrepare v-if="prepareStarted" :timeout="task.preparation_seconds"
-      @prepare-completed="prepareStop" />
-    <MicrophoneFooterRecord v-else-if="recordStarted" :timeout="task.execution_seconds" :taskId="task.id"
-      @record-completed="recordStop" />
+    <div v-if="prepareStarted" class="pt-10">
+      <MicrophoneFooterPrepare :timeout="task.preparation_seconds" @prepare-completed="prepareStop" />
+    </div>
+    <div v-else-if="recordStarted" class="pt-10">
+      <MicrophoneFooterRecord :timeout="task.execution_seconds" :taskId="task.id" @record-completed="recordStop" />
+    </div>
+
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed bottom-0 left-0 w-full border border-gray-300">
+  <div class="fixed-footer px-4">
     <q-toolbar>
       <!-- иконка -->
       <div class="flex items-center">
@@ -162,31 +162,12 @@ export default {
 </script>
 
 <style scoped>
-.text-teal-700 {
-  color: #285e61;
-}
-
-.text-teal-900 {
-  color: #1c3d45;
-}
-
-.text-gray-800 {
-  color: #2d3748;
-}
-
-.list-disc {
-  list-style-type: disc;
-}
-
-.list-inside {
-  list-style-position: inside;
-}
-
-.h-full {
-  height: 100%;
-}
-
-.flex-grow {
-  flex-grow: 1;
+.fixed-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgb(253, 211, 211);
+  border-top: 1px solid #ccc;
 }
 </style>
