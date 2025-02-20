@@ -7,38 +7,52 @@
       Набор заданий: {{ selectedExamType?.label }}
     </p>
   </div>
+
   <div class="flex justify-center min-h-screen">
-    <div v-if="!selectedMainType" class="space-y-4 text-center">
-      <h1 class="text-2xl font-bold mb-4">Выберите тип экзамена</h1>
-      <div class="button-container">
-        <q-btn v-for="type in mainTypes" :key="type.id" @click="selectMainType(type)" class="custom-button"
-          color="primary" :label="type.label" unelevated />
+    <!-- Блок выбора типа экзамена и задания -->
+    <div v-if="!tasks && !exams" class="space-y-4 text-center">
+      <div v-if="!selectedMainType">
+        <h1 class="text-2xl font-bold mb-4">Выберите тип экзамена</h1>
+        <div class="button-container">
+          <q-btn v-for="type in mainTypes" :key="type.id" @click="selectMainType(type)" class="custom-button"
+            color="primary" :label="type.label" unelevated />
+        </div>
+      </div>
+      <div v-else>
+        <h1 class="text-2xl font-bold mb-4">{{ currentStepTitle }}</h1>
+        <div class="button-container">
+          <q-btn v-for="type in currentStepOptions" :key="type.id" @click="handleStepSelection(type)"
+            class="custom-button" color="primary" :label="type.label" unelevated />
+        </div>
       </div>
     </div>
-
-    <div v-else class="space-y-4 text-center">
-      <h1 class="text-2xl font-bold mb-4">{{ currentStepTitle }}</h1>
-      <div class="button-container">
-        <q-btn v-for="type in currentStepOptions" :key="type.id" @click="handleStepSelection(type)"
-          class="custom-button" color="primary" :label="type.label" unelevated />
-      </div>
+    <div class="q-pa-md q-gutter-sm"
+      v-else-if="(selectedTaskType?.id === 2 && (!tasks || tasks.length === 0)) || (selectedTaskType?.id === 1 && (!exams || exams.length === 0))">
+      <q-banner class="text-white bg-red">
+        <span v-if="selectedTaskType?.id === 2">Нет доступных заданий для выбранного типа</span>
+        <span v-else-if="selectedTaskType?.id === 1">Нет доступных экзаменов для выбранного типа</span>
+      </q-banner>
+    </div>
+    <!-- Отображаем task-list, если выбран тип задания "По заданиям" -->
+    <div v-else-if="selectedTaskType?.id === 2 && tasks && tasks.length > 0" class="tasks-list-container">
+      <tasks-list :tasks="tasks" />
     </div>
 
-    <div>
-      <div v-if="tasks" class="tasks-list-container">
-        <tasks-list :tasks="tasks" />
-      </div>
+    <!-- Отображаем exam-list, если выбран тип задания "Экзамен" -->
+    <div v-else-if="selectedTaskType?.id === 1 && exams && exams.length > 0" class="exams-list-container">
+      <exams-list :exams="exams" />
     </div>
   </div>
 </template>
-
 <script>
 import TasksList from '../components/task-list.vue'
+import ExamsList from '../components/exam-list.vue'
 import { useExamStore } from '../stores/exam.store'
 
 export default {
   name: 'TrainingPage',
   components: {
+    ExamsList,
     TasksList
   },
   data() {
@@ -70,7 +84,8 @@ export default {
       selectedMainType: null,
       selectedTaskType: null,
       selectedExamType: null,
-      tasks: null
+      tasks: null,
+      exams: null
     }
   },
   computed: {
@@ -99,15 +114,17 @@ export default {
       if (!this.selectedTaskType) {
         this.selectedTaskType = type
         if (this.selectedMainType?.id === 2 && this.selectedTaskType?.id === 1) {
-          this.fetchTasks(this.selectedMainType.id, this.selectedTaskType.id)
+          this.fetchExams(this.selectedMainType.id, this.selectedTaskType.id)
         }
       } else if (this.selectedMainType.id === 1 && this.selectedTaskType.id === 2) {
-        this.selectedTaskType = type
+        // Если выбран ОГЭ и тип "по заданиям", вызываем getTasksByType
+        this.fetchTasksByType(this.selectedMainType.type, type.id)
       } else if (this.selectedMainType.id === 2 && this.selectedTaskType.id === 2) {
-        this.selectedTaskType = type
+        // Если выбран ЕГЭ и тип "по заданиям", вызываем getTasksByType
+        this.fetchTasksByType(this.selectedMainType.type, type.id)
       } else if (!this.selectedExamType && this.selectedTaskType.label === 'Экзамен' && this.selectedMainType.label === 'ОГЭ') {
         this.selectedExamType = type
-        this.fetchTasks(type.id)
+        this.fetchExams(type.id)
       }
     },
     resetSelection() {
@@ -115,18 +132,45 @@ export default {
       this.selectedTaskType = null
       this.selectedExamType = null
       this.tasks = null
+      this.exams = null
     },
-    fetchTasks() {
+    fetchExams() {
       let fipi = null;
       if (this.selectedMainType?.label === 'ОГЭ' && this.selectedExamType) {
-        // Если выбран ОГЭ и тип варианта, определяем значение fipi
         fipi = this.selectedExamType.id === 1 ? 0 : 1; // 0 для авторских, 1 для ФИПИ
       }
 
       this.store
         .getExams(this.selectedMainType.type, fipi)
         .then((result) => {
+          this.exams = result; // Сохраняем экзамены в переменную exams
+        })
+        .catch((error) => {
+          this.$q.notify({
+            progress: true,
+            position: 'top-right',
+            color: 'negative',
+            message: 'Ошибка при получении экзаменов, попробуйте перезагрузить страницу',
+            timeout: 2000,
+            icon: 'sym_o_warning'
+          })
+        });
+    },
+    fetchTasksByType(examType, taskSubTypeId) {
+      this.store
+        .getTasksByType(examType, taskSubTypeId)
+        .then((result) => {
           this.tasks = result;
+        })
+        .catch((error) => {
+          this.$q.notify({
+            progress: true,
+            position: 'top-right',
+            color: 'negative',
+            message: 'Ошибка при получении заданий, попробуйте перезагрузить страницу',
+            timeout: 2000,
+            icon: 'sym_o_warning'
+          })
         });
     }
   }
@@ -148,9 +192,7 @@ export default {
 
 .custom-button {
   flex: 1 1 45%;
-  /* Кнопки занимают 45% ширины контейнера */
   max-width: 200px;
-  /* Максимальная ширина кнопки */
   margin: 0.25rem;
   font-size: 1rem;
   color: #ffffff;
@@ -164,7 +206,6 @@ export default {
 @media (max-width: 600px) {
   .custom-button {
     flex: 1 1 100%;
-    /* Кнопки занимают всю ширину на мобильных устройствах */
     max-width: 100%;
     font-size: 0.875rem;
   }

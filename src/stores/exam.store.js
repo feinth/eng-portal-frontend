@@ -7,7 +7,6 @@ export const useExamStore = defineStore({
     taskAnswers: [],
     exams: JSON.parse(localStorage.getItem('exams')),
     currentExam: JSON.parse(localStorage.getItem('currentExam')),
-    currentExamID: localStorage.getItem('currentExamID'),
     answerParams: null,
     audioGuidance: null,
     isIntroAudioPlayed: false,
@@ -61,12 +60,12 @@ export const useExamStore = defineStore({
         }
       })
     },
-    getExamTasks() {
+    getExamTasks(examID) {
       return new Promise(async (resolve, reject) => {
         try {
           let res = await api({
             method: 'get',
-            url: `${this.typeExam}/tasks/?exam_id=${this.currentExamID}`
+            url: `${this.typeExam}/tasks/?exam_id=${examID}`
           })
           this.currentExam = res.data
           localStorage.setItem('currentExam', JSON.stringify(this.currentExam))
@@ -164,17 +163,6 @@ export const useExamStore = defineStore({
         }
       })
     },
-    setExamId(id) {
-      return new Promise(async (resolve, reject) => {
-        try {
-          this.currentExamID = id
-          localStorage.setItem('currentExamID', this.currentExamID)
-          resolve()
-        } catch (err) {
-          reject(err)
-        }
-      })
-    },
     getAnswers(id = null, withTasks = false) {
       return new Promise(async (resolve, reject) => {
         try {
@@ -206,8 +194,23 @@ export const useExamStore = defineStore({
             method: 'GET',
             url: `${typeExam}/tasks/?task_type=${taskType}`
           })
-
+          this.typeExam = typeExam
           resolve(res.data)
+        } catch (err) {
+          reject(err)
+        }
+      })
+    },
+    getTasksById(id) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const res = await api({
+            method: 'GET',
+            url: `${this.typeExam}/tasks/${id}`
+          })
+          this.currentExam = [res.data]
+          localStorage.setItem('currentExam', JSON.stringify(this.currentExam))
+          resolve(this.currentExam)
         } catch (err) {
           reject(err)
         }
