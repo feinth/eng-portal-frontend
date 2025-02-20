@@ -1,6 +1,5 @@
 <template>
   <div>
-    <div class="text-h6"></div>
     <q-inner-loading v-if="!answers" showing />
     <q-expansion-item v-else-if="answers && answers.length > 0" class="text-h5" expand-separator
       label="Ваши выполненные задания">
@@ -97,7 +96,7 @@ export default {
 }
 
 .q-item:nth-child(even) {
-  background-color: #8d2828; /* Серый фон для четных элементов */
+  background-color: #e5fdfb; /* Серый фон для четных элементов */
 }
 
 .q-item__section--side {

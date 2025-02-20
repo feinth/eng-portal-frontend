@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import PortalLayout from '../layouts/portal-layout.vue'
 import TrainerLayout from '../layouts/trainer-layout.vue'
 import { useUserStore } from '../stores/user.store'
-
 export const router = createRouter({
   history: createWebHistory('/'),
   routes: [
@@ -53,7 +52,15 @@ export const router = createRouter({
       meta: {
         layout: TrainerLayout
       }
-    }
+    },
+    {
+      path: '/payment',
+      name: 'payment',
+      component: () => import('../views/payment-page.vue'),
+      meta: {
+        layout: PortalLayout
+      }
+    },
   ]
 })
 

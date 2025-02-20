@@ -1,11 +1,10 @@
 <template>
   <q-dialog>
-    <q-card>
-      <q-card-section>
+    <q-card class="agreement-card">
+      <q-card-section class="agreement-header">
         <div class="text-h6">Пользовательское соглашение</div>
       </q-card-section>
-
-      <q-card-section class="q-pt-none">
+      <q-card-section class="agreement-content q-pt-none">
         <p>Настоящее соглашение адресовано пользователям — физическим лицам.</p>
         <p>
           Предмет соглашения — Онлайн-тренажёр для подготовки к разделу “Устная
@@ -46,5 +45,42 @@
 <script>
 export default {
   name: 'AgreementTerms'
-}
+};
 </script>
+
+<style scoped>
+.agreement-card {
+  width: 100%;
+  max-width: 600px; /* Максимальная ширина для больших экранов */
+}
+
+.agreement-header {
+  text-align: center;
+  padding: 1rem;
+  background-color: #f5f5f5; /* Легкий оттенок для заголовка */
+  border-bottom: 1px solid #e0e0e0; /* Разделительная линия */
+}
+
+.agreement-content {
+  padding: 1rem;
+  font-size: 1rem; /* Базовый размер шрифта */
+  line-height: 1.6; /* Отступ между строками для лучшей читаемости */
+  color: #333; /* Темный цвет текста */
+}
+
+.agreement-content p {
+  margin-bottom: 1rem; /* Отступ между абзацами */
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 600px) {
+  .agreement-card {
+    max-width: 100%; /* Полная ширина для маленьких экранов */
+  }
+
+  .agreement-content {
+    font-size: 0.9rem; /* Уменьшенный размер шрифта */
+    padding: 0.75rem; /* Уменьшенные отступы */
+  }
+}
+</style>

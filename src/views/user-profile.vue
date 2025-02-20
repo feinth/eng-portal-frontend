@@ -1,32 +1,15 @@
 <template>
   <div>
     <q-page>
-      <!-- Выполненные задания -->
+      <div v-if="user" class="q-pa-md q-gutter-md">
+        <UserInfo :user="user" />
+      </div>
       <div class="q-pa-md q-gutter-md">
         <UserAnswers />
       </div>
-      <div class="q-pa-md row items-start q-gutter-md">
-        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-          <q-inner-loading v-if="!dataLoaded" :showing="!dataLoaded" label="Пожалуйста, подождите..." />
-          <q-card v-else-if="dataLoaded" class="items-center center">
-            <q-card-section>
-              <div class="text-h6 text-center text-md-left"> {{ `Данные о пользователе: ${user.email}`}} </div>
-              <q-separator />
-              <q-form class="q-gutter-md">
-                <q-input filled v-model="user.first_name" label="Имя" />
-                <q-input filled v-model="user.second_name" label="Фамилия" />
-                <q-input filled v-model="user.birthdate" type="date" label="Дата рождения" class="no-autofill" />
-                <q-input filled v-model="user.phone" label="Телефон" />
-
-                <q-btn-group spread class="q-mt-md">
-                  <q-btn label="Обновить информацию" color="primary" @click="updateUserData" class="q-btn--full-width"/>
-                  <q-btn label="Выйти из аккаунта" color="red" @click="logout" class="q-btn--full-width" />
-                </q-btn-group>
-              </q-form>
-            </q-card-section>
-          </q-card>
-        </div>
-      </div>
+      <!-- <div v-if="user" class="q-pa-md q-gutter-md">
+        <SubscriptionComponent :user="user" />
+      </div> -->
     </q-page>
   </div>
 </template>
@@ -35,9 +18,14 @@
 import { useUserStore } from '../stores/user.store'
 import { router } from '../router/router'
 import UserAnswers from './user-answers.vue'
+import UserInfo from './user-info.vue'
+import SubscriptionComponent from './user-subscription.vue'
+
 export default {
   components: {
-    UserAnswers
+    UserAnswers,
+    SubscriptionComponent,
+    UserInfo
   },
   data() {
     return {
@@ -94,13 +82,9 @@ export default {
 </script>
 
 <style scoped>
-/* Добавьте медиа-запросы для дополнительной адаптивности */
-@media (max-width: 600px) {
-  .text-h6 {
-    font-size: 1.25rem;
-  }
-  .q-btn--full-width {
-    width: 100%;
+@media (min-width: 768px) {
+  .q-card {
+    height: 100%;
   }
 }
 </style>
