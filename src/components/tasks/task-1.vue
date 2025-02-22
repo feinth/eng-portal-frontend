@@ -13,11 +13,11 @@
       <Task1Content :task="task" />
     </div>
 
-    <div v-if="currentState === 'prepare' && taskStarted">
+    <div v-if="currentState === 'prepare' && taskStarted" class="pt-10">
       <MicrophoneFooterPrepare :timeout="task.preparation_seconds" @prepare-completed="prepareStop" />
     </div>
 
-    <div v-else-if="currentState === 'record' && recordStarted">
+    <div v-else-if="currentState === 'record' && recordStarted" class="pt-10">
       <MicrophoneFooterRecord :timeout="task.execution_seconds" :taskId="task.id" @record-completed="recordStop" />
     </div>
   </div>
