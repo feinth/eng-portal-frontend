@@ -16,31 +16,46 @@
 
   <q-inner-loading v-if="createdAnswerData && !createdArchiveUrl" :showing="!createdArchiveUrl"
     label="Сохранение задания, пожалуйста, подождите..." />
+  <div v-if="createdArchiveUrl">
+    <q-card>
+      <q-card-section class="bg-gray-100 text-center">
+        <div class="text-h6">
+          Поздравляем! Ваш тест закончен.
+          <br />
+          Сохранить результаты можно, нажав на кнопку ниже.
+          Запись доступна по данной ссылке ограниченное время (от нескольких часов до нескольких дней).
+          <br />
+          Если Вы планируете использовать запись позже, то Вы можете её скачать по ссылке.
+          <br />
+          <a :href="urlForDownload" target="_blank" class="highlighted-link">
+            {{ urlForDownload }}
+          </a>
+        </div>
 
-  <q-card v-if="createdArchiveUrl">
-    <q-card-section class="bg-teal-6 text-white">
-      <div class="text-h6">
-        Поздравляем!
-        <br />
-        Ваш тест закончен. Сохранить результаты можно, нажав на кнопку ниже.
-        Запись доступна по данной ссылке ограниченное время (от нескольких часов
-        до нескольких дней). Если Вы планируете использовать запись позже, то Вы
-        можете её скачать.
-      </div>
-    </q-card-section>
+        <!-- Блок с кнопкой и аудио -->
+        <div class="centered-actions q-mt-md">
+          <!-- Кнопка "Скачать результаты" -->
+          <q-btn flat color="primary" @click="loadAnswers()" icon="cloud_upload" label="Скачать результаты"
+            class="full-width q-mb-md" />
 
-    <q-card-actions vertical align="center">
-      <q-btn flat color="teal-8" @click="loadAnswers()" icon="cloud_upload" style="width: 100px">Сохранить
-        результаты</q-btn>
-    </q-card-actions>
+          <!-- Аудио-плеер -->
+          <div class="audio-section">
+            <p class="text-subtitle2 q-mb-sm">Прослушайте вашу запись:</p>
+            <audio controls class="q-mx-auto">
+              <source :src="createdAnswerData?.full_audio" type="audio/mpeg" />
+              Ваш браузер не поддерживает аудио элемент.
+            </audio>
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
     <div v-for="(task, index) in completedTasks" :key="index"
       class="my-8 bg-gray-100 rounded-lg shadow-md p-6 flex items-center">
-
       <component :is="getTaskContent(task)" :task="task" />
-
     </div>
+  </div>
 
-  </q-card>
+
 
 </template>
 
@@ -73,7 +88,7 @@ export default {
       audioGuidance: null,
       examStore: useExamStore(),
       savingTask: null,
-      createdAnswerData: false,
+      createdAnswerData: null,
       examStarted: false,
       completedTasks: []
     }
@@ -98,6 +113,14 @@ export default {
     },
     createdArchiveUrl() {
       return this.createdAnswerData?.answer_archive
+    },
+    urlForDownload() {
+      const originalUrl = this.createdAnswerData?.answer_archive;
+      const newBaseUrl = "https://english-portal.ru";
+
+      // Разделяем строку по "/media" и собираем её заново с новым базовым URL
+      const updatedUrl = `${newBaseUrl}${originalUrl.split('/media').pop()}`;
+      return updatedUrl;
     }
   },
   methods: {
@@ -108,7 +131,7 @@ export default {
       this.examStore.getAudioGuidance().then((response) => {
         this.audioGuidance = response
       })
-      this.examData = this.examStore.currentExam.sort((a, b) => a.type - b.type) 
+      this.examData = this.examStore.currentExam.sort((a, b) => a.type - b.type)
     },
     playEndAudio() {
       const audio = new Audio(this.audioGuidance.end_exam_audio)
@@ -174,4 +197,27 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.highlighted-link {
+  color: #1976d2;
+  /* Цвет ссылки (синий) */
+  font-weight: bold;
+  /* Жирный шрифт */
+  text-decoration: underline;
+  /* Подчеркивание */
+  word-break: break-all;
+  /* Перенос длинных ссылок */
+}
+
+/* При наведении мыши */
+.highlighted-link:hover {
+  color: #0056b3;
+  /* Темнее синий при наведении */
+  text-decoration: none;
+  /* Убираем подчеркивание при наведении */
+}
+
+.audio-section {
+  text-align: center;
+}
+</style>
