@@ -4,25 +4,13 @@
       <!-- иконка -->
       <div class="flex items-center">
         <div class="mr-4 flex items-center">
-          <q-btn
-            :color="footerColor"
-            icon="sym_o_mic"
-            :label="footerLabel"
-            no-caps
-            class="w-32"
-          />
+          <q-btn :color="footerColor" icon="sym_o_mic" :label="footerLabel" no-caps class="w-32" />
         </div>
       </div>
 
       <div class="flex-grow flex items-center justify-center">
-        <q-linear-progress
-          stripe
-          class="q-my-md"
-          size="25px"
-          :value="timeLeft / timeout"
-          :max="100"
-          :color="footerColor"
-        >
+        <q-linear-progress stripe class="q-my-md" size="25px" :value="timeLeft / timeout" :max="100"
+          :color="footerColor">
           <div class="absolute-full flex flex-center">
             <q-badge color="white" text-color="black" :label="countdown" />
           </div>
@@ -30,38 +18,14 @@
       </div>
       <!-- прогресс -->
       <div class="flex items-center ml-4">
-        <q-btn
-          v-if="!isRecording && !audioUrl"
-          :color="footerColor"
-          @click="startRecord"
-          label="Проверить микрофон"
-          no-caps
-          class="w-32"
-        />
-        <q-btn
-          v-else-if="isRecording"
-          :color="footerColor"
-          @click="stopRecord"
-          label="Завершить проверку"
-          no-caps
-          class="w-32"
-        />
-        <q-btn
-          v-else-if="!isRecording && audioUrl && !isListening"
-          :color="footerColor"
-          @click="startPlayAudio"
-          label="Прослушать"
-          no-caps
-          class="w-32 ml-4"
-        />
-        <q-btn
-          v-else-if="!isRecording && audioUrl && isListening"
-          :color="footerColor"
-          @click="stopPlayAudio"
-          label="Остановить"
-          no-caps
-          class="w-32 ml-4"
-        />
+        <q-btn v-if="!isRecording && !audioUrl" :color="footerColor" @click="startRecord" label="Проверить микрофон"
+          no-caps class="w-32" />
+        <q-btn v-else-if="isRecording" :color="footerColor" @click="stopRecord" label="Завершить проверку" no-caps
+          class="w-32" />
+        <q-btn v-else-if="!isRecording && audioUrl && !isListening" :color="footerColor" @click="startPlayAudio"
+          label="Прослушать" no-caps class="w-32 ml-4" />
+        <q-btn v-else-if="!isRecording && audioUrl && isListening" :color="footerColor" @click="stopPlayAudio"
+          label="Остановить" no-caps class="w-32 ml-4" />
       </div>
     </q-toolbar>
   </div>
@@ -125,7 +89,7 @@ export default {
       if (this.mediaRecorder) {
         this.mediaRecorder.stop()
         this.mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' })
+          const audioBlob = new Blob(this.audioChunks)
           this.audioUrl = URL.createObjectURL(audioBlob)
           this.isRecording = false
           this.type = 'prepare'
@@ -135,7 +99,9 @@ export default {
     startPlayAudio() {
       if (this.audioUrl) {
         this.currentAudioPlay = new Audio(this.audioUrl)
-        this.currentAudioPlay.play()
+        this.currentAudioPlay.addEventListener('canplaythrough', () => {
+          this.currentAudioPlay.play();
+        });
         this.isListening = true
       }
     },

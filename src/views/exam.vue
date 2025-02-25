@@ -1,14 +1,36 @@
 <template>
+  <div v-if="!checkedMicrophone" class="container mx-auto p-4">
+    <div v-if="!microphonePermission">
+      <h1 class="text-2xl text-center font-bold mb-4">Проверка микрофона</h1>
+      <q-btn-group spread>
 
-  <div class="container mx-auto p-4">
-    <q-btn v-if="!examStarted" color="red" label="Начать экзамен" no-caps class="flex justify-center full-width"
-      @click="startExam">
-    </q-btn>
+        <q-btn label="Разрешить доступ к микрофону" color="primary" @click="checkMicrophonePermission" />
+      </q-btn-group>
+    </div>
+    <div v-else-if="microphonePermission">
+      <p class="mb-4">
+        Микрофон обнаружен! Сейчас будет производиться проверка микрофона.
+      </p>
+      <p class="mb-4">
+        Нажмите кнопку записи внизу, произнесите несколько слов, остановите
+        запись, затем попробуйте воспроизвести.
+      </p>
+      <p>Если вы уже делали это, можете сразу перейти к выполнению задания.</p>
+      <q-btn-group spread>
+        <q-btn color="red" label="Начать экзамен" no-caps class="flex justify-center full-width" @click="startExam" />
+      </q-btn-group>
+      <MicrophoneFooterTest :timeout="10" type="prepare" @stop="stopRecording" @start="startRecording" />
+    </div>
+    <div v-else>
+      <p>Доступ к микрофону отклонен. Пожалуйста, предоставьте доступ для продолжения.</p>
+      <q-btn label="Попробовать снова" color="secondary" @click="checkMicrophonePermission" />
+    </div>
+  </div>
+  <div class="container mx-auto p-4" v-if="checkedMicrophone">
     <q-inner-loading v-if="examStarted && !examData && !audioGuidance" :showing="!examData"
       label="Идет загрузка заданий..." />
     <div v-else>
       <div v-if="currentTaskComponent">
-        <!-- Отображение текущего задания -->
         <component v-show="!createdAnswerData" :is="currentTaskComponent" :task="currentTask" @next-task="nextTask" />
       </div>
     </div>
@@ -70,6 +92,8 @@ import Task2Content from '../components/tasks/Task2Content.vue'
 import Task3Content from '../components/tasks/Task3Content.vue'
 import Task4Content from '../components/tasks/Task4Content.vue'
 import { useExamStore } from '../stores/exam.store'
+import MicrophoneFooterTest from '../components/microphone/microphone-footer-test.vue'
+
 export default {
   components: {
     Task1,
@@ -80,6 +104,7 @@ export default {
     Task2Content,
     Task3Content,
     Task4Content,
+    MicrophoneFooterTest
   },
   data() {
     return {
@@ -90,7 +115,13 @@ export default {
       savingTask: null,
       createdAnswerData: null,
       examStarted: false,
-      completedTasks: []
+      completedTasks: [],
+      microphonePermission: false,
+      checkedMicrophone: false,
+      mediaRecorder: null,
+      audioChunks: [],
+      audioBlob: null,
+      audioUrl: null
     }
   },
   computed: {
@@ -125,6 +156,7 @@ export default {
   },
   methods: {
     startExam() {
+      this.checkedMicrophone = true
       this.examStarted = true
       this.examStore.taskAnswers = []
 
@@ -191,6 +223,43 @@ export default {
         case 3: return 'Task3Content'
         case 4: return 'Task4Content'
         default: return null
+      }
+    },
+    async checkMicrophonePermission() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        this.microphonePermission = true
+        stream.getTracks().forEach(track => track.stop())
+      } catch (e) {
+        this.$q.notify({
+          message: 'Доступ к микрофону отклонен',
+          color: 'negative'
+        })
+      }
+    },
+    startRecording() {
+      this.audioChunks = []
+      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+        this.mediaRecorder = new MediaRecorder(stream)
+        this.mediaRecorder.ondataavailable = (event) => {
+          this.audioChunks.push(event.data)
+        }
+        this.mediaRecorder.start()
+      })
+    },
+    stopRecording() {
+      if (this.mediaRecorder) {
+        this.mediaRecorder.stop()
+        this.mediaRecorder.onstop = () => {
+          this.audioBlob = new Blob(this.audioChunks, { type: 'audio/mpeg' })
+          this.audioUrl = URL.createObjectURL(this.audioBlob)
+        }
+      }
+    },
+    playRecording() {
+      if (this.audioUrl) {
+        const audio = new Audio(this.audioUrl)
+        audio.play()
       }
     },
   },

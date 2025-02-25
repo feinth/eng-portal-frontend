@@ -37,14 +37,14 @@ export const router = createRouter({
         layout: PortalLayout
       }
     },
-    {
-      path: '/microphone-test',
-      name: 'microphone-test',
-      component: () => import('../views/microphone-test.vue'),
-      meta: {
-        layout: TrainerLayout
-      }
-    },
+    // {
+    //   path: '/microphone-test',
+    //   name: 'microphone-test',
+    //   component: () => import('../views/microphone-test.vue'),
+    //   meta: {
+    //     layout: TrainerLayout
+    //   }
+    // },
     {
       path: '/exam',
       name: 'exam',
