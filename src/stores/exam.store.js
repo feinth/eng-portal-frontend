@@ -16,8 +16,11 @@ export const useExamStore = defineStore({
     async playIntroAudio() {
       if (!this.isIntroAudioPlayed && this.audioGuidance?.start_exam_audio) {
         const audio = new Audio(this.audioGuidance.start_exam_audio)
+   
         await new Promise((resolve) => {
-          audio.play()
+          audio.addEventListener('canplaythrough', () => {
+            audio.play();
+          });
           audio.onended = () => {
             this.isIntroAudioPlayed = true
             resolve()

@@ -21,7 +21,7 @@ export default {
     fetchTaskDetails(id) {
       const examStore = useExamStore()
       examStore.getTasksById(id).then(
-        router.push('/microphone-test')
+        router.push('/exam')
       )
     }
   }
