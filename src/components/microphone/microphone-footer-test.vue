@@ -127,7 +127,6 @@ export default {
         this.mediaRecorder.onstop = () => {
           const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' })
           this.audioUrl = URL.createObjectURL(audioBlob)
-          console.log(this.audioUrl)
           this.isRecording = false
           this.type = 'prepare'
         }
