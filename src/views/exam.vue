@@ -40,7 +40,7 @@
 
           <!-- Аудио-плеер -->
           <div class="audio-section">
-            <p class="text-subtitle2 q-mb-sm">Прослушайте вашу запись:</p>
+            <p class="text-h5 text-center q-mb-sm">Прослушайте вашу запись:</p>
             <audio controls class="q-mx-auto">
               <source :src="createdAnswerData?.full_audio" type="audio/mpeg" />
               Ваш браузер не поддерживает аудио элемент.
@@ -116,7 +116,7 @@ export default {
     },
     urlForDownload() {
       const originalUrl = this.createdAnswerData?.answer_archive;
-      const newBaseUrl = "https://english-portal.ru";
+      const newBaseUrl = "https://english-portal.ru/media";
 
       // Разделяем строку по "/media" и собираем её заново с новым базовым URL
       const updatedUrl = `${newBaseUrl}${originalUrl.split('/media').pop()}`;
@@ -219,5 +219,16 @@ export default {
 
 .audio-section {
   text-align: center;
+  width: 100%;
+  /* Растягиваем на всю ширину */
+  max-width: 100%;
+  /* Ограничиваем максимальную ширину */
+  margin: 0 auto;
+  /* Центрируем, если нужно */
+}
+
+.audio-section audio {
+  width: 100%;
+  /* Растягиваем аудио-плеер на всю ширину */
 }
 </style>
