@@ -97,7 +97,11 @@ export const useAudioStore = defineStore('audio', () => {
 
       audioChunks.value = []
 
-      mediaRecorder.value = new MediaRecorder(stream, options)
+      mediaRecorder.value = new MediaRecorder(stream, {
+        mimeType: MediaRecorder.isTypeSupported('audio/mpeg')
+          ? 'audio/mpeg'
+          : 'audio/webm'
+      })
 
       mediaRecorder.value.ondataavailable = (e) => {
         audioChunks.value.push(e.data)
