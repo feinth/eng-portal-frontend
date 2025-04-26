@@ -1,192 +1,169 @@
 <template>
   <div class="fixed-footer px-4">
     <q-toolbar>
-      <!-- иконка -->
+      <!-- Иконка микрофона -->
       <div class="flex items-center">
         <div class="mr-4 flex items-center">
-          <q-btn color="red" icon="sym_o_mic" label="Recording" no-caps class="w-32" />
+          <q-btn 
+            color="red" 
+            icon="sym_o_mic" 
+            label="Recording" 
+            no-caps 
+            class="w-32" 
+          />
         </div>
       </div>
 
+      <!-- Прогресс-бар -->
       <div class="flex-grow flex items-center justify-center">
-        <q-linear-progress stripe class="q-my-md" size="25px" :value="timeLeft / timeout" :max="100" color="red">
+        <q-linear-progress 
+          stripe 
+          class="q-my-md" 
+          size="25px" 
+          :value="timeLeft / timeout" 
+          :max="100" 
+          color="red"
+        >
           <div class="absolute-full flex flex-center">
             <q-badge color="white" text-color="black" :label="countdown" />
           </div>
         </q-linear-progress>
       </div>
-      <!-- прогресс -->
+
+      <!-- Кнопка "Далее" -->
       <div class="flex items-center ml-4">
-        <q-btn color="red" @click="finish" label="Далее" no-caps class="w-32" :disable="isAudioPlaying" />
+        <q-btn 
+          color="red" 
+          @click="finish" 
+          label="Далее" 
+          no-caps 
+          class="w-32" 
+          :disable="isAudioPlaying"
+        />
       </div>
     </q-toolbar>
   </div>
 </template>
 
 <script>
-import { useExamStore } from '../../stores/exam.store'
+import { useExamStore } from '../../stores/exam.store';
+import { useAudioStore } from '../../stores/audio.store'; // Импортируем Pinia-хранилище
+import { storeToRefs } from 'pinia';
 
 export default {
   props: {
-    timeout: {
-      type: Number,
-      required: true,
-      default: 60
-    },
-    taskId: {
-      type: Number,
-      required: true
-    },
-    assignmentId: {
-      type: Number,
-      required: false,
-      default: null
-    },
-    audioBeforeSource: {
-      type: String,
-      required: false,
-      default: null
-    },
-    betweenQuestionAudio: {
-      type: String,
-      required: false,
-      default: null
-    }
+    timeout: { type: Number, default: 60 },
+    taskId: { type: Number, required: true },
+    assignmentId: { type: Number, default: null },
+    audioBeforeSource: { type: String, default: null },
+    betweenQuestionAudio: { type: String, default: null }
+  },
+  setup() {
+    const audioStore = useAudioStore();
+    const examStore = useExamStore();
+    const { audioUrl, isRecording } = storeToRefs(audioStore);
+
+    return { 
+      audioStore,
+      examStore,
+      audioUrl,
+      isRecording 
+    };
   },
   data() {
     return {
       timeLeft: 0,
       timer: null,
-      mediaRecorder: null,
-      audioChunks: [],
-      audioUrl: null,
-      examStore: useExamStore(),
       currentAudioPlay: null,
-      isRecording: false,
       isAudioPlaying: false
-    }
+    };
   },
   computed: {
     countdown() {
-      const remainingSeconds = this.timeout - this.timeLeft
-      const minutes = Math.floor(remainingSeconds / 60)
-      const seconds = remainingSeconds % 60
-      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+      const remainingSeconds = this.timeout - this.timeLeft;
+      const minutes = Math.floor(remainingSeconds / 60);
+      const seconds = remainingSeconds % 60;
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
   },
   methods: {
-    startRecord() {
-      this.timeLeft = 0
-      this.audioChunks = []
-      this.audioUrl = null
-      this.isRecording = true
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-        this.mediaRecorder = new MediaRecorder(stream)
-        this.mediaRecorder.ondataavailable = (event) => {
-          this.audioChunks.push(event.data)
-        }
-        this.mediaRecorder.start()
-      })
-
-      this.timer = setInterval(() => {
-        this.timeLeft += 1
-        if (this.timeLeft >= this.timeout) {
-          this.finish()
-        }
-      }, 1000)
-    },
-    finish() {
-      this.stopRecord().then(() => {
-        this.completeTask() // Вызываем после завершения сохранения
-      })
-    },
-    stopRecord() {
-      return new Promise((resolve) => {
-        clearInterval(this.timer)
-
-        if (this.mediaRecorder) {
-          this.mediaRecorder.stop()
-          this.mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(this.audioChunks)
-            this.audioUrl = URL.createObjectURL(audioBlob)
-            this.isRecording = false
-
-            // Преобразуем аудио в base64 и сохраняем его
-            this.blobToBase64(audioBlob).then((audioBase64) => {
-              this.examStore.addAudioFile({
-                taskId: this.taskId,
-                assignmentId: this.assignmentId,
-                audioUrl: this.audioUrl,
-                audioBase64: audioBase64
-              })
-
-              resolve() // Разрешаем Promise после сохранения
-            })
+    async startRecord() {
+      try {
+        this.timeLeft = 0;
+        await this.audioStore.startRecording(); // Используем метод из хранилища
+        
+        this.timer = setInterval(() => {
+          this.timeLeft += 1;
+          if (this.timeLeft >= this.timeout) {
+            this.finish();
           }
-          this.audioChunks = []
-        }
-      })
+        }, 1000);
+      } catch (error) {
+        console.error('Ошибка записи:', error);
+        this.$q.notify({ message: 'Не удалось начать запись', color: 'negative' });
+      }
+    },
+
+    async finish() {
+      try {
+        await this.stopRecord();
+        this.completeTask();
+      } catch (error) {
+        console.error('Ошибка завершения:', error);
+      }
+    },
+
+    async stopRecord() {
+      clearInterval(this.timer);
+      const audioBlob = await this.audioStore.stopRecording(); // Получаем Blob из хранилища
+
+      // Конвертируем в base64 и сохраняем
+      const audioBase64 = await this.blobToBase64(audioBlob);
+      this.examStore.addAudioFile({
+        taskId: this.taskId,
+        assignmentId: this.assignmentId,
+        audioUrl: this.audioUrl,
+        audioBase64: audioBase64
+      });
     },
 
     completeTask() {
-      this.$emit('record-completed')
+      this.$emit('record-completed');
     },
-
 
     startPlayAudioBefore() {
       if (this.audioBeforeSource) {
-        if (this.betweenQuestionAudio) {
-          const betweenAudio = new Audio(this.betweenQuestionAudio)
-          this.isAudioPlaying = true
-          betweenAudio.play()
-
-          betweenAudio.onended = () => {
-            const audio = new Audio(this.audioBeforeSource)
-            audio.play()
-
-            // Событие окончания аудиозаписи
-            audio.onended = () => {
-              const betweenAudio = new Audio(this.betweenQuestionAudio)
-              this.isAudioPlaying = true
-              betweenAudio.play()
-              betweenAudio.onended = () => {
-                this.isAudioPlaying = false
-                this.startRecord()
-              }
-            }
-          }
-        } else {
-          const audio = new Audio(this.audioBeforeSource)
-          this.isAudioPlaying = true
-          audio.play()
-
-          // Событие окончания аудиозаписи
+        this.isAudioPlaying = true;
+        const playChain = (audioSrc) => {
+          const audio = new Audio(audioSrc);
+          audio.play();
           audio.onended = () => {
-            this.isAudioPlaying = false
-            this.startRecord()
-          }
-        }
-
+            if (audioSrc === this.betweenQuestionAudio) {
+              this.isAudioPlaying = false;
+              this.startRecord();
+            } else if (this.betweenQuestionAudio) {
+              playChain(this.betweenQuestionAudio);
+            }
+          };
+        };
+        playChain(this.audioBeforeSource);
       } else {
-        // Если аудиофайла нет, сразу запускаем запись
-        this.startRecord()
+        this.startRecord();
       }
     },
-    blobToBase64(blob) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onloadend = () => resolve(reader.result.split(',')[1]) // Извлекаем только base64
-        reader.onerror = reject
-        reader.readAsDataURL(blob) // Преобразуем Blob в DataURL
-      })
-    },
-  },
 
+    blobToBase64(blob) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(blob);
+      });
+    }
+  },
   mounted() {
-    // Убираем автоматический запуск записи на монтировании компонента
-    this.startPlayAudioBefore()
+    this.startPlayAudioBefore();
   }
-}
+};
 </script>
 
 <style scoped>

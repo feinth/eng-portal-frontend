@@ -23,7 +23,8 @@
     </div>
     <div v-else>
       <p>Доступ к микрофону отклонен. Пожалуйста, предоставьте доступ для продолжения.</p>
-      <q-btn label="Попробовать снова" color="secondary" @click="checkMicrophonePermission" />
+      <q-btn v-if="errorMicrophonePermission" label="Попробовать снова" color="secondary"
+        @click="checkMicrophonePermission" />
     </div>
   </div>
   <div class="container mx-auto p-4" v-if="checkedMicrophone">
@@ -93,6 +94,7 @@ import Task3Content from '../components/tasks/Task3Content.vue'
 import Task4Content from '../components/tasks/Task4Content.vue'
 import { useExamStore } from '../stores/exam.store'
 import MicrophoneFooterTest from '../components/microphone/microphone-footer-test.vue'
+import { useAudioStore } from '../stores/audio.store';
 
 export default {
   components: {
@@ -112,16 +114,16 @@ export default {
       examData: null,
       audioGuidance: null,
       examStore: useExamStore(),
+      audioStore: useAudioStore(),
       savingTask: null,
       createdAnswerData: null,
+      errorMicrophonePermission: false,
       examStarted: false,
       completedTasks: [],
       microphonePermission: false,
       checkedMicrophone: false,
-      mediaRecorder: null,
       audioChunks: [],
-      audioBlob: null,
-      audioUrl: null
+      audioBlob: null
     }
   },
   computed: {
@@ -152,6 +154,12 @@ export default {
       // Разделяем строку по "/media" и собираем её заново с новым базовым URL
       const updatedUrl = `${newBaseUrl}${originalUrl.split('/media').pop()}`;
       return updatedUrl;
+    },
+    isRecording() {
+      return this.audioStore.isRecording;
+    },
+    audioUrl() {
+      return this.audioStore.audioUrl;
     }
   },
   methods: {
@@ -227,33 +235,63 @@ export default {
     },
     async checkMicrophonePermission() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-        this.microphonePermission = true
-        stream.getTracks().forEach(track => track.stop())
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.microphonePermission = true;
+        stream.getTracks().forEach(track => track.stop());
+
+        // 2. Проигрываем тестовый звук (разово, по клику)
+        const testAudio = new Audio('/ring.mp3'); // путь к файлу
+        testAudio.play().catch(e => {
+          console.error("Автовоспроизведение заблокировано:", e);
+        });
+
+        // Инициализируем аудио хранилище
+        await this.audioStore.initRecorder();
       } catch (e) {
         this.$q.notify({
           message: 'Доступ к микрофону отклонен',
           color: 'negative'
-        })
+        });
       }
     },
-    startRecording() {
-      this.audioChunks = []
-      this.mediaRecorder = new MediaRecorder(stream)
-      this.mediaRecorder.ondataavailable = (event) => {
-        this.audioChunks.push(event.data)
+    async startRecording() {
+      try {
+        await this.audioStore.startRecording();
+      } catch (err) {
+        this.$q.notify({
+          message: 'Ошибка начала записи: ' + err.message,
+          color: 'negative'
+        });
       }
-      this.mediaRecorder.start()
     },
-    stopRecording() {
-      if (this.mediaRecorder) {
-        this.mediaRecorder.stop()
-        this.mediaRecorder.onstop = () => {
-          this.audioBlob = new Blob(this.audioChunks, { type: 'audio/mpeg' })
-          this.audioUrl = URL.createObjectURL(this.audioBlob)
+    async stopRecording() {
+      try {
+        await this.audioStore.stopRecording();
+
+        // Если нужно сохранить аудио в examStore
+        if (this.audioStore.audioBlob) {
+          const audioBase64 = await this.blobToBase64(this.audioStore.audioBlob);
+          this.examStore.addAudioFile({
+            taskId: this.taskId,
+            assignmentId: this.assignmentId,
+            audioUrl: this.audioStore.audioUrl,
+            audioBase64: audioBase64
+          });
         }
+      } catch (err) {
+        this.$q.notify({
+          message: 'Ошибка остановки записи: ' + err.message,
+          color: 'negative'
+        });
       }
     },
+    blobToBase64(blob) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(blob);
+      });
+    }
   },
 }
 </script>
