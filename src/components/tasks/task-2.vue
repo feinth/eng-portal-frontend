@@ -29,7 +29,7 @@
           <div class="col-12 col-md-6 text-gray-800 my-card image-container">
             <q-item>
               <q-item-section>
-                <MarkdownView class="text-h5" :content="task.images[0].header" />
+                <MarkdownView class="text-h5" :content="task?.images[0]?.header" />
                 <q-img :src="task.images[0].image" class="image-max-size" />
               </q-item-section>
             </q-item>
