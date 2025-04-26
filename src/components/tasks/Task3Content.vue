@@ -1,7 +1,7 @@
 <template>
   <div class="bg-gray-100 p-4 rounded-lg shadow-md">
     <p class="text-h4 font-bold text-gray-800 mt-4">
-      {{ `Task ${task.type}.` }}
+      {{ `Task ${task.number}.` }}
     </p>
     <p class="text-h5 font-bold text-gray-800 mt-4">
       {{ task.header }}

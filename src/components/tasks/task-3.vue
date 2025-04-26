@@ -4,7 +4,7 @@
       @countdown-finished="startPrepare" />
     <div class="bg-gray-100 p-4 rounded-lg shadow-md" v-if="prepareStarted">
       <p class="text-h4 font-bold text-gray-800 mt-4">
-        {{ `Task ${task.type}.` }}
+        {{ `Task ${task.number}.` }}
       </p>
       <p class="text-h5 font-bold text-gray-800 mt-4">
         {{ task.header }}
@@ -13,7 +13,7 @@
     </div>
     <div class="bg-gray-100 p-4 rounded-lg shadow-md" v-if="interviewStarted">
       <p class="text-h4 font-bold text-gray-800 mt-4">
-        {{ `Task ${task.type}.` }}
+        {{ `Task ${task.number}.` }}
       </p>
       <p class="text-h4 font-bold text-gray-800 mt-4">
         {{ `Interviewer` }}
@@ -24,14 +24,14 @@
     <div v-else-if="questionStarted">
       <div class="bg-gray-100 p-4 rounded-lg shadow-md">
         <p class="text-h4 font-bold text-gray-800 mt-4">
-          {{ `Task ${task.type}.` }}
+          {{ `Task ${task.number}.` }}
         </p>
         <p class="text-h4 font-bold text-gray-800 mt-4">
           {{ `Interviewer: question ${currentQuestionIndex + 1}` }}
         </p>
         <MicrophoneFooterRecord :key="currentQuestionIndex" :timeout="task.execution_seconds" :taskId="task.id"
-          :assignmentId="currentQuestion.id" :audioBeforeSource="currentQuestion.audio"
-          @record-completed="stopRecord" />
+          :assignmentId="currentQuestion.id" :audioBeforeSource="currentQuestion.audio" :betweenQuestionAudio="examStore?.audioGuidance?.between_question_audio"
+          @record-completed="handleRecordCompleted" />
       </div>
     </div>
   </div>
@@ -89,7 +89,6 @@ export default {
       if (this.task.audio) {
         const audio = new Audio(this.task.audio)
         audio.play()
-        this.isAudioPlaying = true
         // Запускаем таймер после завершения воспроизведения аудио
         audio.onended = () => {
           this.startTimerAnswer()
@@ -106,10 +105,13 @@ export default {
       this.questionStarted = true
       this.showTimerAnswer = false
     },
-    stopRecord() {
+
+    async handleRecordCompleted() {
+      
       if (this.currentQuestionIndex < this.task.questions.length - 1) {
         this.currentQuestionIndex++
       } else {
+        // Завершение интервью
         if (this.task.audio_after_execution) {
           const audio = new Audio(this.examStore.audioGuidance.end_interview_audio)
           audio.play()

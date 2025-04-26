@@ -18,34 +18,32 @@
       </div>
       <!-- прогресс -->
       <div class="flex items-center ml-4">
-        <q-btn v-if="!isRecording && !audioUrl" :color="footerColor" @click="startRecord" label="Проверить микрофон"
-          no-caps class="w-32" />
-        <q-btn v-else-if="isRecording" :color="footerColor" @click="stopRecord" label="Завершить проверку" no-caps
-          class="w-32" />
-        <q-btn v-else-if="!isRecording && audioUrl && !isListening" :color="footerColor" @click="startPlayAudio"
-          label="Прослушать" no-caps class="w-32 ml-4" />
-        <q-btn v-else-if="!isRecording && audioUrl && isListening" :color="footerColor" @click="stopPlayAudio"
-          label="Остановить" no-caps class="w-32 ml-4" />
+        <q-btn v-if="!audioStore.isRecording && !audioStore.audioUrl" :color="footerColor" @click="startRecord" 
+          label="Проверить микрофон" no-caps class="w-32" />
+        <q-btn v-else-if="audioStore.isRecording" :color="footerColor" @click="stopRecord" 
+          label="Завершить проверку" no-caps class="w-32" />
+        <q-btn v-else-if="!audioStore.isRecording && audioStore.audioUrl && !isListening" 
+          :color="footerColor" @click="startPlayAudio" label="Прослушать" no-caps class="w-32 ml-4" />
+        <q-btn v-else-if="!audioStore.isRecording && audioStore.audioUrl && isListening" 
+          :color="footerColor" @click="stopPlayAudio" label="Остановить" no-caps class="w-32 ml-4" />
       </div>
     </q-toolbar>
   </div>
 </template>
 
 <script>
+import { useAudioStore } from '../../stores/audio.store';
 
 export default {
   data() {
     return {
       timeLeft: 0,
       timer: null,
-      mediaRecorder: null,
-      audioChunks: [],
-      audioUrl: null,
       currentAudioPlay: null,
-      isRecording: false,
-      timeout: 20,
       isListening: false,
-      type: 'prepare'
+      timeout: 20,
+      type: 'prepare',
+      audioStore: useAudioStore()
     }
   },
   computed: {
@@ -63,53 +61,60 @@ export default {
     }
   },
   methods: {
-    startRecord() {
+    async startRecord() {
       this.timeLeft = 0
-      this.audioChunks = []
-      this.audioUrl = null
-      this.isRecording = true
       this.type = 'record'
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-        this.mediaRecorder = new MediaRecorder(stream)
-        this.mediaRecorder.ondataavailable = (event) => {
-          this.audioChunks.push(event.data)
-        }
-        this.mediaRecorder.start()
-      })
-
-      this.timer = setInterval(() => {
-        this.timeLeft += 1
-        if (this.timeLeft >= this.timeout) {
-          this.stopRecord()
-        }
-      }, 1000)
-    },
-    stopRecord() {
-      clearInterval(this.timer)
-      if (this.mediaRecorder) {
-        this.mediaRecorder.stop()
-        this.mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(this.audioChunks)
-          this.audioUrl = URL.createObjectURL(audioBlob)
-          this.isRecording = false
-          this.type = 'prepare'
-        }
+      
+      try {
+        await this.audioStore.startRecording();
+        this.isRecording = true;
+        
+        this.timer = setInterval(() => {
+          this.timeLeft += 1
+          if (this.timeLeft >= this.timeout) {
+            this.stopRecord()
+          }
+        }, 1000);
+      } catch (error) {
+        console.error('Ошибка записи:', error);
       }
     },
+    
+    async stopRecord() {
+      clearInterval(this.timer);
+      try {
+        await this.audioStore.stopRecording();
+        this.type = 'prepare';
+      } catch (error) {
+        console.error('Ошибка остановки записи:', error);
+      }
+    },
+    
     startPlayAudio() {
-      if (this.audioUrl) {
-        this.currentAudioPlay = new Audio(this.audioUrl)
+      if (this.audioStore.audioUrl) {
+        this.currentAudioPlay = new Audio(this.audioStore.audioUrl);
         this.currentAudioPlay.addEventListener('canplaythrough', () => {
           this.currentAudioPlay.play();
         });
-        this.isListening = true
+        this.isListening = true;
+        
+        this.currentAudioPlay.addEventListener('ended', () => {
+          this.isListening = false;
+        });
       }
     },
+    
     stopPlayAudio() {
       if (this.currentAudioPlay) {
-        this.currentAudioPlay.pause()
-        this.isListening = false
+        this.currentAudioPlay.pause();
+        this.isListening = false;
       }
+    }
+  },
+  beforeUnmount() {
+    if (this.timer) clearInterval(this.timer);
+    if (this.currentAudioPlay) {
+      this.currentAudioPlay.pause();
     }
   }
 }
