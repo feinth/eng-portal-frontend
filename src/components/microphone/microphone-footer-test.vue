@@ -80,7 +80,6 @@ export default {
           message: 'Ошибка начала записи: ' + error.message,
           color: 'negative'
         });
-        console.error('Ошибка записи:', error);
       }
     },
     
@@ -96,15 +95,13 @@ export default {
     
     startPlayAudio() {
       if (this.audioStore.audioUrl) {
-        this.currentAudioPlay = new Audio(this.audioStore.audioUrl);
-        this.currentAudioPlay.addEventListener('canplaythrough', () => {
-          this.currentAudioPlay.play();
-        });
-        this.isListening = true;
+        const currentAudioPlay = new Audio(this.audioStore.audioUrl);
         
-        this.currentAudioPlay.addEventListener('ended', () => {
+        this.isListening = true;
+        currentAudioPlay.play();
+        currentAudioPlay.onended = () => {
           this.isListening = false;
-        });
+        }
       }
     },
     
