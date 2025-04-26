@@ -239,7 +239,7 @@ export default {
         await this.audioStore.initRecorder();
         this.microphonePermission = true;
         // 2. Проигрываем тестовый звук (разово, по клику)
-        const testAudio = new Audio('/ring.mp3'); // путь к файлу
+        const testAudio = new Audio('/ring.mp3'); 
         testAudio.play().catch(e => {
           console.error("Автовоспроизведение заблокировано:", e);
         });

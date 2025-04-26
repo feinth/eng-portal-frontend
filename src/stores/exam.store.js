@@ -9,25 +9,9 @@ export const useExamStore = defineStore({
     currentExam: JSON.parse(localStorage.getItem('currentExam')),
     answerParams: null,
     audioGuidance: null,
-    isIntroAudioPlayed: false,
     typeExam: null
   }),
   actions: {
-    async playIntroAudio() {
-      if (!this.isIntroAudioPlayed && this.audioGuidance?.start_exam_audio) {
-        const audio = new Audio(this.audioGuidance.start_exam_audio)
-   
-        await new Promise((resolve) => {
-          audio.addEventListener('canplaythrough', () => {
-            audio.play();
-          });
-          audio.onended = () => {
-            this.isIntroAudioPlayed = true
-            resolve()
-          }
-        })
-      }
-    },
     addAudioFile(taskAnswer) {
       this.taskAnswers.push(taskAnswer)
     },
