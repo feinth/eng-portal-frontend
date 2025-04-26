@@ -15,7 +15,7 @@
         <div class="row q-col-gutter-lg">
           <div class="text-h5 col-6">
             <p class="text-h4 font-bold text-gray-800 mt-4">
-              {{ `Task ${task.type}.` }}
+              {{ `Task ${task.number}.` }}
             </p>
             <p class="text-h5 text-gray-800 mt-4">
               {{ 'Study the advertisement.' }}

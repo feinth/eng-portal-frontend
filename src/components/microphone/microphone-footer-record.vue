@@ -46,6 +46,11 @@ export default {
       type: String,
       required: false,
       default: null
+    },
+    betweenQuestionAudio: {
+      type: String,
+      required: false,
+      default: null
     }
   },
   data() {
@@ -130,15 +135,38 @@ export default {
 
     startPlayAudioBefore() {
       if (this.audioBeforeSource) {
-        const audio = new Audio(this.audioBeforeSource)
-        this.isAudioPlaying = true
-        audio.play()
+        if (this.betweenQuestionAudio) {
+          const betweenAudio = new Audio(this.betweenQuestionAudio)
+          this.isAudioPlaying = true
+          betweenAudio.play()
 
-        // Событие окончания аудиозаписи
-        audio.onended = () => {
-          this.isAudioPlaying = false
-          this.startRecord()
+          betweenAudio.onended = () => {
+            const audio = new Audio(this.audioBeforeSource)
+            audio.play()
+
+            // Событие окончания аудиозаписи
+            audio.onended = () => {
+              const betweenAudio = new Audio(this.betweenQuestionAudio)
+              this.isAudioPlaying = true
+              betweenAudio.play()
+              betweenAudio.onended = () => {
+                this.isAudioPlaying = false
+                this.startRecord()
+              }
+            }
+          }
+        } else {
+          const audio = new Audio(this.audioBeforeSource)
+          this.isAudioPlaying = true
+          audio.play()
+
+          // Событие окончания аудиозаписи
+          audio.onended = () => {
+            this.isAudioPlaying = false
+            this.startRecord()
+          }
         }
+
       } else {
         // Если аудиофайла нет, сразу запускаем запись
         this.startRecord()

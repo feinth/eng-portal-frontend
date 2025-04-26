@@ -239,13 +239,11 @@ export default {
     },
     startRecording() {
       this.audioChunks = []
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-        this.mediaRecorder = new MediaRecorder(stream)
-        this.mediaRecorder.ondataavailable = (event) => {
-          this.audioChunks.push(event.data)
-        }
-        this.mediaRecorder.start()
-      })
+      this.mediaRecorder = new MediaRecorder(stream)
+      this.mediaRecorder.ondataavailable = (event) => {
+        this.audioChunks.push(event.data)
+      }
+      this.mediaRecorder.start()
     },
     stopRecording() {
       if (this.mediaRecorder) {
@@ -254,12 +252,6 @@ export default {
           this.audioBlob = new Blob(this.audioChunks, { type: 'audio/mpeg' })
           this.audioUrl = URL.createObjectURL(this.audioBlob)
         }
-      }
-    },
-    playRecording() {
-      if (this.audioUrl) {
-        const audio = new Audio(this.audioUrl)
-        audio.play()
       }
     },
   },
