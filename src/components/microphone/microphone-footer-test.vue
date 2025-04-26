@@ -76,6 +76,10 @@ export default {
           }
         }, 1000);
       } catch (error) {
+        this.$q.notify({
+          message: 'Ошибка начала записи: ' + error.message,
+          color: 'negative'
+        });
         console.error('Ошибка записи:', error);
       }
     },
