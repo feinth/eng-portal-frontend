@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { useExamStore } from '../../stores/exam.store'
+import { useAudioStore } from '../../stores/audio.store'
 export default {
   props: {
     duration: {
@@ -28,7 +28,8 @@ export default {
   data() {
     return {
       timeLeft: this.duration,
-      audio: null
+      audio: null,
+      audioStore: useAudioStore()
     }
   },
   methods: {
@@ -38,8 +39,7 @@ export default {
         if (this.timeLeft <= 0) {
           clearInterval(countdown)
 
-          const examStore = useExamStore()
-          await examStore.playIntroAudio() 
+          await this.audioStore.playIntroAudio() 
 
           if (this.audioSrc) {
             this.$emit('countdown-finished')
