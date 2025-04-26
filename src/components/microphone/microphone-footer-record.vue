@@ -4,26 +4,13 @@
       <!-- Иконка микрофона -->
       <div class="flex items-center">
         <div class="mr-4 flex items-center">
-          <q-btn 
-            color="red" 
-            icon="sym_o_mic" 
-            label="Recording" 
-            no-caps 
-            class="w-32" 
-          />
+          <q-btn color="red" icon="sym_o_mic" label="Recording" no-caps class="w-32" />
         </div>
       </div>
 
       <!-- Прогресс-бар -->
       <div class="flex-grow flex items-center justify-center">
-        <q-linear-progress 
-          stripe 
-          class="q-my-md" 
-          size="25px" 
-          :value="timeLeft / timeout" 
-          :max="100" 
-          color="red"
-        >
+        <q-linear-progress stripe class="q-my-md" size="25px" :value="timeLeft / timeout" :max="100" color="red">
           <div class="absolute-full flex flex-center">
             <q-badge color="white" text-color="black" :label="countdown" />
           </div>
@@ -32,14 +19,7 @@
 
       <!-- Кнопка "Далее" -->
       <div class="flex items-center ml-4">
-        <q-btn 
-          color="red" 
-          @click="finish" 
-          label="Далее" 
-          no-caps 
-          class="w-32" 
-          :disable="isAudioPlaying"
-        />
+        <q-btn color="red" @click="finish" label="Далее" no-caps class="w-32" :disable="isAudioPlaying" />
       </div>
     </q-toolbar>
   </div>
@@ -63,11 +43,11 @@ export default {
     const examStore = useExamStore();
     const { audioUrl, isRecording } = storeToRefs(audioStore);
 
-    return { 
+    return {
       audioStore,
       examStore,
       audioUrl,
-      isRecording 
+      isRecording
     };
   },
   data() {
@@ -91,7 +71,7 @@ export default {
       try {
         this.timeLeft = 0;
         await this.audioStore.startRecording(); // Используем метод из хранилища
-        
+
         this.timer = setInterval(() => {
           this.timeLeft += 1;
           if (this.timeLeft >= this.timeout) {
@@ -134,19 +114,29 @@ export default {
     startPlayAudioBefore() {
       if (this.audioBeforeSource) {
         this.isAudioPlaying = true;
-        const playChain = (audioSrc) => {
-          const audio = new Audio(audioSrc);
+        if (this.betweenQuestionAudio) {
+          const betweenQuestionAudio = new Audio(this.betweenQuestionAudio);
+          betweenQuestionAudio.play();
+          betweenQuestionAudio.onended = () => {
+            const audio = new Audio(this.audioBeforeSource);
+            audio.play();
+            audio.onended = () => {
+              const betweenQuestionAudio = new Audio(this.betweenQuestionAudio);
+              betweenQuestionAudio.play();
+              betweenQuestionAudio.onended = () => {
+                this.isAudioPlaying = false;
+                this.startRecord();
+              }
+            }
+          }
+        } else {
+          const audio = new Audio(this.audioBeforeSource);
           audio.play();
           audio.onended = () => {
-            if (audioSrc === this.betweenQuestionAudio) {
-              this.isAudioPlaying = false;
-              this.startRecord();
-            } else if (this.betweenQuestionAudio) {
-              playChain(this.betweenQuestionAudio);
-            }
-          };
+            this.isAudioPlaying = false;
+            this.startRecord();
+          }
         };
-        playChain(this.audioBeforeSource);
       } else {
         this.startRecord();
       }

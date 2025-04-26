@@ -235,18 +235,16 @@ export default {
     },
     async checkMicrophonePermission() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Инициализируем аудио хранилище
+        await this.audioStore.initRecorder();
         this.microphonePermission = true;
-        stream.getTracks().forEach(track => track.stop());
-
         // 2. Проигрываем тестовый звук (разово, по клику)
         const testAudio = new Audio('/ring.mp3'); // путь к файлу
         testAudio.play().catch(e => {
           console.error("Автовоспроизведение заблокировано:", e);
         });
 
-        // Инициализируем аудио хранилище
-        await this.audioStore.initRecorder();
+
       } catch (e) {
         this.$q.notify({
           message: 'Доступ к микрофону отклонен',
