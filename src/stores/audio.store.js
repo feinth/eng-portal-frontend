@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useExamStore } from './exam.store'
-import { Notify } from 'quasar';
+import { Notify } from 'quasar'
 export const useAudioStore = defineStore('audio', () => {
   const mediaRecorder = ref(null)
   const audioChunks = ref([])
@@ -15,13 +15,21 @@ export const useAudioStore = defineStore('audio', () => {
     try {
       // Только проверяем поддержку API, без запроса прав
       if (!navigator.mediaDevices?.getUserMedia) {
+        Notify.create({
+          message: 'Audio recording is not supported in this browser.',
+          color: 'negative'
+        })
         throw new Error('Audio recording is not supported in this browser.')
       }
 
       const stream = await navigator.mediaDevices
         .getUserMedia({ audio: true })
         .catch((err) => {
-          console.log('Microphone access check failed (expected on iOS).', err)
+          Notify.create({
+            message:
+              'Microphone access check failed (expected on iOS).' + err.message,
+            color: 'negative'
+          })
           return null
         })
 
@@ -32,6 +40,10 @@ export const useAudioStore = defineStore('audio', () => {
 
       return true
     } catch (err) {
+      Notify.create({
+        message: 'Microphone check failed: ' + err.message,
+        color: 'negative'
+      })
       error.value = 'Microphone check failed: ' + err.message
       throw err
     }
@@ -48,7 +60,10 @@ export const useAudioStore = defineStore('audio', () => {
         // Обработка ошибок воспроизведения (особенно важно для iOS)
         audio.play().catch((err) => {
           error.value = 'Playback failed: ' + err.message
-          console.error('Audio playback error:', err)
+          Notify.create({
+            message: 'Playback failed: ' + err.message,
+            color: 'negative'
+          })
         })
 
         audio.onended = () => {
@@ -79,7 +94,7 @@ export const useAudioStore = defineStore('audio', () => {
     Notify.create({
       message: 'No supported audio format found',
       color: 'negative'
-    });
+    })
     return null
   }
   const startRecording = async () => {
@@ -92,16 +107,12 @@ export const useAudioStore = defineStore('audio', () => {
         Notify.create({
           message: 'Ваш браузер не поддерживает запись аудио',
           color: 'negative'
-        });
+        })
       }
 
       audioChunks.value = []
 
-      mediaRecorder.value = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/mpeg')
-          ? 'audio/mpeg'
-          : 'audio/webm'
-      })
+      mediaRecorder.value = new MediaRecorder(stream, options)
 
       mediaRecorder.value.ondataavailable = (e) => {
         audioChunks.value.push(e.data)
@@ -113,7 +124,7 @@ export const useAudioStore = defineStore('audio', () => {
       Notify.create({
         message: err.message,
         color: 'negative'
-      });
+      })
       error.value = err.message
       throw err
     }
