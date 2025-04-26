@@ -55,18 +55,40 @@ export const useAudioStore = defineStore('audio', () => {
       }
     });
   }
-
+  const getSupportedAudioOptions = () => {
+    const audioTypes = [
+      'audio/webm;codecs=opus',  // Chrome/Firefox/Edge
+      'audio/mp4;codecs=mp4a',   // Safari/iOS
+      'audio/aac',               // Safari/iOS fallback
+      'audio/mpeg',              // MP3 fallback
+      'audio/ogg;codecs=opus'    // Legacy Firefox
+    ];
+  
+    for (const type of audioTypes) {
+      if (MediaRecorder.isTypeSupported(type)) {
+        return { 
+          mimeType: type
+        };
+      }
+    }
+  
+    console.error("No supported audio format found");
+    return null;
+  }
   const startRecording = async () => {
     try {
+      
       error.value = null
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const options = getSupportedAudioOptions();
+
+      if (!options) {
+        throw new Error("Ваш браузер не поддерживает запись аудио");
+      }
+
       audioChunks.value = []
 
-      mediaRecorder.value = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/mpeg')
-          ? 'audio/mpeg'
-          : 'audio/webm'
-      })
+      mediaRecorder.value = new MediaRecorder(stream, options)
 
       mediaRecorder.value.ondataavailable = (e) => {
         audioChunks.value.push(e.data)
