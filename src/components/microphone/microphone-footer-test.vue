@@ -89,7 +89,6 @@ export default {
         await this.audioStore.stopRecording();
         this.type = 'prepare';
       } catch (error) {
-        console.error('Ошибка остановки записи:', error);
       }
     },
     

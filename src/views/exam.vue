@@ -3,8 +3,11 @@
     <div v-if="!microphonePermission">
       <h1 class="text-2xl text-center font-bold mb-4">Проверка микрофона</h1>
       <q-btn-group spread>
-
-        <q-btn label="Разрешить доступ к микрофону" color="primary" @click="checkMicrophonePermission" />
+        <q-btn
+          label="Разрешить доступ к микрофону"
+          color="primary"
+          @click="checkMicrophonePermission"
+        />
       </q-btn-group>
     </div>
     <div v-else-if="microphonePermission">
@@ -17,38 +20,57 @@
       </p>
       <p>Если вы уже делали это, можете сразу перейти к выполнению задания.</p>
       <q-btn-group spread>
-        <q-btn color="red" label="Начать экзамен" no-caps class="flex justify-center full-width" @click="startExam" />
+        <q-btn
+          color="red"
+          label="Начать экзамен"
+          no-caps
+          class="flex justify-center full-width"
+          @click="startExam"
+        />
       </q-btn-group>
-      <MicrophoneFooterTest :timeout="10" type="prepare" @stop="stopRecording" @start="startRecording" />
-    </div>
-    <div v-else>
-      <p>Доступ к микрофону отклонен. Пожалуйста, предоставьте доступ для продолжения.</p>
-      <q-btn v-if="errorMicrophonePermission" label="Попробовать снова" color="secondary"
-        @click="checkMicrophonePermission" />
+      <MicrophoneFooterTest
+        :timeout="10"
+        type="prepare"
+        @stop="stopRecording"
+        @start="startRecording"
+      />
     </div>
   </div>
   <div class="container mx-auto p-4" v-if="checkedMicrophone">
-    <q-inner-loading v-if="examStarted && !examData && !audioGuidance" :showing="!examData"
-      label="Идет загрузка заданий..." />
+    <q-inner-loading
+      v-if="examStarted && !examData && !audioGuidance"
+      :showing="!examData"
+      label="Идет загрузка заданий..."
+    />
     <div v-else>
       <div v-if="currentTaskComponent">
-        <component v-show="!createdAnswerData" :is="currentTaskComponent" :task="currentTask" @next-task="nextTask" />
+        <component
+          v-show="!createdAnswerData"
+          :is="currentTaskComponent"
+          :task="currentTask"
+          @next-task="nextTask"
+        />
       </div>
     </div>
   </div>
 
-  <q-inner-loading v-if="createdAnswerData && !createdArchiveUrl" :showing="!createdArchiveUrl"
-    label="Сохранение задания, пожалуйста, подождите..." />
+  <q-inner-loading
+    v-if="createdAnswerData && !createdArchiveUrl"
+    :showing="!createdArchiveUrl"
+    label="Сохранение задания, пожалуйста, подождите..."
+  />
   <div v-if="createdArchiveUrl">
     <q-card>
       <q-card-section class="bg-gray-100 text-center">
         <div class="text-h6">
           Поздравляем! Ваш тест закончен.
           <br />
-          Сохранить результаты можно, нажав на кнопку ниже.
-          Запись доступна по данной ссылке ограниченное время (от нескольких часов до нескольких дней).
+          Сохранить результаты можно, нажав на кнопку ниже. Запись доступна по
+          данной ссылке ограниченное время (от нескольких часов до нескольких
+          дней).
           <br />
-          Если Вы планируете использовать запись позже, то Вы можете её скачать по ссылке.
+          Если Вы планируете использовать запись позже, то Вы можете её скачать
+          по ссылке.
           <br />
           <a :href="urlForDownload" target="_blank" class="highlighted-link">
             {{ urlForDownload }}
@@ -58,8 +80,14 @@
         <!-- Блок с кнопкой и аудио -->
         <div class="centered-actions q-mt-md">
           <!-- Кнопка "Скачать результаты" -->
-          <q-btn flat color="primary" @click="loadAnswers()" icon="cloud_upload" label="Скачать результаты"
-            class="full-width q-mb-md" />
+          <q-btn
+            flat
+            color="primary"
+            @click="loadAnswers()"
+            icon="cloud_upload"
+            label="Скачать результаты"
+            class="full-width q-mb-md"
+          />
 
           <!-- Аудио-плеер -->
           <div class="audio-section">
@@ -72,14 +100,14 @@
         </div>
       </q-card-section>
     </q-card>
-    <div v-for="(task, index) in completedTasks" :key="index"
-      class="my-8 bg-gray-100 rounded-lg shadow-md p-6 flex items-center">
+    <div
+      v-for="(task, index) in completedTasks"
+      :key="index"
+      class="my-8 bg-gray-100 rounded-lg shadow-md p-6 flex items-center"
+    >
       <component :is="getTaskContent(task)" :task="task" />
     </div>
   </div>
-
-
-
 </template>
 
 <script>
@@ -94,7 +122,7 @@ import Task3Content from '../components/tasks/Task3Content.vue'
 import Task4Content from '../components/tasks/Task4Content.vue'
 import { useExamStore } from '../stores/exam.store'
 import MicrophoneFooterTest from '../components/microphone/microphone-footer-test.vue'
-import { useAudioStore } from '../stores/audio.store';
+import { useAudioStore } from '../stores/audio.store'
 
 export default {
   components: {
@@ -148,18 +176,18 @@ export default {
       return this.createdAnswerData?.answer_archive
     },
     urlForDownload() {
-      const originalUrl = this.createdAnswerData?.answer_archive;
-      const newBaseUrl = "https://english-portal.ru/media";
+      const originalUrl = this.createdAnswerData?.answer_archive
+      const newBaseUrl = 'https://english-portal.ru/media'
 
       // Разделяем строку по "/media" и собираем её заново с новым базовым URL
-      const updatedUrl = `${newBaseUrl}${originalUrl.split('/media').pop()}`;
-      return updatedUrl;
+      const updatedUrl = `${newBaseUrl}${originalUrl.split('/media').pop()}`
+      return updatedUrl
     },
     isRecording() {
-      return this.audioStore.isRecording;
+      return this.audioStore.isRecording
     },
     audioUrl() {
-      return this.audioStore.audioUrl;
+      return this.audioStore.audioUrl
     }
   },
   methods: {
@@ -174,8 +202,11 @@ export default {
       this.examData = this.examStore.currentExam.sort((a, b) => a.type - b.type)
     },
     playEndAudio() {
-      const audio = new Audio(this.audioGuidance.end_exam_audio)
-      audio.play()
+      if (!this.audioStore.audioContext) {
+        this.audioStore.initAudioContext()
+      }
+
+      this.audioStore.fetchAndPlayAudio(this.audioGuidance?.end_exam_audio)
     },
     nextTask() {
       if (!this.completedTasks.includes(this.currentTask)) {
@@ -226,71 +257,71 @@ export default {
     getTaskContent(task) {
       if (!task) return null
       switch (task.type) {
-        case 1: return 'Task1Content'
-        case 2: return 'Task2Content'
-        case 3: return 'Task3Content'
-        case 4: return 'Task4Content'
-        default: return null
+        case 1:
+          return 'Task1Content'
+        case 2:
+          return 'Task2Content'
+        case 3:
+          return 'Task3Content'
+        case 4:
+          return 'Task4Content'
+        default:
+          return null
       }
     },
     async checkMicrophonePermission() {
       try {
-        // Инициализируем аудио хранилище
-        await this.audioStore.initRecorder();
-        this.microphonePermission = true;
-        // 2. Проигрываем тестовый звук (разово, по клику)
-        const testAudio = new Audio('/ring.mp3'); 
-        testAudio.play().catch(e => {
-          console.error("Автовоспроизведение заблокировано:", e);
-        });
+        this.microphonePermission = await this.audioStore.initRecorder()
 
-
+        if (!this.audioStore.audioContext) {
+          this.audioStore.initAudioContext()
+        }
       } catch (e) {
         this.$q.notify({
           message: 'Доступ к микрофону отклонен',
           color: 'negative'
-        });
+        })
       }
     },
     async startRecording() {
       try {
-        await this.audioStore.startRecording();
+        await this.audioStore.startRecording()
       } catch (err) {
         this.$q.notify({
           message: 'Ошибка начала записи: ' + err.message,
           color: 'negative'
-        });
+        })
       }
     },
     async stopRecording() {
       try {
-        await this.audioStore.stopRecording();
+        await this.audioStore.stopRecording()
 
         // Если нужно сохранить аудио в examStore
         if (this.audioStore.audioBlob) {
-          const audioBase64 = await this.blobToBase64(this.audioStore.audioBlob);
+          const audioBase64 = await this.blobToBase64(this.audioStore.audioBlob)
           this.examStore.addAudioFile({
             taskId: this.taskId,
             assignmentId: this.assignmentId,
             audioUrl: this.audioStore.audioUrl,
             audioBase64: audioBase64
-          });
+          })
         }
       } catch (err) {
         this.$q.notify({
           message: 'Ошибка остановки записи: ' + err.message,
           color: 'negative'
-        });
+        })
       }
     },
     blobToBase64(blob) {
       return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result.split(',')[1]);
-        reader.readAsDataURL(blob);
-      });
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result.split(',')[1])
+        reader.readAsDataURL(blob)
+      })
     }
-  },
+  }
 }
 </script>
 

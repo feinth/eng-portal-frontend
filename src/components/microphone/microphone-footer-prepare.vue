@@ -44,69 +44,78 @@
 </template>
 
 <script>
+import { useAudioStore } from '../../stores/audio.store'
 export default {
   props: {
     timeout: {
       type: Number,
       required: true,
-      default: 60,
+      default: 60
     },
     audioSrc: {
       type: String,
       required: false,
-      default: null,
-    },
+      default: null
+    }
   },
   data() {
     return {
       timeLeft: 0,
       timer: null,
-      isAudioPlaying: false,
-    };
+      isAudioPlaying: false
+    }
   },
   computed: {
     countdown() {
-      const remainingSeconds = this.timeout - this.timeLeft;
-      const minutes = Math.floor(remainingSeconds / 60);
-      const seconds = remainingSeconds % 60;
-      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-    },
+      const remainingSeconds = this.timeout - this.timeLeft
+      const minutes = Math.floor(remainingSeconds / 60)
+      const seconds = remainingSeconds % 60
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+    }
   },
   methods: {
     startPrepare() {
-      this.timeLeft = 0;
+      this.timeLeft = 0
       this.timer = setInterval(() => {
-        this.timeLeft += 1;
+        this.timeLeft += 1
         if (this.timeLeft >= this.timeout) {
-          this.stopPrepare();
+          this.stopPrepare()
         }
-      }, 1000);
+      }, 1000)
     },
     stopPrepare() {
-      clearInterval(this.timer);
-      this.completeTask();
+      clearInterval(this.timer)
+      this.completeTask()
     },
     completeTask() {
-      this.$emit("prepare-completed");
+      this.$emit('prepare-completed')
     },
-    startPlayAudioBefore() {
-      if (this.audioSrc) {
-        const audio = new Audio(this.audioSrc);
-        audio.play();
-        this.isAudioPlaying = true;
-        audio.onended = () => {
-          this.isAudioPlaying = false;
-          this.startPrepare();
-        };
-      } else {
-        this.startPrepare();
+    async startPlayAudioBefore() {
+      if (!this.audioSrc) {
+        this.startPrepare()
+        return
       }
-    },
+
+      const audioStore = useAudioStore()
+
+      try {
+        if (!audioStore.audioContext) {
+          audioStore.initAudioContext()
+        }
+
+        this.isAudioPlaying = true
+        await audioStore.fetchAndPlayAudio(this.audioSrc)
+      } catch (error) {
+      } finally {
+        this.isAudioPlaying = false
+        this.startPrepare()
+      }
+    }
   },
   mounted() {
-    this.startPlayAudioBefore();
-  },
-};
+    this.startPlayAudioBefore()
+  }
+}
 </script>
 
 <style scoped>
@@ -118,5 +127,4 @@ export default {
   background-color: rgb(232, 238, 255);
   border-top: 1px solid #ccc;
 }
-
 </style>
