@@ -26,9 +26,9 @@
 </template>
 
 <script>
-import { useExamStore } from '../../stores/exam.store';
-import { useAudioStore } from '../../stores/audio.store'; // Импортируем Pinia-хранилище
-import { storeToRefs } from 'pinia';
+import { useExamStore } from '../../stores/exam.store'
+import { useAudioStore } from '../../stores/audio.store' // Импортируем Pinia-хранилище
+import { storeToRefs } from 'pinia'
 
 export default {
   props: {
@@ -39,16 +39,16 @@ export default {
     betweenQuestionAudio: { type: String, default: null }
   },
   setup() {
-    const audioStore = useAudioStore();
-    const examStore = useExamStore();
-    const { audioUrl, isRecording } = storeToRefs(audioStore);
+    const audioStore = useAudioStore()
+    const examStore = useExamStore()
+    const { audioUrl, isRecording } = storeToRefs(audioStore)
 
     return {
       audioStore,
       examStore,
       audioUrl,
       isRecording
-    };
+    }
   },
   data() {
     return {
@@ -56,104 +56,113 @@ export default {
       timer: null,
       currentAudioPlay: null,
       isAudioPlaying: false
-    };
+    }
   },
   computed: {
     countdown() {
-      const remainingSeconds = this.timeout - this.timeLeft;
-      const minutes = Math.floor(remainingSeconds / 60);
-      const seconds = remainingSeconds % 60;
-      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      const remainingSeconds = this.timeout - this.timeLeft
+      const minutes = Math.floor(remainingSeconds / 60)
+      const seconds = remainingSeconds % 60
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
     }
   },
   methods: {
     async startRecord() {
       try {
-        this.timeLeft = 0;
-        await this.audioStore.startRecording(); // Используем метод из хранилища
+        this.timeLeft = 0
+        await this.audioStore.startRecording() // Используем метод из хранилища
 
         this.timer = setInterval(() => {
-          this.timeLeft += 1;
+          this.timeLeft += 1
           if (this.timeLeft >= this.timeout) {
-            this.finish();
+            this.finish()
           }
-        }, 1000);
+        }, 1000)
       } catch (error) {
-        console.error('Ошибка записи:', error);
-        this.$q.notify({ message: 'Не удалось начать запись', color: 'negative' });
+        this.$q.notify({
+          message: 'Не удалось начать запись',
+          color: 'negative'
+        })
       }
     },
 
     async finish() {
       try {
-        await this.stopRecord();
-        this.completeTask();
+        await this.stopRecord()
+        this.completeTask()
       } catch (error) {
-        console.error('Ошибка завершения:', error);
       }
     },
 
     async stopRecord() {
-      clearInterval(this.timer);
-      const audioBlob = await this.audioStore.stopRecording(); // Получаем Blob из хранилища
+      clearInterval(this.timer)
+      const audioBlob = await this.audioStore.stopRecording() // Получаем Blob из хранилища
 
       // Конвертируем в base64 и сохраняем
-      const audioBase64 = await this.blobToBase64(audioBlob);
+      const audioBase64 = await this.blobToBase64(audioBlob)
       this.examStore.addAudioFile({
         taskId: this.taskId,
         assignmentId: this.assignmentId,
         audioUrl: this.audioUrl,
         audioBase64: audioBase64
-      });
+      })
     },
 
     completeTask() {
-      this.$emit('record-completed');
+      this.$emit('record-completed')
     },
 
-    startPlayAudioBefore() {
-      if (this.audioBeforeSource) {
-        this.isAudioPlaying = true;
-        if (this.betweenQuestionAudio) {
-          const betweenQuestionAudio = new Audio(this.betweenQuestionAudio);
-          betweenQuestionAudio.play();
-          betweenQuestionAudio.onended = () => {
-            const audio = new Audio(this.audioBeforeSource);
-            audio.play();
-            audio.onended = () => {
-              const betweenQuestionAudio = new Audio(this.betweenQuestionAudio);
-              betweenQuestionAudio.play();
-              betweenQuestionAudio.onended = () => {
-                this.isAudioPlaying = false;
-                this.startRecord();
-              }
-            }
+    async startPlayAudioBefore() {
+      if (!this.audioBeforeSource) {
+        this.startRecord()
+        return
+      }
+
+      const audioStore = useAudioStore()
+
+      try {
+        this.isAudioPlaying = true
+
+        // Инициализируем AudioContext (если ещё не был инициализирован)
+        if (!audioStore.audioContext) {
+          audioStore.initAudioContext()
+        }
+
+        // Функция для последовательного воспроизведения аудио
+        const playSequence = async () => {
+          if (this.betweenQuestionAudio) {
+            await audioStore.fetchAndPlayAudio(this.betweenQuestionAudio)
+            await audioStore.fetchAndPlayAudio(this.audioBeforeSource)
+            await audioStore.fetchAndPlayAudio(this.betweenQuestionAudio)
+          } else {
+            await audioStore.fetchAndPlayAudio(this.audioBeforeSource)
           }
-        } else {
-          const audio = new Audio(this.audioBeforeSource);
-          audio.play();
-          audio.onended = () => {
-            this.isAudioPlaying = false;
-            this.startRecord();
-          }
-        };
-      } else {
-        this.startRecord();
+        }
+
+        await playSequence()
+      } catch (error) {
+        Notify.create({
+          message: 'Ошибка воспроизведения аудио',
+          color: 'negative'
+        })
+      } finally {
+        this.isAudioPlaying = false
+        this.startRecord()
       }
     },
 
     blobToBase64(blob) {
       return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result.split(',')[1]);
-        reader.readAsDataURL(blob);
-      });
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result.split(',')[1])
+        reader.readAsDataURL(blob)
+      })
     }
   },
   mounted() {
-    this.startPlayAudioBefore();
+    this.startPlayAudioBefore()
   }
-};
+}
 </script>
 
 <style scoped>

@@ -39,12 +39,12 @@ export default {
         if (this.timeLeft <= 0) {
           clearInterval(countdown)
 
-          await this.audioStore.playIntroAudio() 
+          await this.audioStore.playIntroAudio()
 
           if (this.audioSrc) {
             this.$emit('countdown-finished')
-            const audio = new Audio(this.audioSrc)
-            audio.play()
+            this.audioStore.initAudioContext()
+            await this.audioStore.fetchAndPlayAudio(this.audioSrc)
           } else {
             this.$emit('countdown-finished')
           }

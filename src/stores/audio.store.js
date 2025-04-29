@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useExamStore } from './exam.store'
 import { Notify } from 'quasar'
+
 export const useAudioStore = defineStore('audio', () => {
   const mediaRecorder = ref(null)
   const audioChunks = ref([])
@@ -10,71 +11,109 @@ export const useAudioStore = defineStore('audio', () => {
   const isRecording = ref(false)
   const error = ref(null)
   const isIntroAudioPlayed = ref(false)
+  const audioContext = ref(null)
+  const isAudioContextAllowed = ref(false)
+
+  // Инициализация AudioContext при первом взаимодействии
+  const initAudioContext = () => {
+    if (!audioContext.value && typeof window !== 'undefined') {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      audioContext.value = new AudioContext()
+      isAudioContextAllowed.value = true
+    }
+  }
+
+  // Функция для воспроизведения аудио через AudioContext
+  const playAudioWithContext = async (audioBuffer) => {
+    if (!audioContext.value) {
+      return
+    }
+
+    try {
+      if (audioContext.value.state === 'suspended') {
+        await audioContext.value.resume()
+      }
+
+      const source = audioContext.value.createBufferSource()
+      source.buffer = audioBuffer
+      source.connect(audioContext.value.destination)
+      source.start(0)
+
+      return new Promise((resolve) => {
+        source.onended = () => resolve()
+      })
+    } catch (err) {
+      Notify.create({
+        message: 'Ошибка при воспроизведении аудио: ' + err.message,
+        color: 'negative'
+      })
+    }
+  }
+
+  const fetchAndPlayAudio = async (audioUrl) => {
+    if (!audioContext.value) {
+      return
+    }
+
+    try {
+      const response = await fetch(audioUrl)
+      const arrayBuffer = await response.arrayBuffer()
+      const audioBuffer = await audioContext.value.decodeAudioData(arrayBuffer)
+      await playAudioWithContext(audioBuffer)
+    } catch (err) {
+      Notify.create({
+        message: 'Ошибка при загрузке аудио: ' + err.message,
+        color: 'negative'
+      })
+    }
+  }
 
   const initRecorder = async () => {
     try {
-      // Только проверяем поддержку API, без запроса прав
       if (!navigator.mediaDevices?.getUserMedia) {
         Notify.create({
-          message: 'Audio recording is not supported in this browser.',
+          message: 'Запись аудио не поддерживается Вашим браузером',
           color: 'negative'
         })
-        throw new Error('Audio recording is not supported in this browser.')
+        throw new Error('Запись аудио не поддерживается Вашим браузером')
       }
-
       const stream = await navigator.mediaDevices
         .getUserMedia({ audio: true })
         .catch((err) => {
-          Notify.create({
-            message:
-              'Microphone access check failed (expected on iOS).' + err.message,
-            color: 'negative'
-          })
-          return null
+          throw new Error('Нет разрешения на использование микрофона')
         })
-
       if (stream) {
-        // Если вдруг доступ есть (не iOS или права уже выданы) — закрываем поток
         stream.getTracks().forEach((track) => track.stop())
       }
-
       return true
     } catch (err) {
       Notify.create({
-        message: 'Microphone check failed: ' + err.message,
+        message: 'Ошибка при доступе к микрофону: ' + err.message,
         color: 'negative'
       })
-      error.value = 'Microphone check failed: ' + err.message
-      throw err
+      error.value = 'Ошибка при доступе к микрофону: ' + err.message
+      return false
     }
   }
   const playIntroAudio = async () => {
-    return new Promise((resolve) => {
-      const examStore = useExamStore()
+    return new Promise(async (resolve) => {
+      const examStore = useExamStore();
+  
       if (
         !isIntroAudioPlayed.value &&
         examStore.audioGuidance?.start_exam_audio
       ) {
-        const audio = new Audio(examStore.audioGuidance.start_exam_audio)
-
-        // Обработка ошибок воспроизведения (особенно важно для iOS)
-        audio.play().catch((err) => {
-          error.value = 'Playback failed: ' + err.message
-          Notify.create({
-            message: 'Playback failed: ' + err.message,
-            color: 'negative'
-          })
-        })
-
-        audio.onended = () => {
-          isIntroAudioPlayed.value = true
-          resolve()
-        }
-      } else {
-        resolve()
+        initAudioContext();
+  
+        // 🔥 Ждём окончания проигрывания
+        await fetchAndPlayAudio(examStore.audioGuidance.start_exam_audio);
+  
+        isIntroAudioPlayed.value = true;
       }
-    })
-  }
+  
+      resolve(); // ✅ После окончания аудио
+    });
+  };
   const getSupportedAudioOptions = () => {
     const audioTypes = [
       'audio/mpeg',
@@ -160,6 +199,9 @@ export const useAudioStore = defineStore('audio', () => {
     initRecorder,
     startRecording,
     stopRecording,
-    playIntroAudio
+    playIntroAudio,
+    initAudioContext,
+    playAudioWithContext,
+    fetchAndPlayAudio
   }
 })
