@@ -1,7 +1,31 @@
 <template>
-  <div class="exams-list">
-    <q-btn v-for="exam in exams" :key="exam.id" :label="`Вариант ${exam.number}`" color="teal-8"
-      class="custom-exam-button" @click="fetchExamDetails(exam.id)" />
+  <div class="q-mt-lg">
+    <div class="text-h6 text-weight-medium text-grey-8 q-mb-md">
+      Доступные экзамены
+    </div>
+    
+    <div class="exams-grid">
+      <q-card
+        v-for="exam in exams"
+        :key="exam.id"
+        class="exam-card cursor-pointer"
+        @click="fetchExamDetails(exam.id)"
+      >
+        <q-card-section class="text-center q-pa-lg">
+          <q-icon 
+            name="sym_o_quiz" 
+            size="2.5rem" 
+            class="text-primary q-mb-md" 
+          />
+          <div class="text-subtitle1 text-weight-medium text-grey-9">
+            Вариант {{ exam.number }}
+          </div>
+          <div class="text-caption text-grey-6 q-mt-xs">
+            Нажми, чтобы начать экзамен
+          </div>
+        </q-card-section>
+      </q-card>
+    </div>
   </div>
 </template>
 
@@ -20,62 +44,70 @@ export default {
   methods: {
     fetchExamDetails(id) {
       const examStore = useExamStore()
-      examStore.getExamTasks(id).then(
+      examStore.getExamTasks(id).then(() => {
         router.push('/exam')
-      )
+      }).catch(() => {
+        this.$q.notify({
+          color: 'negative',
+          message: 'Не удалось загрузить экзамен',
+          icon: 'sym_o_warning'
+        })
+      })
     }
   }
 }
 </script>
 
 <style scoped>
-.exams-list {
+/* Адаптивная сетка карточек */
+.exams-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  /* 5 столбцов на больших экранах */
-  gap: 1rem;
-  /* Расстояние между кнопками */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.25rem;
 }
 
-.custom-exam-button {
-  margin: 0.5rem;
-  /* Отступы между кнопками */
-  font-size: 1.25rem;
-  /* Размер шрифта */
-  color: #ffffff;
-  /* Цвет текста */
-  width: 100%;
-  /* Кнопки занимают всю ширину ячейки */
+/* Стиль карточки экзамена */
+:deep(.exam-card) {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.25s ease !important;
+  overflow: hidden;
 }
 
-/* Адаптивные стили для планшетов */
-@media (max-width: 1024px) {
-  .exams-list {
-    grid-template-columns: repeat(3, 1fr);
-    /* 3 столбца на планшетах */
-  }
+:deep(.exam-card:hover) {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+  border-color: var(--q-primary) !important;
 }
 
-/* Адаптивные стили для мобильных устройств */
+:deep(.exam-card:active) {
+  transform: translateY(-2px);
+}
+
+/* Адаптивность */
 @media (max-width: 600px) {
-  .exams-list {
+  .exams-grid {
     grid-template-columns: repeat(2, 1fr);
-    /* 2 столбца на мобильных устройствах */
+    gap: 1rem;
   }
 
-  .custom-exam-button {
-    font-size: 1rem;
-    /* Уменьшаем размер шрифта на мобильных устройствах */
-    margin: 0.25rem;
-    /* Уменьшаем отступы */
+  :deep(.exam-card .q-card__section) {
+    padding: 1rem !important;
+  }
+
+  :deep(.exam-card .q-icon) {
+    font-size: 2rem !important;
+  }
+
+  .text-subtitle1 {
+    font-size: 0.95rem !important;
   }
 }
 
-/* Адаптивные стили для очень маленьких экранов */
 @media (max-width: 400px) {
-  .exams-list {
-    grid-template-columns: repeat(1, 1fr);
-    /* 1 столбец на очень маленьких экранах */
+  .exams-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

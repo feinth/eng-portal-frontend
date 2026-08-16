@@ -1,49 +1,82 @@
 <template>
-  <div class="top text-center">
-    <q-btn @click="resetSelection" class="custom-secondary-button" color="red" label="Сбросить выбор" unelevated />
-    <p class="mb-2">Экзамен: {{ selectedMainType?.label }}</p>
-    <p class="mb-2">Тип задания: {{ selectedTaskType?.label }}</p>
-    <p v-if="selectedExamType !== null" class="mb-2">
-      Набор заданий: {{ selectedExamType?.label }}
-    </p>
-  </div>
+  <q-page class="q-pa-md md:q-pa-lg">
+    <!-- Основной контент -->
+    <div class="main-content">
 
-  <div class="flex justify-center min-h-screen">
-    <!-- Блок выбора типа экзамена и задания -->
-    <div v-if="!tasks && !exams" class="space-y-4 text-center">
-      <div v-if="!selectedMainType">
-        <h1 class="text-2xl font-bold mb-4">Выберите тип экзамена</h1>
-        <div class="button-container">
-          <q-btn v-for="type in mainTypes" :key="type.id" @click="selectMainType(type)" class="custom-button"
-            color="primary" :label="type.label" unelevated />
-        </div>
+      <!-- Индикатор загрузки -->
+      <div v-if="isLoading" class="text-center q-pa-xl">
+        <q-spinner-dots color="primary" size="3rem" />
+        <p class="text-body1 text-grey-7 q-mt-md">Загрузка...</p>
       </div>
-      <div v-else>
-        <h1 class="text-2xl font-bold mb-4">{{ currentStepTitle }}</h1>
-        <div class="button-container">
-          <q-btn v-for="type in currentStepOptions" :key="type.id" @click="handleStepSelection(type)"
-            class="custom-button" color="primary" :label="type.label" unelevated />
+
+      <!-- Блок выбора типа экзамена и задания -->
+      <div v-else-if="!tasks && !exams && !isLoading" class="text-center">
+
+        <!-- Заголовок текущего шага -->
+        <div class="q-mb-xl">
+          <h1 class="text-h5 text-weight-bold text-grey-9 q-mb-sm">
+            {{ currentStepTitle }}
+          </h1>
+          <p class="text-body2 text-grey-6">
+            Выберите один из вариантов ниже
+          </p>
         </div>
+
+        <!-- ШАГ 1: Выбор типа экзамена (ОГЭ / ЕГЭ) -->
+        <div v-if="!selectedMainType" class="options-grid">
+          <q-card v-for="option in mainTypes" :key="option.id" class="option-card cursor-pointer"
+            @click="selectMainType(option)">
+            <q-card-section class="text-center q-pa-lg">
+              <q-icon :name="getOptionIcon(option)" size="3rem" class="text-primary q-mb-md" />
+              <div class="text-h6 text-weight-medium text-grey-9">
+                {{ option.label }}
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+
+        <!-- ШАГ 2 и далее -->
+        <div v-else class="options-grid">
+          <q-card v-for="option in currentStepOptions" :key="option.id" class="option-card cursor-pointer"
+            @click="handleStepSelection(option)">
+            <q-card-section class="text-center q-pa-lg">
+              <q-icon :name="getOptionIcon(option)" size="3rem" class="text-primary q-mb-md" />
+              <div class="text-h6 text-weight-medium text-grey-9">
+                {{ option.label }}
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+
       </div>
-    </div>
-    <div class="q-pa-md q-gutter-sm"
-      v-else-if="(selectedTaskType?.id === 2 && (!tasks || tasks.length === 0)) || (selectedTaskType?.id === 1 && (!exams || exams.length === 0))">
-      <q-banner class="text-white bg-red">
-        <span v-if="selectedTaskType?.id === 2">Нет доступных заданий для выбранного типа</span>
-        <span v-else-if="selectedTaskType?.id === 1">Нет доступных экзаменов для выбранного типа</span>
+
+      <!-- Сообщение об отсутствии данных (только если загрузка завершена и данных нет) -->
+      <q-banner
+        v-else-if="!isLoading && ((selectedTaskType?.id === 2 && tasks && tasks.length === 0) || (selectedTaskType?.id === 1 && exams && exams.length === 0))"
+        class="no-data-banner q-mb-lg" rounded>
+        <template v-slot:avatar>
+          <q-icon name="sym_o_info" color="warning" size="2rem" />
+        </template>
+        <span class="text-body1">
+          <span v-if="selectedTaskType?.id === 2">Нет доступных заданий для выбранного типа</span>
+          <span v-else-if="selectedTaskType?.id === 1">Нет доступных экзаменов для выбранного типа</span>
+        </span>
       </q-banner>
-    </div>
-    <!-- Отображаем task-list, если выбран тип задания "По заданиям" -->
-    <div v-else-if="selectedTaskType?.id === 2 && tasks && tasks.length > 0" class="tasks-list-container">
-      <tasks-list :tasks="tasks" />
-    </div>
 
-    <!-- Отображаем exam-list, если выбран тип задания "Экзамен" -->
-    <div v-else-if="selectedTaskType?.id === 1 && exams && exams.length > 0" class="exams-list-container">
-      <exams-list :exams="exams" />
+      <!-- Список заданий -->
+      <div v-else-if="!isLoading && selectedTaskType?.id === 2 && tasks && tasks.length > 0">
+        <tasks-list :tasks="tasks" />
+      </div>
+
+      <!-- Список экзаменов -->
+      <div v-else-if="!isLoading && selectedTaskType?.id === 1 && exams && exams.length > 0">
+        <exams-list :exams="exams" />
+      </div>
+
     </div>
-  </div>
+  </q-page>
 </template>
+
 <script>
 import TasksList from '../components/task-list.vue'
 import ExamsList from '../components/exam-list.vue'
@@ -85,7 +118,8 @@ export default {
       selectedTaskType: null,
       selectedExamType: null,
       tasks: null,
-      exams: null
+      exams: null,
+      isLoading: false
     }
   },
   computed: {
@@ -107,6 +141,15 @@ export default {
     }
   },
   methods: {
+    getOptionIcon(option) {
+      if (option.type === 'oge' || option.type === 'ege') return 'sym_o_school'
+      if (option.label === 'Экзамен') return 'sym_o_quiz'
+      if (option.label === 'По заданиям') return 'sym_o_task'
+      if (option.label.includes('Авторские')) return 'sym_o_edit_note'
+      if (option.label.includes('ФИПИ')) return 'sym_o_database'
+      if (option.label.includes('Задание')) return 'sym_o_assignment'
+      return 'sym_o_circle'
+    },
     selectMainType(type) {
       this.selectedMainType = type
     },
@@ -117,10 +160,8 @@ export default {
           this.fetchExams(this.selectedMainType.id, this.selectedTaskType.id)
         }
       } else if (this.selectedMainType.id === 1 && this.selectedTaskType.id === 2) {
-        // Если выбран ОГЭ и тип "по заданиям", вызываем getTasksByType
         this.fetchTasksByType(this.selectedMainType.type, type.id)
       } else if (this.selectedMainType.id === 2 && this.selectedTaskType.id === 2) {
-        // Если выбран ЕГЭ и тип "по заданиям", вызываем getTasksByType
         this.fetchTasksByType(this.selectedMainType.type, type.id)
       } else if (!this.selectedExamType && this.selectedTaskType.label === 'Экзамен' && this.selectedMainType.label === 'ОГЭ') {
         this.selectedExamType = type
@@ -135,15 +176,16 @@ export default {
       this.exams = null
     },
     fetchExams() {
+      this.isLoading = true  // Включаем индикатор загрузки
       let fipi = null;
       if (this.selectedMainType?.label === 'ОГЭ' && this.selectedExamType) {
-        fipi = this.selectedExamType.id === 1 ? 0 : 1; // 0 для авторских, 1 для ФИПИ
+        fipi = this.selectedExamType.id === 1 ? 0 : 1;
       }
 
       this.store
         .getExams(this.selectedMainType.type, fipi)
         .then((result) => {
-          this.exams = result; // Сохраняем экзамены в переменную exams
+          this.exams = result;
         })
         .catch((error) => {
           this.$q.notify({
@@ -154,9 +196,13 @@ export default {
             timeout: 2000,
             icon: 'sym_o_warning'
           })
+        })
+        .finally(() => {
+          this.isLoading = false  // Выключаем индикатор загрузки в любом случае
         });
     },
     fetchTasksByType(examType, taskSubTypeId) {
+      this.isLoading = true  // Включаем индикатор загрузки
       this.store
         .getTasksByType(examType, taskSubTypeId)
         .then((result) => {
@@ -171,6 +217,9 @@ export default {
             timeout: 2000,
             icon: 'sym_o_warning'
           })
+        })
+        .finally(() => {
+          this.isLoading = false  // Выключаем индикатор загрузки в любом случае
         });
     }
   }
@@ -178,44 +227,119 @@ export default {
 </script>
 
 <style scoped>
-/* Общие стили */
-.space-y-4>*+* {
-  margin-top: 1rem;
+/* Карточка с текущим выбором */
+:deep(.selection-card) {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.03) !important;
 }
 
-.button-container {
+/* Чипы выбора */
+.selection-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  justify-content: center;
 }
 
-.custom-button {
-  flex: 1 1 45%;
-  max-width: 200px;
-  margin: 0.25rem;
-  font-size: 1rem;
-  color: #ffffff;
+:deep(.selection-chip) {
+  border-radius: 20px !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  margin: 0 !important;
 }
 
-.custom-secondary-button {
-  color: #ffffff;
+/* Кнопка сброса */
+:deep(.reset-btn) {
+  border-radius: 12px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
 }
 
-/* Адаптивные стили для мобильных устройств */
+:deep(.reset-btn:hover) {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Сетка кнопок выбора */
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Карточки вариантов */
+:deep(.option-card) {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.3s ease !important;
+  overflow: hidden;
+}
+
+:deep(.option-card:hover) {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+  border-color: var(--q-primary) !important;
+}
+
+:deep(.option-card:active) {
+  transform: translateY(-2px);
+}
+
+/* Баннер об отсутствии данных */
+:deep(.no-data-banner) {
+  background-color: #FFF9E6 !important;
+  border: 1px solid #FFE082 !important;
+}
+
+:deep(.no-data-banner .q-banner__content) {
+  color: #856404 !important;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+  .options-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+}
+
 @media (max-width: 600px) {
-  .custom-button {
-    flex: 1 1 100%;
-    max-width: 100%;
-    font-size: 0.875rem;
+  .options-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
-  h1 {
-    font-size: 1.5rem;
+  :deep(.selection-card .q-card__section) {
+    padding: 1rem !important;
   }
 
-  p {
-    font-size: 0.875rem;
+  .text-h6 {
+    font-size: 1.1rem !important;
+  }
+
+  .text-h5 {
+    font-size: 1.3rem !important;
+  }
+
+  .selection-chips {
+    gap: 0.3rem;
+  }
+
+  :deep(.selection-chip) {
+    padding: 6px 12px !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .options-grid {
+    gap: 0.75rem;
+  }
+
+  :deep(.option-card .q-card__section) {
+    padding: 1.25rem !important;
   }
 }
 </style>

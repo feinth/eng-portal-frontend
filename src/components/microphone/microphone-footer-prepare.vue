@@ -1,50 +1,62 @@
 <template>
-  <div class="fixed-footer px-4">
-    <q-toolbar>
-      <!-- иконка -->
-      <div class="flex items-center">
-        <div class="mr-4 flex items-center">
-          <q-btn
-            color="blue"
-            icon="sym_o_mic"
-            label="Preparation"
-            no-caps
-            class="w-32"
-          />
+  <div class="prepare-footer">
+    <div class="footer-container">
+      
+      <!-- Левая часть: статус подготовки -->
+      <div class="status-section">
+        <q-icon 
+          name="sym_o_mic" 
+          size="1.5rem" 
+          class="text-primary" 
+        />
+        <span class="status-label">Подготовка</span>
+      </div>
+
+      <!-- Центральная часть: прогресс-бар с таймером -->
+      <div class="progress-section">
+        <div class="progress-wrapper">
+          <q-linear-progress
+            stripe
+            size="28px"
+            :value="timeLeft / timeout"
+            :max="1"
+            color="primary"
+            track-color="grey-3"
+            class="custom-progress"
+          >
+            <div class="progress-content">
+              <q-badge 
+                color="white" 
+                text-color="primary" 
+                :label="countdown"
+                class="time-badge"
+              />
+            </div>
+          </q-linear-progress>
         </div>
       </div>
 
-      <div class="flex-grow flex items-center justify-center">
-        <q-linear-progress
-          stripe
-          class="q-my-md"
-          size="25px"
-          :value="timeLeft / timeout"
-          :max="100"
-          color="blue"
-        >
-          <div class="absolute-full flex flex-center">
-            <q-badge color="white" text-color="black" :label="countdown" />
-          </div>
-        </q-linear-progress>
-      </div>
-      <!-- прогресс -->
-      <div class="flex items-center ml-4">
+      <!-- Правая часть: кнопка "Далее" -->
+      <div class="action-section">
         <q-btn
-          color="blue"
+          unelevated
+          color="primary"
+          label="Далее"
+          icon="sym_o_arrow_forward"
+          no-caps
           @click="stopPrepare"
           :disable="isAudioPlaying"
-          label="Далее"
-          no-caps
-          class="w-32"
+          class="next-btn"
         />
       </div>
-    </q-toolbar>
+
+    </div>
   </div>
 </template>
 
 <script>
 import { useAudioStore } from '../../stores/audio.store'
+
 export default {
   props: {
     timeout: {
@@ -119,12 +131,145 @@ export default {
 </script>
 
 <style scoped>
-.fixed-footer {
+/* Основной контейнер футера */
+.prepare-footer {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: rgb(232, 238, 255);
-  border-top: 1px solid #ccc;
+  background-color: #FFFFFF;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+}
+
+.footer-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Секция статуса */
+.status-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.status-label {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2B2D42;
+}
+
+/* Секция прогресса */
+.progress-section {
+  flex: 1;
+  max-width: 600px;
+}
+
+.progress-wrapper {
+  width: 100%;
+}
+
+/* Кастомный прогресс-бар */
+:deep(.custom-progress) {
+  border-radius: 14px !important;
+  overflow: hidden;
+}
+
+:deep(.custom-progress .q-linear-progress__track) {
+  border-radius: 14px !important;
+}
+
+.progress-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* Бейдж с таймером */
+:deep(.time-badge) {
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  padding: 4px 12px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Секция действий */
+.action-section {
+  min-width: 140px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Кнопка "Далее" */
+:deep(.next-btn) {
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.3px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 12px rgba(124, 147, 195, 0.3) !important;
+  padding: 8px 20px !important;
+}
+
+:deep(.next-btn:hover:not([disabled])) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(124, 147, 195, 0.4) !important;
+}
+
+:deep(.next-btn:active:not([disabled])) {
+  transform: translateY(0);
+}
+
+:deep(.next-btn[disabled]) {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .footer-container {
+    padding: 0.875rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .status-section {
+    min-width: auto;
+  }
+
+  .status-label {
+    display: none;
+  }
+
+  .action-section {
+    min-width: auto;
+  }
+
+  :deep(.next-btn) {
+    padding: 8px 16px !important;
+  }
+
+  .progress-section {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-container {
+    padding: 0.75rem;
+  }
+
+  :deep(.time-badge) {
+    font-size: 0.85rem !important;
+    padding: 3px 10px !important;
+  }
 }
 </style>

@@ -13,13 +13,43 @@ export const useAudioStore = defineStore('audio', () => {
   const isIntroAudioPlayed = ref(false)
   const audioContext = ref(null)
   const isAudioContextAllowed = ref(false)
+  const isUnlocked = ref(false) // ← НОВОЕ: флаг разблокировки
 
-  // Инициализация AudioContext при первом взаимодействии
+  // Инициализация AudioContext
   const initAudioContext = () => {
     if (!audioContext.value && typeof window !== 'undefined') {
       const AudioContext = window.AudioContext || window.webkitAudioContext
       audioContext.value = new AudioContext()
       isAudioContextAllowed.value = true
+    }
+  }
+
+  // ← НОВЫЙ МЕТОД: разблокирует аудио на iOS
+  // ДОЛЖЕН вызываться СИНХРОННО в обработчике клика пользователя!
+  const unlockAudio = () => {
+    if (isUnlocked.value) return
+    
+    // 1. Создаём AudioContext если его нет
+    initAudioContext()
+    
+    if (!audioContext.value) return
+    
+    // 2. Resume контекста (важно для iOS)
+    if (audioContext.value.state === 'suspended') {
+      audioContext.value.resume()
+    }
+    
+    // 3. Создаём пустой буфер на 0.1 секунды тишины
+    // Это "обманывает" iOS и разблокирует аудио вывод
+    try {
+      const buffer = audioContext.value.createBuffer(1, 1, 22050)
+      const source = audioContext.value.createBufferSource()
+      source.buffer = buffer
+      source.connect(audioContext.value.destination)
+      source.start(0)
+      
+      isUnlocked.value = true
+    } catch (err) {
     }
   }
 
@@ -50,22 +80,40 @@ export const useAudioStore = defineStore('audio', () => {
     }
   }
 
-  const fetchAndPlayAudio = async (audioUrl) => {
+  const fetchAndPlayAudio = async (audioSrc) => {
+    if (!isUnlocked.value) {
+      unlockAudio()
+    }
+    
     if (!audioContext.value) {
-      return
+      // Фолбэк: пробуем через обычный HTMLAudioElement
+      return playAudioFallback(audioSrc)
     }
 
     try {
-      const response = await fetch(audioUrl)
+      const response = await fetch(audioSrc)
       const arrayBuffer = await response.arrayBuffer()
       const audioBuffer = await audioContext.value.decodeAudioData(arrayBuffer)
       await playAudioWithContext(audioBuffer)
     } catch (err) {
-      Notify.create({
-        message: 'Ошибка при загрузке аудио: ' + err.message,
-        color: 'negative'
-      })
+      return playAudioFallback(audioSrc)
     }
+  }
+
+  // ← НОВЫЙ МЕТОД: фолбэк через HTMLAudioElement
+  const playAudioFallback = (audioSrc) => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio(audioSrc)
+      audio.onended = () => resolve()
+      audio.onerror = (e) => reject(e)
+      audio.play().catch(err => {
+        Notify.create({
+          message: 'Не удалось воспроизвести аудио. Тапните по экрану и попробуйте снова.',
+          color: 'warning'
+        })
+        reject(err)
+      })
+    })
   }
 
   const initRecorder = async () => {
@@ -95,6 +143,7 @@ export const useAudioStore = defineStore('audio', () => {
       return false
     }
   }
+
   const playIntroAudio = async () => {
     return new Promise(async (resolve) => {
       const examStore = useExamStore();
@@ -104,16 +153,14 @@ export const useAudioStore = defineStore('audio', () => {
         examStore.audioGuidance?.start_exam_audio
       ) {
         initAudioContext();
-  
-        // 🔥 Ждём окончания проигрывания
         await fetchAndPlayAudio(examStore.audioGuidance.start_exam_audio);
-  
         isIntroAudioPlayed.value = true;
       }
   
-      resolve(); // ✅ После окончания аудио
+      resolve();
     });
   };
+
   const getSupportedAudioOptions = () => {
     const audioTypes = [
       'audio/mpeg',
@@ -136,6 +183,7 @@ export const useAudioStore = defineStore('audio', () => {
     })
     return null
   }
+
   const startRecording = async () => {
     try {
       error.value = null
@@ -150,7 +198,6 @@ export const useAudioStore = defineStore('audio', () => {
       }
 
       audioChunks.value = []
-
       mediaRecorder.value = new MediaRecorder(stream, options)
 
       mediaRecorder.value.ondataavailable = (e) => {
@@ -202,6 +249,8 @@ export const useAudioStore = defineStore('audio', () => {
     playIntroAudio,
     initAudioContext,
     playAudioWithContext,
-    fetchAndPlayAudio
+    fetchAndPlayAudio,
+    unlockAudio,          // ← НОВОЕ: экспортируем
+    isUnlocked            // ← НОВОЕ: экспортируем
   }
 })
