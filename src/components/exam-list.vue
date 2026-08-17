@@ -1,9 +1,5 @@
 <template>
   <div class="q-mt-lg">
-    <div class="text-h6 text-weight-medium text-grey-8 q-mb-md">
-      Доступные экзамены
-    </div>
-    
     <div class="exams-grid">
       <q-card
         v-for="exam in exams"
@@ -59,55 +55,36 @@ export default {
 </script>
 
 <style scoped>
-/* Адаптивная сетка карточек */
 .exams-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-/* Стиль карточки экзамена */
-:deep(.exam-card) {
-  border-radius: 16px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
-  border: 1px solid rgba(0, 0, 0, 0.05) !important;
-  transition: all 0.25s ease !important;
+.exams-grid .exam-card {
+  flex: 0 0 calc(50% - 0.75rem);
+  max-width: calc(50% - 0.75rem);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
   overflow: hidden;
 }
 
-:deep(.exam-card:hover) {
+.exams-grid .exam-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
-  border-color: var(--q-primary) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-color: var(--q-primary);
 }
 
-:deep(.exam-card:active) {
-  transform: translateY(-2px);
-}
-
-/* Адаптивность */
+/* Адаптив: на мобильных — одна карточка в ряд */
 @media (max-width: 600px) {
-  .exams-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-
-  :deep(.exam-card .q-card__section) {
-    padding: 1rem !important;
-  }
-
-  :deep(.exam-card .q-icon) {
-    font-size: 2rem !important;
-  }
-
-  .text-subtitle1 {
-    font-size: 0.95rem !important;
-  }
-}
-
-@media (max-width: 400px) {
-  .exams-grid {
-    grid-template-columns: 1fr;
+  .exams-grid .exam-card {
+    flex: 0 0 100%;
+    max-width: 100%;
   }
 }
 </style>

@@ -9,8 +9,7 @@ export const useExamStore = defineStore({
     currentExam: JSON.parse(localStorage.getItem('currentExam')),
     answerParams: null,
     audioGuidance: null,
-    typeExam: null,
-    generatedExamId: null
+    typeExam: null
   }),
   actions: {
     addAudioFile(taskAnswer) {
@@ -25,16 +24,19 @@ export const useExamStore = defineStore({
     getExams(typeExam, fipi = null) {
       return new Promise(async (resolve, reject) => {
         try {
+          // Формируем URL в зависимости от переданных параметров
           let url = `${typeExam}/exams/`
           if (fipi !== null) {
-            url += `?fipi=${fipi}`
+            url += `?fipi=${fipi}` // Добавляем параметр fipi, если он передан
           }
 
+          // Выполняем запрос к API
           let res = await api({
             method: 'get',
             url: url
           })
 
+          // Сохраняем данные в хранилище
           this.exams = res.data
           this.typeExam = typeExam
           localStorage.setItem('exams', JSON.stringify(this.exams))
@@ -151,6 +153,7 @@ export const useExamStore = defineStore({
     getAnswers(id = null, withTasks = false) {
       return new Promise(async (resolve, reject) => {
         try {
+          // Формируем URL в зависимости от переданных параметров
           let url = '/answers/'
           if (id) {
             url += `${id}`
@@ -159,6 +162,7 @@ export const useExamStore = defineStore({
             url += '?with_tasks=1'
           }
 
+          // Выполняем запрос к API
           const res = await api({
             method: 'GET',
             url
@@ -194,59 +198,6 @@ export const useExamStore = defineStore({
           this.currentExam = [res.data]
           localStorage.setItem('currentExam', JSON.stringify(this.currentExam))
           resolve(this.currentExam)
-        } catch (err) {
-          reject(err)
-        }
-      })
-    },
-    // ← НОВЫЙ ACTION: генерация случайного варианта
-    generateRandomExam(examType) {
-      return new Promise(async (resolve, reject) => {
-        try {
-          // examType: 1=ЕГЭ, 2=ОГЭ (из enum ExamType)
-          const urlPrefix = examType === 1 ? 'ege' : 'oge'
-
-          const res = await api({
-            method: 'POST',
-            url: `${urlPrefix}/generated-exams/`
-          })
-
-          // Сохраняем ID сгенерированного варианта
-          this.generatedExamId = res.data.id
-          
-          // Сохраняем задания в том же формате, что и обычный экзамен
-          this.currentExam = res.data.tasks
-          this.typeExam = urlPrefix
-          
-          // Сохраняем в localStorage, чтобы не потерять при перезагрузке
-          localStorage.setItem('currentExam', JSON.stringify(this.currentExam))
-          localStorage.setItem('generatedExamId', JSON.stringify(this.generatedExamId))
-
-          resolve(res.data)
-        } catch (err) {
-          reject(err)
-        }
-      })
-    },
-    // ← НОВЫЙ ACTION: загрузка ранее сгенерированного варианта по ID
-    getGeneratedExam(examType, examId) {
-      return new Promise(async (resolve, reject) => {
-        try {
-          const urlPrefix = examType === 1 ? 'ege' : 'oge'
-
-          const res = await api({
-            method: 'GET',
-            url: `${urlPrefix}/generated-exams/${examId}/`
-          })
-
-          this.generatedExamId = res.data.id
-          this.currentExam = res.data.tasks
-          this.typeExam = urlPrefix
-          
-          localStorage.setItem('currentExam', JSON.stringify(this.currentExam))
-          localStorage.setItem('generatedExamId', JSON.stringify(this.generatedExamId))
-
-          resolve(res.data)
         } catch (err) {
           reject(err)
         }

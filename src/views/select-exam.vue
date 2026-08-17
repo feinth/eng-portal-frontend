@@ -144,7 +144,8 @@ export default {
         { id: 1, label: 'Экзамен' },
         { id: 2, label: 'По заданиям' }
       ],
-      examTypes: [
+      // Полный список типов экзаменов
+      allExamTypes: [
         { id: 1, label: 'Авторские варианты', type: 'author' },
         { id: 2, label: 'На основе открытого банка ФИПИ', type: 'fipi' },
         { id: 3, label: 'Случайный вариант', type: 'random' }
@@ -170,22 +171,56 @@ export default {
     }
   },
   computed: {
+    examTypes() {
+      if (this.selectedMainType?.type === 'ege') {
+        // Для ЕГЭ только авторские и случайные
+        return this.allExamTypes.filter(t => t.type !== 'fipi')
+      }
+      // Для ОГЭ все три типа
+      return this.allExamTypes
+    },
+
     currentStepTitle() {
       if (!this.selectedMainType) return 'Выберите тип экзамена'
       if (!this.selectedTaskType) return 'Выберите тип задания'
-      if (this.selectedMainType.id === 1 && this.selectedTaskType.id === 2) return 'Выберите тип задания (ОГЭ)'
-      if (this.selectedMainType.id === 2 && this.selectedTaskType.id === 2) return 'Выберите тип задания (ЕГЭ)'
-      if (!this.selectedExamType && this.selectedTaskType.label === 'Экзамен' && this.selectedMainType.label === 'ОГЭ') return 'Выберите варианты'
+
+      // Для режима "По заданиям"
+      if (this.selectedTaskType.id === 2) {
+        if (this.selectedMainType.id === 1) return 'Выберите тип задания (ОГЭ)'
+        if (this.selectedMainType.id === 2) return 'Выберите тип задания (ЕГЭ)'
+      }
+
+      // Для режима "Экзамен"
+      if (this.selectedTaskType.id === 1) {
+        if (!this.selectedExamType) {
+          const examName = this.selectedMainType.label
+          return `Выберите тип варианта (${examName})`
+        }
+      }
+
       return ''
     },
+
     currentStepOptions() {
       if (!this.selectedMainType) return this.mainTypes
       if (!this.selectedTaskType) return this.taskTypes
-      if (this.selectedMainType.id === 1 && this.selectedTaskType.id === 2) return this.ogeTaskSubTypes
-      if (this.selectedMainType.id === 2 && this.selectedTaskType.id === 2) return this.egeTaskSubTypes
-      if (!this.selectedExamType && this.selectedTaskType.label === 'Экзамен' && this.selectedMainType.label === 'ОГЭ') return this.examTypes
+
+      // Режим "По заданиям"
+      if (this.selectedMainType.id === 1 && this.selectedTaskType.id === 2) {
+        return this.ogeTaskSubTypes
+      }
+      if (this.selectedMainType.id === 2 && this.selectedTaskType.id === 2) {
+        return this.egeTaskSubTypes
+      }
+
+      // Режим "Экзамен" - показываем выбор типа для обоих экзаменов
+      if (this.selectedTaskType.id === 1 && !this.selectedExamType) {
+        return this.examTypes
+      }
+
       return []
     },
+
     hasAnySelection() {
       return !!(this.selectedMainType || this.selectedTaskType || this.selectedExamType)
     }
@@ -211,6 +246,7 @@ export default {
         return
       }
     },
+
     getOptionIcon(option) {
       if (option.type === 'oge') return 'sym_o_menu_book'
       if (option.type === 'ege') return 'sym_o_school'
@@ -222,42 +258,66 @@ export default {
       if (option.label.includes('Задание')) return 'sym_o_assignment'
       return 'sym_o_circle'
     },
+
     selectMainType(type) {
       this.selectedMainType = type
     },
+
     async handleStepSelection(type) {
+      // Генерация случайного варианта
       if (type.type === 'random') {
         await this.generateRandomExam()
         return
       }
 
+      // Шаг 1: Выбор типа задания (Экзамен / По заданиям)
       if (!this.selectedTaskType) {
         this.selectedTaskType = type
-        if (this.selectedMainType?.id === 2 && this.selectedTaskType?.id === 1) {
-          this.fetchExams(this.selectedMainType.id, this.selectedTaskType.id)
-        }
-      } else if (this.selectedMainType.id === 1 && this.selectedTaskType.id === 2) {
+        return
+      }
+
+      // Режим "По заданиям" - выбор типа задания
+      if (this.selectedTaskType.id === 2) {
         this.fetchTasksByType(this.selectedMainType.type, type.id)
-      } else if (this.selectedMainType.id === 2 && this.selectedTaskType.id === 2) {
-        this.fetchTasksByType(this.selectedMainType.type, type.id)
-      } else if (!this.selectedExamType && this.selectedTaskType.label === 'Экзамен' && this.selectedMainType.label === 'ОГЭ') {
+        return
+      }
+
+      // Режим "Экзамен" - выбор типа варианта
+      if (this.selectedTaskType.id === 1 && !this.selectedExamType) {
         this.selectedExamType = type
-        this.fetchExams(type.id)
+
+        // Авторские варианты - загружаем список экзаменов
+        if (type.type === 'author') {
+          this.fetchExams()
+        }
       }
     },
+
     async generateRandomExam() {
       this.isGeneratingRandom = true
       try {
-        const result = await this.store.generateRandomExam(this.selectedMainType.id)
+        // Передаём type ('oge' или 'ege')
+        const result = await this.store.generateRandomExam(this.selectedMainType.type)
 
         if (result.warnings && result.warnings.length > 0) {
           this.$q.notify({
             color: 'warning',
             message: 'Некоторые задания не были найдены',
-            icon: 'sym_o_warning'
+            caption: result.warnings.join(', '),
+            icon: 'sym_o_warning',
+            timeout: 3000
           })
         }
-        this.router.push('/exam')
+
+        // Уведомление об успешной генерации
+        this.$q.notify({
+          color: 'positive',
+          message: 'Случайный вариант успешно создан',
+          icon: 'sym_o_check_circle',
+          timeout: 2000
+        })
+
+        this.$router.push('/exam')
       } catch (error) {
         const errMsg = error.response?.data?.error || 'Ошибка генерации варианта'
         const details = error.response?.data?.details || []
@@ -265,12 +325,14 @@ export default {
         this.$q.notify({
           color: 'negative',
           message: errMsg + (details.length ? ': ' + details.join(', ') : ''),
-          icon: 'sym_o_warning'
+          icon: 'sym_o_error',
+          timeout: 4000
         })
       } finally {
         this.isGeneratingRandom = false
       }
     },
+
     resetSelection() {
       this.selectedMainType = null
       this.selectedTaskType = null
@@ -278,17 +340,25 @@ export default {
       this.tasks = null
       this.exams = null
     },
+
     fetchExams() {
       this.isLoading = true
-      let fipi = null;
+      let fipi = null
+
+      // Для ОГЭ определяем тип (авторские = 0, ФИПИ = 1)
       if (this.selectedMainType?.label === 'ОГЭ' && this.selectedExamType) {
-        fipi = this.selectedExamType.id === 1 ? 0 : 1;
+        fipi = this.selectedExamType.type === 'fipi' ? 1 : 0
+      }
+
+      // Для ЕГЭ только авторские варианты
+      if (this.selectedMainType?.label === 'ЕГЭ' && this.selectedExamType) {
+        fipi = 0 // Только авторские
       }
 
       this.store
         .getExams(this.selectedMainType.type, fipi)
         .then((result) => {
-          this.exams = result;
+          this.exams = result
         })
         .catch((error) => {
           this.$q.notify({
@@ -302,14 +372,15 @@ export default {
         })
         .finally(() => {
           this.isLoading = false
-        });
+        })
     },
+
     fetchTasksByType(examType, taskSubTypeId) {
       this.isLoading = true
       this.store
         .getTasksByType(examType, taskSubTypeId)
         .then((result) => {
-          this.tasks = result;
+          this.tasks = result
         })
         .catch((error) => {
           this.$q.notify({
@@ -323,7 +394,7 @@ export default {
         })
         .finally(() => {
           this.isLoading = false
-        });
+        })
     }
   }
 }
