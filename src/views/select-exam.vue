@@ -1,7 +1,48 @@
 <template>
   <q-page class="q-pa-md md:q-pa-lg">
-    <!-- Основной контент -->
     <div class="main-content">
+
+      <!-- Карточка с текущим выбором (всегда видна, если есть выбор) -->
+      <q-card v-if="hasAnySelection" class="selection-card q-mb-lg">
+        <q-card-section class="q-pa-lg">
+
+          <!-- Заголовок над чипами -->
+          <div class="text-overline text-grey-6 q-mb-sm text-center">Ваш выбор</div>
+
+          <!-- Чипы с текущим выбором -->
+          <div class="selection-chips q-mb-md">
+            <q-chip v-if="selectedMainType" color="primary" text-color="white" class="selection-chip" square>
+              <div class="chip-content">
+                <q-icon name="sym_o_school" size="20px" />
+                <span class="chip-text">{{ selectedMainType.label }}</span>
+              </div>
+            </q-chip>
+
+            <q-chip v-if="selectedTaskType" color="secondary" text-color="white" class="selection-chip" square>
+              <div class="chip-content">
+                <q-icon name="sym_o_assignment" size="20px" />
+                <span class="chip-text">{{ selectedTaskType.label }}</span>
+              </div>
+            </q-chip>
+
+            <q-chip v-if="selectedExamType" color="accent" text-color="white" class="selection-chip" square>
+              <div class="chip-content">
+                <q-icon name="sym_o_description" size="20px" />
+                <span class="chip-text">{{ selectedExamType.label }}</span>
+              </div>
+            </q-chip>
+          </div>
+
+          <!-- Кнопки управления -->
+          <div class="selection-actions">
+            <q-btn flat dense no-caps icon="sym_o_arrow_back" label="Назад" color="grey-7" @click="goBack"
+              class="back-btn q-mr-sm" />
+            <q-btn flat dense no-caps icon="sym_o_refresh" label="Сбросить" color="grey-7" @click="resetSelection"
+              class="reset-btn" />
+          </div>
+
+        </q-card-section>
+      </q-card>
 
       <!-- Индикатор загрузки -->
       <div v-if="isLoading" class="text-center q-pa-xl">
@@ -12,7 +53,6 @@
       <!-- Блок выбора типа экзамена и задания -->
       <div v-else-if="!tasks && !exams && !isLoading" class="text-center">
 
-        <!-- Заголовок текущего шага -->
         <div class="q-mb-xl">
           <h1 class="text-h5 text-weight-bold text-grey-9 q-mb-sm">
             {{ currentStepTitle }}
@@ -20,6 +60,12 @@
           <p class="text-body2 text-grey-6">
             Выберите один из вариантов ниже
           </p>
+        </div>
+
+        <!-- Индикатор генерации случайного варианта -->
+        <div v-if="isGeneratingRandom" class="text-center q-pa-xl">
+          <q-spinner-dots color="primary" size="3rem" />
+          <p class="text-body1 text-grey-7 q-mt-md">Создаём случайный вариант...</p>
         </div>
 
         <!-- ШАГ 1: Выбор типа экзамена (ОГЭ / ЕГЭ) -->
@@ -35,7 +81,6 @@
           </q-card>
         </div>
 
-        <!-- ШАГ 2 и далее -->
         <div v-else class="options-grid">
           <q-card v-for="option in currentStepOptions" :key="option.id" class="option-card cursor-pointer"
             @click="handleStepSelection(option)">
@@ -50,7 +95,7 @@
 
       </div>
 
-      <!-- Сообщение об отсутствии данных (только если загрузка завершена и данных нет) -->
+      <!-- Сообщение об отсутствии данных -->
       <q-banner
         v-else-if="!isLoading && ((selectedTaskType?.id === 2 && tasks && tasks.length === 0) || (selectedTaskType?.id === 1 && exams && exams.length === 0))"
         class="no-data-banner q-mb-lg" rounded>
@@ -100,8 +145,9 @@ export default {
         { id: 2, label: 'По заданиям' }
       ],
       examTypes: [
-        { id: 1, label: 'Авторские варианты' },
-        { id: 2, label: 'На основе открытого банка ФИПИ' }
+        { id: 1, label: 'Авторские варианты', type: 'author' },
+        { id: 2, label: 'На основе открытого банка ФИПИ', type: 'fipi' },
+        { id: 3, label: 'Случайный вариант', type: 'random' }
       ],
       ogeTaskSubTypes: [
         { id: 1, label: 'Задание 1' },
@@ -119,7 +165,8 @@ export default {
       selectedExamType: null,
       tasks: null,
       exams: null,
-      isLoading: false
+      isLoading: false,
+      isGeneratingRandom: false
     }
   },
   computed: {
@@ -138,22 +185,52 @@ export default {
       if (this.selectedMainType.id === 2 && this.selectedTaskType.id === 2) return this.egeTaskSubTypes
       if (!this.selectedExamType && this.selectedTaskType.label === 'Экзамен' && this.selectedMainType.label === 'ОГЭ') return this.examTypes
       return []
+    },
+    hasAnySelection() {
+      return !!(this.selectedMainType || this.selectedTaskType || this.selectedExamType)
     }
   },
   methods: {
+    goBack() {
+      if (this.selectedExamType) {
+        this.selectedExamType = null
+        this.exams = null
+        this.tasks = null
+        return
+      }
+      if (this.selectedTaskType) {
+        this.selectedTaskType = null
+        this.exams = null
+        this.tasks = null
+        return
+      }
+      if (this.selectedMainType) {
+        this.selectedMainType = null
+        this.exams = null
+        this.tasks = null
+        return
+      }
+    },
     getOptionIcon(option) {
-      if (option.type === 'oge' || option.type === 'ege') return 'sym_o_school'
+      if (option.type === 'oge') return 'sym_o_menu_book'
+      if (option.type === 'ege') return 'sym_o_school'
       if (option.label === 'Экзамен') return 'sym_o_quiz'
       if (option.label === 'По заданиям') return 'sym_o_task'
       if (option.label.includes('Авторские')) return 'sym_o_edit_note'
       if (option.label.includes('ФИПИ')) return 'sym_o_database'
+      if (option.type === 'random') return 'sym_o_shuffle'
       if (option.label.includes('Задание')) return 'sym_o_assignment'
       return 'sym_o_circle'
     },
     selectMainType(type) {
       this.selectedMainType = type
     },
-    handleStepSelection(type) {
+    async handleStepSelection(type) {
+      if (type.type === 'random') {
+        await this.generateRandomExam()
+        return
+      }
+
       if (!this.selectedTaskType) {
         this.selectedTaskType = type
         if (this.selectedMainType?.id === 2 && this.selectedTaskType?.id === 1) {
@@ -168,6 +245,32 @@ export default {
         this.fetchExams(type.id)
       }
     },
+    async generateRandomExam() {
+      this.isGeneratingRandom = true
+      try {
+        const result = await this.store.generateRandomExam(this.selectedMainType.id)
+
+        if (result.warnings && result.warnings.length > 0) {
+          this.$q.notify({
+            color: 'warning',
+            message: 'Некоторые задания не были найдены',
+            icon: 'sym_o_warning'
+          })
+        }
+        this.router.push('/exam')
+      } catch (error) {
+        const errMsg = error.response?.data?.error || 'Ошибка генерации варианта'
+        const details = error.response?.data?.details || []
+
+        this.$q.notify({
+          color: 'negative',
+          message: errMsg + (details.length ? ': ' + details.join(', ') : ''),
+          icon: 'sym_o_warning'
+        })
+      } finally {
+        this.isGeneratingRandom = false
+      }
+    },
     resetSelection() {
       this.selectedMainType = null
       this.selectedTaskType = null
@@ -176,7 +279,7 @@ export default {
       this.exams = null
     },
     fetchExams() {
-      this.isLoading = true  // Включаем индикатор загрузки
+      this.isLoading = true
       let fipi = null;
       if (this.selectedMainType?.label === 'ОГЭ' && this.selectedExamType) {
         fipi = this.selectedExamType.id === 1 ? 0 : 1;
@@ -198,11 +301,11 @@ export default {
           })
         })
         .finally(() => {
-          this.isLoading = false  // Выключаем индикатор загрузки в любом случае
+          this.isLoading = false
         });
     },
     fetchTasksByType(examType, taskSubTypeId) {
-      this.isLoading = true  // Включаем индикатор загрузки
+      this.isLoading = true
       this.store
         .getTasksByType(examType, taskSubTypeId)
         .then((result) => {
@@ -219,7 +322,7 @@ export default {
           })
         })
         .finally(() => {
-          this.isLoading = false  // Выключаем индикатор загрузки в любом случае
+          this.isLoading = false
         });
     }
   }
@@ -232,13 +335,19 @@ export default {
   border-radius: 16px !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
   border: 1px solid rgba(0, 0, 0, 0.03) !important;
+  max-width: 900px !important;
+  margin: 0 auto 1.5rem auto !important;
+  /* Центрирование карточки */
 }
 
-/* Чипы выбора */
-.selection-chips {
+/* Контейнер внутри карточки */
+:deep(.selection-card .row) {
   display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Центрирование содержимого */
+  gap: 1rem;
   flex-wrap: wrap;
-  gap: 0.5rem;
 }
 
 :deep(.selection-chip) {
@@ -259,13 +368,108 @@ export default {
   background-color: rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Сетка кнопок выбора */
+/* Чипы выбора */
+.selection-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+:deep(.selection-chip) {
+  border-radius: 24px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: auto !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease !important;
+}
+
+:deep(.selection-chip:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Контейнер внутри чипа */
+.chip-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 8px 16px 8px 12px;
+}
+
+/* Иконка внутри чипа */
+.chip-content .q-icon {
+  flex-shrink: 0;
+}
+
+/* Текст внутри чипа */
+.chip-text {
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 600px) {
+  .selection-chips {
+    gap: 0.5rem;
+  }
+
+  :deep(.selection-chip) {
+    border-radius: 20px !important;
+  }
+
+  .chip-content {
+    padding: 6px 12px 6px 10px;
+    gap: 0.4rem;
+  }
+
+  .chip-content .q-icon {
+    font-size: 18px !important;
+  }
+
+  .chip-text {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .chip-content {
+    padding: 5px 10px 5px 8px;
+  }
+
+  .chip-text {
+    font-size: 0.8rem;
+  }
+}
+
+/* Кнопка сброса */
+:deep(.reset-btn) {
+  border-radius: 12px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+:deep(.reset-btn:hover) {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Сетка выбора: 2 колонки, последний элемент по центру */
 .options-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 1.5rem;
   max-width: 900px;
   margin: 0 auto;
+}
+
+/* Каждая карточка занимает 50% ширины */
+.options-grid .option-card {
+  flex: 0 0 calc(50% - 0.75rem);
+  max-width: calc(50% - 0.75rem);
 }
 
 /* Карточки вариантов */
@@ -297,30 +501,27 @@ export default {
   color: #856404 !important;
 }
 
-/* Адаптивность */
-@media (max-width: 1024px) {
-  .options-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-  }
+/* Кнопка Назад */
+:deep(.back-btn) {
+  border-radius: 10px !important;
+  transition: all 0.2s ease !important;
+  padding: 6px 16px !important;
 }
 
-@media (max-width: 600px) {
-  .options-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+:deep(.back-btn:hover) {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  transform: translateX(-2px);
+}
 
+:deep(.back-btn .q-icon) {
+  font-size: 1.3rem !important;
+  margin-right: 4px !important;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
   :deep(.selection-card .q-card__section) {
     padding: 1rem !important;
-  }
-
-  .text-h6 {
-    font-size: 1.1rem !important;
-  }
-
-  .text-h5 {
-    font-size: 1.3rem !important;
   }
 
   .selection-chips {
@@ -333,13 +534,67 @@ export default {
   }
 }
 
-@media (max-width: 400px) {
-  .options-grid {
-    gap: 0.75rem;
+@media (max-width: 600px) {
+  .options-grid .option-card {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .text-h6 {
+    font-size: 1.1rem !important;
+  }
+
+  .text-h5 {
+    font-size: 1.3rem !important;
   }
 
   :deep(.option-card .q-card__section) {
     padding: 1.25rem !important;
+  }
+}
+
+/* Кнопки управления (Назад, Сбросить) */
+.selection-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* Кнопка Назад */
+:deep(.back-btn) {
+  border-radius: 10px !important;
+  transition: all 0.2s ease !important;
+  padding: 6px 16px !important;
+}
+
+:deep(.back-btn:hover) {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  transform: translateX(-2px);
+}
+
+:deep(.back-btn .q-icon) {
+  font-size: 1.3rem !important;
+  margin-right: 4px !important;
+}
+
+@media (max-width: 600px) {
+  :deep(.selection-card) {
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  :deep(.selection-card .q-card__section) {
+    padding: 1rem !important;
+  }
+
+  .selection-chips {
+    gap: 0.3rem;
+  }
+
+  :deep(.selection-chip) {
+    padding: 6px 12px !important;
+    font-size: 0.85rem !important;
   }
 }
 </style>

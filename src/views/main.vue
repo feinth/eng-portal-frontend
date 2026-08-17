@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-md md:q-pa-lg bg-white">
     <div class="max-w-5xl mx-auto">
-      
+
       <!-- Приветственный текст -->
       <div class="mb-8 space-y-6">
         <p class="text-lg leading-relaxed text-gray-700 text-justify">
@@ -49,7 +49,7 @@
       <!-- Карточка преподавателя (адаптивная) -->
       <q-card class="teacher-card q-mb-lg">
         <q-card-section horizontal class="teacher-card-section">
-          
+
           <!-- Текстовая часть -->
           <q-card-section class="col-12 col-md-7 q-pa-lg">
             <div class="text-overline text-primary q-mb-xs">О преподавателе</div>
@@ -62,12 +62,7 @@
 
           <!-- Фотография -->
           <q-card-section class="col-12 col-md-5 flex flex-center q-pa-lg">
-            <q-img
-              src="@/assets/teacher-photo.jpg"
-              alt="Teacher Photo"
-              class="teacher-photo"
-              fit="cover"
-            />
+            <q-img src="@/assets/teacher-photo.jpg" alt="Teacher Photo" class="teacher-photo" fit="cover" />
           </q-card-section>
 
         </q-card-section>
@@ -127,7 +122,7 @@ export default {
   text-align: justify;
 }
 
-.space-y-6 > * + * {
+.space-y-6>*+* {
   margin-top: 1.5rem;
 }
 
@@ -186,7 +181,7 @@ export default {
   .max-w-5xl {
     max-width: 100%;
   }
-  
+
   :deep(.q-card-section.q-pa-lg) {
     padding: 1.5rem !important;
   }
