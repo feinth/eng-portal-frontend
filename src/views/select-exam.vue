@@ -37,8 +37,8 @@
           <div class="selection-actions">
             <q-btn flat dense no-caps icon="sym_o_arrow_back" label="Назад" color="grey-7" @click="goBack"
               class="back-btn q-mr-sm" />
-            <q-btn flat dense no-caps icon="sym_o_refresh" label="Сбросить" color="grey-7" @click="resetSelection"
-              class="reset-btn" />
+            <!-- <q-btn flat dense no-caps icon="sym_o_refresh" label="Сбросить" color="grey-7" @click="resetSelection"
+              class="reset-btn" /> -->
           </div>
 
         </q-card-section>
