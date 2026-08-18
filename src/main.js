@@ -17,6 +17,8 @@ import quasarLang from 'quasar/lang/ru'
 import storeWatcherPlugin from './plugins/store.watcher'
 import { router } from './router/router'
 
+import { initMetrika } from '@/plugins/metrika'
+
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)
@@ -29,3 +31,4 @@ app.use(Quasar, {
 })
 app.use(storeWatcherPlugin)
 app.mount('#app')
+initMetrika()

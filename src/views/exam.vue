@@ -316,6 +316,7 @@ export default {
         this.createdAnswerData = result
         this.pollForAnswerArchive(this.createdAnswerData.id)
       })
+      trackGoal('exam_finished')
     },
     pollForAnswerArchive(id) {
       this.pollingInterval = setInterval(async () => {

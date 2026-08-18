@@ -65,3 +65,19 @@ router.beforeEach(async (to) => {
     return '/login'
   }
 })
+
+let isFirstNavigation = true
+
+router.afterEach((to) => {
+  // Бонус: обновляем заголовок вкладки из meta
+  if (to.meta.title) {
+    document.title = to.meta.title
+  }
+
+  if (isFirstNavigation) {
+    isFirstNavigation = false
+    return
+  }
+
+  trackPageView(to)
+})
