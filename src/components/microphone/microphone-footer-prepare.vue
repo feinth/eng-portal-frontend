@@ -137,8 +137,8 @@ export default {
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: #FFFFFF;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  background-color: #e4f3fb;
+  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.08);
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   z-index: 1000;
 }

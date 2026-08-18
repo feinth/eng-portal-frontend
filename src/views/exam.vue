@@ -181,7 +181,7 @@
         <!-- Список выполненных заданий -->
         <div class="completed-tasks-section">
           <h3 class="text-h5 text-weight-bold text-grey-9 q-mb-lg">
-            Ваши ответы
+            Ваш вариант
           </h3>
           <div class="tasks-grid">
             <q-card

@@ -1,12 +1,16 @@
 <template>
   <div class="fixed-footer px-4">
     <q-toolbar>
-      <!-- Иконка микрофона -->
-      <div class="flex items-center">
         <div class="mr-4 flex items-center">
-          <q-btn color="red" icon="sym_o_mic" label="Recording" no-caps class="w-32" />
+          <q-btn
+            unelevated
+            color="negative"
+            icon="sym_o_mic"
+            label="Запись"
+            no-caps
+            class="record-btn"
+          />
         </div>
-      </div>
 
       <!-- Прогресс-бар -->
       <div class="flex-grow flex items-center justify-center">

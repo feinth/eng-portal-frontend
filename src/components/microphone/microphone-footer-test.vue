@@ -321,7 +321,7 @@ export default {
 
 /* Красная кнопка остановки записи */
 :deep(.stop-btn) {
-  box-shadow: 0 4px 12px rgba(255, 181, 167, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(255, 177, 167, 0.4) !important;
 }
 
 :deep(.stop-btn:hover) {

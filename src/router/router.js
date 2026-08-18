@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import PortalLayout from '../layouts/portal-layout.vue'
 import TrainerLayout from '../layouts/trainer-layout.vue'
 import { useUserStore } from '../stores/user.store'
+import { trackPageView } from '../plugins/metrika'
+
 export const router = createRouter({
   history: createWebHistory('/'),
   routes: [
