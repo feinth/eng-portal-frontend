@@ -40,14 +40,11 @@ export default {
           clearInterval(countdown)
 
           await this.audioStore.playIntroAudio()
-
           if (this.audioSrc) {
-            this.$emit('countdown-finished')
             this.audioStore.initAudioContext()
             await this.audioStore.fetchAndPlayAudio(this.audioSrc)
-          } else {
-            this.$emit('countdown-finished')
           }
+          this.$emit('countdown-finished')
         }
       }, 1000)
     }
@@ -66,6 +63,7 @@ export default {
   height: 100vh;
   font-size: 2rem;
 }
+
 .timer-container {
   display: flex;
   flex-direction: column;

@@ -7,22 +7,22 @@
       :type="'test'"
       @countdown-finished="startPrepare"
     />
-    <div class="bg-gray-100 p-4 rounded-lg shadow-md" v-if="prepareStarted">
-      <p class="text-h4 font-bold text-gray-800 mt-4">
-        {{ `Task ${task.number}.` }}
-      </p>
-      <p class="text-h5 font-bold text-gray-800 mt-4">
-        {{ task.header }}
-      </p>
+
+    <!-- Режим подготовки -->
+    <div class="task-container mode-block" v-if="prepareStarted">
+      <div class="task-intro">
+        <span class="task-title">{{ `Task ${task.number}.` }}</span>
+        <span class="task-header">{{ task.header }}</span>
+      </div>
       <MicrophoneFooterPrepare :timeout="20" @prepare-completed="prepareStop" />
     </div>
-    <div class="bg-gray-100 p-4 rounded-lg shadow-md" v-if="interviewStarted">
-      <p class="text-h4 font-bold text-gray-800 mt-4">
-        {{ `Task ${task.number}.` }}
-      </p>
-      <p class="text-h4 font-bold text-gray-800 mt-4">
-        {{ `Interviewer` }}
-      </p>
+
+    <!-- Режим интервью (воспроизведение аудио) -->
+    <div class="task-container" v-if="interviewStarted">
+      <div class="task-intro">
+        <span class="task-title">{{ `Task ${task.number}.` }}</span>
+        <span class="task-header">{{ `Interviewer` }}</span>
+      </div>
     </div>
 
     <Timer
@@ -31,14 +31,14 @@
       :type="'answer'"
       @countdown-finished="startRecord"
     />
+
+    <!-- Режим ответа на вопрос -->
     <div v-else-if="questionStarted">
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md">
-        <p class="text-h4 font-bold text-gray-800 mt-4">
-          {{ `Task ${task.number}.` }}
-        </p>
-        <p class="text-h4 font-bold text-gray-800 mt-4">
-          {{ `Interviewer: question ${currentQuestionIndex + 1}` }}
-        </p>
+      <div class="task-container mode-block">
+        <div class="task-intro">
+          <span class="task-title">{{ `Task ${task.number}.` }}</span>
+          <span class="task-header">{{ `Interviewer: question ${currentQuestionIndex + 1}` }}</span>
+        </div>
         <MicrophoneFooterRecord
           :key="currentQuestionIndex"
           :timeout="task.execution_seconds"
@@ -169,3 +169,73 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* Контейнер задания */
+.task-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 3rem;
+  background-color: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+/* Отступ снизу, чтобы фиксированный футер не перекрывал контент */
+.mode-block {
+  padding-bottom: 7rem;
+}
+
+/* Заголовок + текст в одну строку */
+.task-intro {
+  margin-bottom: 1.5rem;
+  line-height: 1.9;
+}
+
+.task-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--q-primary);
+  margin-right: 0.5rem;
+  line-height: 1.3;
+}
+
+/* Текст продолжается в строку после заголовка */
+.task-header {
+  font-size: 1.1rem;
+  line-height: 1.9;
+  color: #2B2D42;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .task-container {
+    padding: 1.75rem 1.5rem;
+    border-radius: 16px;
+  }
+
+  .mode-block {
+    padding-bottom: 6rem;
+  }
+
+  .task-title {
+    font-size: 1.6rem;
+  }
+
+  .task-header {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .task-container {
+    padding: 1.25rem 1rem;
+    border-radius: 12px;
+  }
+
+  .task-title {
+    font-size: 1.4rem;
+  }
+}
+</style>

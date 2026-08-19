@@ -182,6 +182,18 @@ export const useExamStore = defineStore({
           reject(err)
         }
       })
-    }
-  }
+    },
+    resetExamStore() {
+      this.taskAnswers = []
+      this.exams = null
+      this.currentExam = null
+      this.answerParams = null
+      this.typeExam = null
+
+      // Очищаем localStorage
+      localStorage.removeItem('exams')
+      localStorage.removeItem('currentExam')
+      localStorage.removeItem('answerParams')
+    },
+  },
 })

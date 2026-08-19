@@ -128,7 +128,7 @@
 
         <!-- Список выполненных заданий -->
         <div class="completed-tasks-section">
-          <h3 class="text-h5 text-weight-bold text-grey-9 q-mb-lg">
+          <h3 class="text-h5 text-center text-weight-bold text-grey-9 q-mb-lg">
             Ваш вариант
           </h3>
           <div class="tasks-grid">
@@ -158,7 +158,6 @@ import Task4Content from '../components/tasks/Task4Content.vue'
 import { useExamStore } from '../stores/exam.store'
 import MicrophoneFooterTest from '../components/microphone/microphone-footer-test.vue'
 import { useAudioStore } from '../stores/audio.store'
-
 export default {
   components: {
     Task1,
@@ -224,6 +223,17 @@ export default {
       return this.audioStore.audioUrl
     }
   },
+  unmounted() {
+    // Очищаем интервал опроса результатов (если он был запущен)
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval)
+      this.pollingInterval = null
+    }
+
+    // Сбрасываем все сторы, кроме пользовательского
+    this.audioStore.resetAudioStore()
+    this.examStore.resetExamStore()
+  },
   methods: {
     async startExam() {
       // ← Разблокируем аудио СИНХРОННО в момент клика
@@ -259,7 +269,6 @@ export default {
         this.createdAnswerData = result
         this.pollForAnswerArchive(this.createdAnswerData.id)
       })
-      trackGoal('exam_finished')
     },
     pollForAnswerArchive(id) {
       this.pollingInterval = setInterval(async () => {

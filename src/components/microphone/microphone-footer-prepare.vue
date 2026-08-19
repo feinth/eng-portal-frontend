@@ -5,7 +5,7 @@
       <!-- Левая часть: статус подготовки -->
       <div class="status-section">
         <q-icon 
-          name="sym_o_mic" 
+          name="sym_o_timer" 
           size="1.5rem" 
           class="text-primary" 
         />
@@ -23,16 +23,17 @@
             color="primary"
             track-color="grey-3"
             class="custom-progress"
-          >
-            <div class="progress-content">
-              <q-badge 
-                color="white" 
-                text-color="primary" 
-                :label="countdown"
-                class="time-badge"
-              />
-            </div>
-          </q-linear-progress>
+          />
+          
+          <!-- Таймер ПОД прогресс-баром (всегда виден) -->
+          <div class="timer-overlay">
+            <q-badge 
+              color="white" 
+              text-color="primary" 
+              :label="countdown"
+              class="time-badge"
+            />
+          </div>
         </div>
       </div>
 
@@ -95,13 +96,20 @@ export default {
         }
       }, 1000)
     },
+    
     stopPrepare() {
-      clearInterval(this.timer)
+      if (this.timer) {
+        clearInterval(this.timer)
+        this.timer = null
+      }
+      this.timeLeft = 0
       this.completeTask()
     },
+    
     completeTask() {
       this.$emit('prepare-completed')
     },
+    
     async startPlayAudioBefore() {
       if (!this.audioSrc) {
         this.startPrepare()
@@ -116,8 +124,12 @@ export default {
         }
 
         this.isAudioPlaying = true
-        await audioStore.fetchAndPlayAudio(this.audioSrc)
+        await audioStore.playPreloadedAudio(this.audioSrc)
       } catch (error) {
+        this.$q.notify({
+          message: 'Ошибка воспроизведения аудио',
+          color: 'negative'
+        })
       } finally {
         this.isAudioPlaying = false
         this.startPrepare()
@@ -126,6 +138,12 @@ export default {
   },
   mounted() {
     this.startPlayAudioBefore()
+  },
+  beforeUnmount() {
+    if (this.timer) {
+      clearInterval(this.timer)
+      this.timer = null
+    }
   }
 }
 </script>
@@ -137,8 +155,8 @@ export default {
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: #e4f3fb;
-  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.08);
+  background-color: #ddfdfa;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   z-index: 1000;
 }
@@ -148,7 +166,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.5rem;
+  padding: 0.875rem 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -158,12 +176,12 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 140px;
+  min-width: 120px;
 }
 
 .status-label {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #2B2D42;
 }
 
@@ -174,6 +192,7 @@ export default {
 }
 
 .progress-wrapper {
+  position: relative;
   width: 100%;
 }
 
@@ -187,25 +206,29 @@ export default {
   border-radius: 14px !important;
 }
 
-.progress-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+/* Таймер поверх прогресс-бара */
+.timer-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
 }
 
 /* Бейдж с таймером */
 :deep(.time-badge) {
   font-weight: 700 !important;
-  font-size: 0.95rem !important;
-  padding: 4px 12px !important;
+  font-size: 1rem !important;
+  padding: 6px 16px !important;
   border-radius: 20px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  background-color: #FFFFFF !important;
+  color: var(--q-primary) !important;
 }
 
 /* Секция действий */
 .action-section {
-  min-width: 140px;
+  min-width: 120px;
   display: flex;
   justify-content: flex-end;
 }
@@ -237,7 +260,7 @@ export default {
 /* Адаптивность */
 @media (max-width: 768px) {
   .footer-container {
-    padding: 0.875rem 1rem;
+    padding: 0.75rem 1rem;
     gap: 0.75rem;
   }
 
@@ -260,16 +283,21 @@ export default {
   .progress-section {
     max-width: none;
   }
+
+  :deep(.time-badge) {
+    font-size: 0.9rem !important;
+    padding: 5px 14px !important;
+  }
 }
 
 @media (max-width: 480px) {
   .footer-container {
-    padding: 0.75rem;
+    padding: 0.625rem 0.75rem;
   }
 
   :deep(.time-badge) {
     font-size: 0.85rem !important;
-    padding: 3px 10px !important;
+    padding: 4px 12px !important;
   }
 }
 </style>

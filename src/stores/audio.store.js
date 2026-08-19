@@ -99,7 +99,7 @@ export const useAudioStore = defineStore('audio', () => {
       audio.onerror = (e) => reject(e)
       audio.play().catch(err => {
         Notify.create({
-          message: 'Не удалось воспроизвести аудио. Тапните по экрану и попробуйте снова.',
+          message: 'Не удалось воспроизвести аудио',
           color: 'warning'
         })
         reject(err)
@@ -107,7 +107,6 @@ export const useAudioStore = defineStore('audio', () => {
     })
   }
 
-  // ← НОВЫЙ МЕТОД: предзагрузка audioGuidance и intro аудио в память
   const preloadAudioGuidance = async () => {
     try {
       const api = (await import('../api/api')).default
@@ -266,6 +265,40 @@ export const useAudioStore = defineStore('audio', () => {
     })
   }
 
+  const resetAudioStore = () => {
+    if (isRecording.value && mediaRecorder.value) {
+      try {
+        mediaRecorder.value.stream.getTracks().forEach((track) => track.stop())
+        mediaRecorder.value.stop()
+      } catch (err) {
+        // Игнорируем ошибки при остановке
+      }
+    }
+
+
+    // Освобождаем URL аудио-блоба
+    if (audioUrl.value) {
+      URL.revokeObjectURL(audioUrl.value)
+    }
+
+    // Закрываем AudioContext
+    if (audioContext.value) {
+      audioContext.value.close().catch(() => {})
+      audioContext.value = null
+    }
+
+    // Сбрасываем все состояния
+    mediaRecorder.value = null
+    audioChunks.value = []
+    audioBlob.value = null
+    audioUrl.value = null
+    isRecording.value = false
+    error.value = null
+    isIntroAudioPlayed.value = false
+    isUnlocked.value = false
+    isAudioContextAllowed.value = false
+  }
+
   return {
     mediaRecorder,
     audioBlob,
@@ -283,6 +316,7 @@ export const useAudioStore = defineStore('audio', () => {
     unlockAudio,
     isUnlocked,
     preloadAudioGuidance,
-    playIntroAudio
+    playIntroAudio,
+    resetAudioStore
   }
 })

@@ -1,9 +1,5 @@
 <template>
   <div class="q-mt-lg">
-    <div class="text-h6 text-weight-medium text-grey-8 q-mb-md">
-      Доступные варианты
-    </div>
-    
     <div class="tasks-grid">
       <q-card
         v-for="task in tasks"
@@ -44,8 +40,6 @@ export default {
   methods: {
     fetchTaskDetails(id) {
       const examStore = useExamStore()
-      // ИСПРАВЛЕН БАГ: оборачиваем router.push в стрелочную функцию,
-      // чтобы редирект произошел ТОЛЬКО после успешной загрузки данных
       examStore.getTasksById(id).then(() => {
         router.push('/exam')
       }).catch(() => {
@@ -61,55 +55,36 @@ export default {
 </script>
 
 <style scoped>
-/* Адаптивная сетка карточек */
 .tasks-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-/* Стиль карточки варианта */
-:deep(.task-card) {
-  border-radius: 16px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
-  border: 1px solid rgba(0, 0, 0, 0.05) !important;
-  transition: all 0.25s ease !important;
+.tasks-grid .task-card {
+  flex: 0 0 calc(50% - 0.75rem);
+  max-width: calc(50% - 0.75rem);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
   overflow: hidden;
 }
 
-:deep(.task-card:hover) {
+.tasks-grid .task-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
-  border-color: var(--q-primary) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-color: var(--q-primary);
 }
 
-:deep(.task-card:active) {
-  transform: translateY(-2px);
-}
-
-/* Адаптивность */
+/* Адаптив: на мобильных — одна карточка в ряд */
 @media (max-width: 600px) {
-  .tasks-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-
-  :deep(.task-card .q-card__section) {
-    padding: 1rem !important;
-  }
-
-  :deep(.task-card .q-icon) {
-    font-size: 2rem !important;
-  }
-
-  .text-subtitle1 {
-    font-size: 0.95rem !important;
-  }
-}
-
-@media (max-width: 400px) {
-  .tasks-grid {
-    grid-template-columns: 1fr;
+  .tasks-grid .task-card {
+    flex: 0 0 100%;
+    max-width: 100%;
   }
 }
 </style>
