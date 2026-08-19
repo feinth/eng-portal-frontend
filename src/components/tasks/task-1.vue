@@ -5,7 +5,7 @@
     </div>
 
     <div v-if="showTimerAnswer">
-      <Timer :duration="5" :audioSrc="this.examStore.audioGuidance.before_task_audio" :type="'answer'"
+      <Timer :duration="5" :audioSrc="this.audioStore.audioGuidance.before_task_audio" :type="'answer'"
         @countdown-finished="startRecord" />
     </div>
 
@@ -28,7 +28,7 @@ import Timer from '../utils/timer.vue'
 import Task1Content from './Task1Content.vue'
 import MicrophoneFooterPrepare from '../microphone/microphone-footer-prepare.vue'
 import MicrophoneFooterRecord from '../microphone/microphone-footer-record.vue'
-import { useExamStore } from '../../stores/exam.store'
+import { useAudioStore } from '../../stores/audio.store'
 
 export default {
   components: {
@@ -48,7 +48,7 @@ export default {
       taskStarted: false,
       recordStarted: false,
       currentState: 'prepare',
-      examStore: useExamStore(),
+      audioStore: useAudioStore(),
       showTimerPrepare: false,
       showTimerAnswer: false,
       showTask: false

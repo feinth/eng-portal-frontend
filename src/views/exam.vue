@@ -1,19 +1,15 @@
 <template>
   <q-page class="q-pa-md md:q-pa-lg">
     <div class="max-w-5xl mx-auto">
-      
+
       <!-- ЭКРАН 1: Проверка микрофона -->
       <div v-if="!checkedMicrophone">
-        
+
         <!-- Запрос разрешения -->
         <div v-if="!microphonePermission" class="microphone-check-card">
           <q-card>
             <q-card-section class="text-center q-pa-xl">
-              <q-icon 
-                name="sym_o_mic" 
-                size="4rem" 
-                class="text-primary q-mb-lg" 
-              />
+              <q-icon name="sym_o_mic" size="4rem" class="text-primary q-mb-lg" />
               <h1 class="text-h5 text-weight-bold text-grey-9 q-mb-md">
                 Проверка микрофона
               </h1>
@@ -21,15 +17,8 @@
                 Для прохождения экзамена необходим доступ к микрофону.
                 Пожалуйста, разрешите доступ, чтобы продолжить.
               </p>
-              <q-btn
-                unelevated
-                color="primary"
-                label="Разрешить доступ к микрофону"
-                icon="sym_o_mic"
-                size="lg"
-                class="permission-btn"
-                @click="checkMicrophonePermission"
-              />
+              <q-btn unelevated color="primary" label="Разрешить доступ к микрофону" icon="sym_o_mic" size="lg"
+                class="permission-btn" @click="checkMicrophonePermission" />
             </q-card-section>
           </q-card>
         </div>
@@ -60,72 +49,42 @@
                 Если вы уже проверяли микрофон, можете сразу начать экзамен.
               </q-banner>
 
-              <q-btn
-                unelevated
-                color="primary"
-                label="Начать экзамен"
-                icon="sym_o_play_arrow"
-                size="lg"
-                class="start-exam-btn full-width"
-                @click="startExam"
-              />
+              <q-btn unelevated color="primary" label="Начать экзамен" icon="sym_o_play_arrow" size="lg"
+                class="start-exam-btn full-width" @click="startExam" />
             </q-card-section>
           </q-card>
 
           <!-- Компонент теста микрофона -->
           <div class="q-mt-lg">
-            <MicrophoneFooterTest
-              :timeout="10"
-              type="prepare"
-              @stop="stopRecording"
-              @start="startRecording"
-            />
+            <MicrophoneFooterTest :timeout="10" type="prepare" @stop="stopRecording" @start="startRecording" />
           </div>
         </div>
       </div>
 
       <!-- ЭКРАН 2: Процесс экзамена -->
       <div v-if="checkedMicrophone" class="exam-container">
-        
+
         <!-- Индикатор загрузки -->
-        <q-inner-loading
-          v-if="examStarted && !examData && !audioGuidance"
-          :showing="!examData"
-          label="Идет загрузка заданий..."
-          label-class="text-grey-7"
-        />
+        <q-inner-loading v-if="examStarted && !examData && !audioGuidance" :showing="!examData"
+          label="Идет загрузка заданий..." label-class="text-grey-7" />
 
         <!-- Текущее задание -->
         <div v-else-if="currentTaskComponent">
-          <component
-            v-show="!createdAnswerData"
-            :is="currentTaskComponent"
-            :task="currentTask"
-            @next-task="nextTask"
-          />
+          <component v-show="!createdAnswerData" :is="currentTaskComponent" :task="currentTask" @next-task="nextTask" />
         </div>
       </div>
 
       <!-- ЭКРАН 3: Сохранение результатов -->
-      <q-inner-loading
-        v-if="createdAnswerData && !createdArchiveUrl"
-        :showing="!createdArchiveUrl"
-        label="Сохранение задания, пожалуйста, подождите..."
-        label-class="text-grey-7"
-      />
+      <q-inner-loading v-if="createdAnswerData && !createdArchiveUrl" :showing="!createdArchiveUrl"
+        label="Сохранение задания, пожалуйста, подождите..." label-class="text-grey-7" />
 
       <!-- ЭКРАН 4: Результаты экзамена -->
       <div v-if="createdArchiveUrl" class="results-container">
-        
+
         <!-- Карточка поздравления -->
         <q-card class="congratulations-card q-mb-xl">
           <q-card-section class="q-pa-xl text-center">
-            <q-icon 
-              name="sym_o_celebration" 
-              size="5rem" 
-              color="positive" 
-              class="q-mb-lg" 
-            />
+            <q-icon name="sym_o_celebration" size="5rem" color="positive" class="q-mb-lg" />
             <h2 class="text-h4 text-weight-bold text-grey-9 q-mb-md">
               Поздравляем!
             </h2>
@@ -141,24 +100,13 @@
             </div>
 
             <!-- Кнопка скачивания -->
-            <q-btn
-              unelevated
-              color="primary"
-              label="Скачать результаты"
-              icon="sym_o_download"
-              size="lg"
-              class="download-btn full-width q-mb-lg"
-              @click="loadAnswers()"
-            />
+            <q-btn unelevated color="primary" label="Скачать результаты" icon="sym_o_download" size="lg"
+              class="download-btn full-width q-mb-lg" @click="loadAnswers()" />
 
             <!-- Ссылка для скачивания -->
             <div class="download-link-section q-mb-lg">
               <p class="text-caption text-grey-6 q-mb-xs">Прямая ссылка:</p>
-              <a 
-                :href="urlForDownload" 
-                target="_blank" 
-                class="download-link"
-              >
+              <a :href="urlForDownload" target="_blank" class="download-link">
                 {{ urlForDownload }}
               </a>
             </div>
@@ -184,11 +132,7 @@
             Ваш вариант
           </h3>
           <div class="tasks-grid">
-            <q-card
-              v-for="(task, index) in completedTasks"
-              :key="index"
-              class="completed-task-card"
-            >
+            <q-card v-for="(task, index) in completedTasks" :key="index" class="completed-task-card">
               <q-card-section>
                 <component :is="getTaskContent(task)" :task="task" />
               </q-card-section>
@@ -281,15 +225,14 @@ export default {
     }
   },
   methods: {
-    startExam() {
+    async startExam() {
+      // ← Разблокируем аудио СИНХРОННО в момент клика
       this.audioStore.unlockAudio()
+
       this.checkedMicrophone = true
       this.examStarted = true
       this.examStore.taskAnswers = []
 
-      this.examStore.getAudioGuidance().then((response) => {
-        this.audioGuidance = response
-      })
       this.examData = this.examStore.currentExam.sort((a, b) => a.type - b.type)
     },
     playEndAudio() {
@@ -358,13 +301,19 @@ export default {
       }
     },
     async checkMicrophonePermission() {
+      // Разблокируем аудио
       this.audioStore.unlockAudio()
+
       try {
         this.microphonePermission = await this.audioStore.initRecorder()
 
         if (!this.audioStore.audioContext) {
           this.audioStore.initAudioContext()
         }
+
+        // ← ВАЖНО: предзагружаем audioGuidance И intro аудио в память
+        await this.audioStore.preloadAudioGuidance()
+
       } catch (e) {
         this.$q.notify({
           message: 'Доступ к микрофону отклонен',
@@ -535,6 +484,7 @@ export default {
 
 /* Адаптивность */
 @media (max-width: 768px) {
+
   .microphone-check-card :deep(.q-card),
   :deep(.congratulations-card) {
     border-radius: 16px !important;

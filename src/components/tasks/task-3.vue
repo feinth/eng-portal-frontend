@@ -46,7 +46,7 @@
           :assignmentId="currentQuestion.id"
           :audioBeforeSource="currentQuestion.audio"
           :betweenQuestionAudio="
-            examStore?.audioGuidance?.between_question_audio
+            audioStore?.audioGuidance?.between_question_audio
           "
           @record-completed="handleRecordCompleted"
         />
@@ -60,7 +60,6 @@ import Timer from '../utils/timer.vue'
 import MarkdownView from '../utils/markdown-view.vue'
 import MicrophoneFooterPrepare from '../microphone/microphone-footer-prepare.vue'
 import MicrophoneFooterRecord from '../microphone/microphone-footer-record.vue'
-import { useExamStore } from '../../stores/exam.store'
 import { useAudioStore } from '../../stores/audio.store'
 export default {
   components: {
@@ -83,7 +82,6 @@ export default {
       prepareStarted: false,
       questionStarted: false,
       showTimerAnswer: false,
-      examStore: useExamStore(),
       audioStore: useAudioStore()
     }
   },
@@ -141,7 +139,7 @@ export default {
       try {
         if (
           this.task.audio_after_execution &&
-          examStore.audioGuidance?.end_interview_audio
+          this.audioStore.audioGuidance?.end_interview_audio
         ) {
           // Инициализируем AudioContext если ещё не был инициализирован
           if (!this.audioStore.audioContext) {
@@ -150,7 +148,7 @@ export default {
 
           // Воспроизводим завершающее аудио
           await this.audioStore.fetchAndPlayAudio(
-            this.examStore.audioGuidance.end_interview_audio
+            this.audioStore.audioGuidance.end_interview_audio
           )
         }
       } catch (error) {

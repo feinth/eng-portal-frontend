@@ -8,7 +8,6 @@ export const useExamStore = defineStore({
     exams: JSON.parse(localStorage.getItem('exams')),
     currentExam: JSON.parse(localStorage.getItem('currentExam')),
     answerParams: null,
-    audioGuidance: null,
     typeExam: null
   }),
   actions: {
@@ -130,25 +129,6 @@ export const useExamStore = defineStore({
         }
       })
       return result
-    },
-    getAudioGuidance() {
-      return new Promise(async (resolve, reject) => {
-        try {
-          let res = await api({
-            method: 'GET',
-            url: `/audio-guidance`
-          })
-
-          this.audioGuidance = res.data
-          localStorage.setItem(
-            'audioGuidance',
-            JSON.stringify(this.audioGuidance)
-          )
-          resolve(this.audioGuidance)
-        } catch (err) {
-          reject(err)
-        }
-      })
     },
     getAnswers(id = null, withTasks = false) {
       return new Promise(async (resolve, reject) => {

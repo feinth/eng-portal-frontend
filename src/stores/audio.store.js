@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useExamStore } from './exam.store'
 import { Notify } from 'quasar'
 
 export const useAudioStore = defineStore('audio', () => {
@@ -13,9 +12,10 @@ export const useAudioStore = defineStore('audio', () => {
   const isIntroAudioPlayed = ref(false)
   const audioContext = ref(null)
   const isAudioContextAllowed = ref(false)
-  const isUnlocked = ref(false) // ← НОВОЕ: флаг разблокировки
+  const isUnlocked = ref(false)
+  const audioGuidance = ref(null)
+  const introAudioBuffer = ref(null)
 
-  // Инициализация AudioContext
   const initAudioContext = () => {
     if (!audioContext.value && typeof window !== 'undefined') {
       const AudioContext = window.AudioContext || window.webkitAudioContext
@@ -24,23 +24,17 @@ export const useAudioStore = defineStore('audio', () => {
     }
   }
 
-  // ← НОВЫЙ МЕТОД: разблокирует аудио на iOS
-  // ДОЛЖЕН вызываться СИНХРОННО в обработчике клика пользователя!
   const unlockAudio = () => {
     if (isUnlocked.value) return
     
-    // 1. Создаём AudioContext если его нет
     initAudioContext()
     
     if (!audioContext.value) return
     
-    // 2. Resume контекста (важно для iOS)
     if (audioContext.value.state === 'suspended') {
       audioContext.value.resume()
     }
     
-    // 3. Создаём пустой буфер на 0.1 секунды тишины
-    // Это "обманывает" iOS и разблокирует аудио вывод
     try {
       const buffer = audioContext.value.createBuffer(1, 1, 22050)
       const source = audioContext.value.createBufferSource()
@@ -53,7 +47,6 @@ export const useAudioStore = defineStore('audio', () => {
     }
   }
 
-  // Функция для воспроизведения аудио через AudioContext
   const playAudioWithContext = async (audioBuffer) => {
     if (!audioContext.value) {
       return
@@ -86,7 +79,6 @@ export const useAudioStore = defineStore('audio', () => {
     }
     
     if (!audioContext.value) {
-      // Фолбэк: пробуем через обычный HTMLAudioElement
       return playAudioFallback(audioSrc)
     }
 
@@ -100,7 +92,6 @@ export const useAudioStore = defineStore('audio', () => {
     }
   }
 
-  // ← НОВЫЙ МЕТОД: фолбэк через HTMLAudioElement
   const playAudioFallback = (audioSrc) => {
     return new Promise((resolve, reject) => {
       const audio = new Audio(audioSrc)
@@ -114,6 +105,61 @@ export const useAudioStore = defineStore('audio', () => {
         reject(err)
       })
     })
+  }
+
+  // ← НОВЫЙ МЕТОД: предзагрузка audioGuidance и intro аудио в память
+  const preloadAudioGuidance = async () => {
+    try {
+      const api = (await import('../api/api')).default
+      
+      const res = await api({
+        method: 'GET',
+        url: '/audio-guidance'
+      })
+
+      audioGuidance.value = res.data
+      
+      // Предзагружаем intro аудио в ArrayBuffer (в память браузера)
+      if (audioGuidance.value?.start_exam_audio) {
+        initAudioContext()
+        
+        const response = await fetch(audioGuidance.value.start_exam_audio)
+        const arrayBuffer = await response.arrayBuffer()
+        introAudioBuffer.value = await audioContext.value.decodeAudioData(arrayBuffer)
+      }
+      
+      return audioGuidance.value
+    } catch (err) {
+      Notify.create({
+        message: 'Не удалось загрузить аудио сопровождение',
+        color: 'negative'
+      })
+      throw err
+    }
+  }
+
+  const playIntroAudio = async () => {
+    if (isIntroAudioPlayed.value) return
+    
+    if (!introAudioBuffer.value) {
+      // Если буфер не предзагружен, пытаемся загрузить сейчас
+      if (audioGuidance.value?.start_exam_audio) {
+        return fetchAndPlayAudio(audioGuidance.value.start_exam_audio)
+      }
+      return
+    }
+
+    // Воспроизводим из памяти (мгновенно!)
+    try {
+      await playAudioWithContext(introAudioBuffer.value)
+      isIntroAudioPlayed.value = true
+    } catch (err) {
+      // Фолбэк на случай ошибки
+      if (audioGuidance.value?.start_exam_audio) {
+        await playAudioFallback(audioGuidance.value.start_exam_audio)
+        isIntroAudioPlayed.value = true
+      }
+    }
   }
 
   const initRecorder = async () => {
@@ -143,23 +189,6 @@ export const useAudioStore = defineStore('audio', () => {
       return false
     }
   }
-
-  const playIntroAudio = async () => {
-    return new Promise(async (resolve) => {
-      const examStore = useExamStore();
-  
-      if (
-        !isIntroAudioPlayed.value &&
-        examStore.audioGuidance?.start_exam_audio
-      ) {
-        initAudioContext();
-        await fetchAndPlayAudio(examStore.audioGuidance.start_exam_audio);
-        isIntroAudioPlayed.value = true;
-      }
-  
-      resolve();
-    });
-  };
 
   const getSupportedAudioOptions = () => {
     const audioTypes = [
@@ -243,14 +272,17 @@ export const useAudioStore = defineStore('audio', () => {
     audioUrl,
     isRecording,
     error,
+    audioGuidance,
+    introAudioBuffer,
     initRecorder,
     startRecording,
     stopRecording,
-    playIntroAudio,
     initAudioContext,
     playAudioWithContext,
     fetchAndPlayAudio,
-    unlockAudio,          // ← НОВОЕ: экспортируем
-    isUnlocked            // ← НОВОЕ: экспортируем
+    unlockAudio,
+    isUnlocked,
+    preloadAudioGuidance,
+    playIntroAudio
   }
 })

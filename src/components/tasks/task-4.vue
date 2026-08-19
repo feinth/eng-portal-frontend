@@ -2,7 +2,7 @@
   <div>
     <Timer v-if="showTimerPrepare" :duration="5" :audioSrc="task.audio_guidance" :type="'test'"
       @countdown-finished="startPrepare" />
-    <Timer v-if="showTimerAnswer" :duration="5" :audioSrc="examStore.audioGuidance.before_task_audio" :type="'answer'"
+    <Timer v-if="showTimerAnswer" :duration="5" :audioSrc="audioStore.audioGuidance.before_task_audio" :type="'answer'"
       @countdown-finished="startRecord" />
 
     <div v-if="prepareStarted || recordStarted">
@@ -23,7 +23,7 @@ import Timer from '../utils/timer.vue'
 import Task4Content from '../tasks/Task4Content.vue'
 import MicrophoneFooterPrepare from '../microphone/microphone-footer-prepare.vue'
 import MicrophoneFooterRecord from '../microphone/microphone-footer-record.vue'
-import { useExamStore } from '../../stores/exam.store'
+import { useAudioStore } from '../../stores/audio.store'
 export default {
   components: {
     Timer,
@@ -43,7 +43,7 @@ export default {
       recordStarted: false,
       showTimerPrepare: false,
       showTimerAnswer: false,
-      examStore: useExamStore(),
+      audioStore: useAudioStore(),
       prepareStarted: false
     }
   },
