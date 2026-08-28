@@ -4,6 +4,32 @@ import TrainerLayout from '../layouts/trainer-layout.vue'
 import { useUserStore } from '../stores/user.store'
 import { trackPageView } from '../plugins/metrika'
 
+
+const PAGE_META = {
+  '/': {
+    title: 'Тренажёр устной части ОГЭ и ЕГЭ по английскому языку — EnglishPortal',
+    description: 'Онлайн-тренажёр устной части ОГЭ и ЕГЭ по английскому: таймер, запись ответов, формат настоящего экзамена.'
+  },
+  '/select': {
+    title: 'Выбор экзамена — ОГЭ и ЕГЭ по английскому | EnglishPortal',
+    description: 'Выбери экзамен: ОГЭ или ЕГЭ, вариант из банка или случайная генерация, тренировка по отдельным заданиям.'
+  },
+  '/login': {
+    title: 'Вход — EnglishPortal',
+    description: 'Войди в аккаунт, чтобы сохранять результаты тренировок.'
+  }
+}
+
+function setMetaTag(attr, name, content) {
+  let el = document.head.querySelector(`meta[${attr}="${name}"]`)
+  if (!el) {
+    el = document.createElement('meta')
+    el.setAttribute(attr, name)
+    document.head.appendChild(el)
+  }
+  el.setAttribute('content', content)
+}
+
 export const router = createRouter({
   history: createWebHistory('/'),
   routes: [
@@ -82,4 +108,13 @@ router.afterEach((to) => {
   }
 
   trackPageView(to)
+
+    const meta = PAGE_META[to.path]
+  if (!meta) return
+
+  document.title = meta.title
+  setMetaTag('name', 'description', meta.description)
+  setMetaTag('property', 'og:title', meta.title)
+  setMetaTag('property', 'og:description', meta.description)
+  setMetaTag('property', 'og:url', `https://englishportal.ru${to.path}`)
 })

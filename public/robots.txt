@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /exam
+Disallow: /profile
+Disallow: /payment
+
+Sitemap: https://englishportal.ru/sitemap.xml
