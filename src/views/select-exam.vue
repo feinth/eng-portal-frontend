@@ -44,7 +44,7 @@
         </q-card-section>
       </q-card>
 
-      <!-- Индикатор загрузки -->
+      <!-- Индикатор загрузки (для списков) -->
       <div v-if="isLoading" class="text-center q-pa-xl">
         <q-spinner-dots color="primary" size="3rem" />
         <p class="text-body1 text-grey-7 q-mt-md">Загрузка...</p>
@@ -60,12 +60,6 @@
           <p class="text-body2 text-grey-6">
             Выберите один из вариантов ниже
           </p>
-        </div>
-
-        <!-- Индикатор генерации случайного варианта -->
-        <div v-if="isGeneratingRandom" class="text-center q-pa-xl">
-          <q-spinner-dots color="primary" size="3rem" />
-          <p class="text-body1 text-grey-7 q-mt-md">Создаём случайный вариант...</p>
         </div>
 
         <!-- ШАГ 1: Выбор типа экзамена (ОГЭ / ЕГЭ) -->
@@ -151,15 +145,15 @@ export default {
         { id: 3, label: 'Случайный вариант', type: 'random' }
       ],
       ogeTaskSubTypes: [
-        { id: 1, label: 'Задание 1' },
-        { id: 2, label: 'Задание 2' },
-        { id: 3, label: 'Задание 3' }
+        { id: 1, label: 'Задание 1', taskType: 1 },
+        { id: 2, label: 'Задание 2', taskType: 3 },
+        { id: 3, label: 'Задание 3', taskType: 4 }
       ],
       egeTaskSubTypes: [
-        { id: 1, label: 'Задание 1' },
-        { id: 2, label: 'Задание 2' },
-        { id: 3, label: 'Задание 3' },
-        { id: 4, label: 'Задание 4' }
+        { id: 1, label: 'Задание 1', taskType: 1 },
+        { id: 2, label: 'Задание 2', taskType: 2 },
+        { id: 3, label: 'Задание 3', taskType: 3 },
+        { id: 4, label: 'Задание 4', taskType: 4 }
       ],
       selectedMainType: null,
       selectedTaskType: null,
@@ -196,6 +190,8 @@ export default {
           const examName = this.selectedMainType.label
           return `Выберите тип варианта (${examName})`
         }
+        // Если выбрали тип варианта — но экзамены ещё не загружены
+        return `Выберите конкретный вариант (${this.selectedMainType.label})`
       }
 
       return ''
@@ -276,9 +272,9 @@ export default {
         return
       }
 
-      // Режим "По заданиям" - выбор типа задания
+      // Режим "По заданиям"
       if (this.selectedTaskType.id === 2) {
-        this.fetchTasksByType(this.selectedMainType.type, type.id)
+        this.fetchTasksByType(this.selectedMainType.type, type.taskType)
         return
       }
 
@@ -286,8 +282,8 @@ export default {
       if (this.selectedTaskType.id === 1 && !this.selectedExamType) {
         this.selectedExamType = type
 
-        // Авторские варианты - загружаем список экзаменов
-        if (type.type === 'author') {
+        // Авторские варианты или ФИПИ - загружаем список экзаменов
+        if (type.type === 'author' || type.type === 'fipi') {
           this.fetchExams()
         }
       }
@@ -296,7 +292,6 @@ export default {
     async generateRandomExam() {
       this.isGeneratingRandom = true
       try {
-        // Передаём type ('oge' или 'ege')
         const result = await this.store.generateRandomExam(this.selectedMainType.type)
 
         if (result.warnings && result.warnings.length > 0) {
@@ -309,7 +304,6 @@ export default {
           })
         }
 
-        // Уведомление об успешной генерации
         this.$q.notify({
           color: 'positive',
           message: 'Случайный вариант успешно создан',
@@ -346,13 +340,13 @@ export default {
       let fipi = null
 
       // Для ОГЭ определяем тип (авторские = 0, ФИПИ = 1)
-      if (this.selectedMainType?.label === 'ОГЭ' && this.selectedExamType) {
+      if (this.selectedMainType?.type === 'oge' && this.selectedExamType) {
         fipi = this.selectedExamType.type === 'fipi' ? 1 : 0
       }
 
       // Для ЕГЭ только авторские варианты
-      if (this.selectedMainType?.label === 'ЕГЭ' && this.selectedExamType) {
-        fipi = 0 // Только авторские
+      if (this.selectedMainType?.type === 'ege' && this.selectedExamType) {
+        fipi = 0
       }
 
       this.store
@@ -408,15 +402,12 @@ export default {
   border: 1px solid rgba(0, 0, 0, 0.03) !important;
   max-width: 900px !important;
   margin: 0 auto 1.5rem auto !important;
-  /* Центрирование карточки */
 }
 
-/* Контейнер внутри карточки */
 :deep(.selection-card .row) {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Центрирование содержимого */
   gap: 1rem;
   flex-wrap: wrap;
 }
@@ -428,7 +419,6 @@ export default {
   margin: 0 !important;
 }
 
-/* Кнопка сброса */
 :deep(.reset-btn) {
   border-radius: 12px !important;
   font-weight: 500 !important;
@@ -439,7 +429,6 @@ export default {
   background-color: rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Чипы выбора */
 .selection-chips {
   display: flex;
   flex-wrap: wrap;
@@ -461,7 +450,6 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
-/* Контейнер внутри чипа */
 .chip-content {
   display: flex;
   align-items: center;
@@ -469,12 +457,10 @@ export default {
   padding: 8px 16px 8px 12px;
 }
 
-/* Иконка внутри чипа */
 .chip-content .q-icon {
   flex-shrink: 0;
 }
 
-/* Текст внутри чипа */
 .chip-text {
   font-weight: 600;
   font-size: 0.9rem;
@@ -482,52 +468,6 @@ export default {
   white-space: nowrap;
 }
 
-/* Адаптивность для мобильных */
-@media (max-width: 600px) {
-  .selection-chips {
-    gap: 0.5rem;
-  }
-
-  :deep(.selection-chip) {
-    border-radius: 20px !important;
-  }
-
-  .chip-content {
-    padding: 6px 12px 6px 10px;
-    gap: 0.4rem;
-  }
-
-  .chip-content .q-icon {
-    font-size: 18px !important;
-  }
-
-  .chip-text {
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 400px) {
-  .chip-content {
-    padding: 5px 10px 5px 8px;
-  }
-
-  .chip-text {
-    font-size: 0.8rem;
-  }
-}
-
-/* Кнопка сброса */
-:deep(.reset-btn) {
-  border-radius: 12px !important;
-  font-weight: 500 !important;
-  transition: all 0.2s ease !important;
-}
-
-:deep(.reset-btn:hover) {
-  background-color: rgba(0, 0, 0, 0.05) !important;
-}
-
-/* Сетка выбора: 2 колонки, последний элемент по центру */
 .options-grid {
   display: flex;
   flex-wrap: wrap;
@@ -537,13 +477,11 @@ export default {
   margin: 0 auto;
 }
 
-/* Каждая карточка занимает 50% ширины */
 .options-grid .option-card {
   flex: 0 0 calc(50% - 0.75rem);
   max-width: calc(50% - 0.75rem);
 }
 
-/* Карточки вариантов */
 :deep(.option-card) {
   border-radius: 16px !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
@@ -562,7 +500,6 @@ export default {
   transform: translateY(-2px);
 }
 
-/* Баннер об отсутствии данных */
 :deep(.no-data-banner) {
   background-color: #FFF9E6 !important;
   border: 1px solid #FFE082 !important;
@@ -572,7 +509,12 @@ export default {
   color: #856404 !important;
 }
 
-/* Кнопка Назад */
+.selection-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
 :deep(.back-btn) {
   border-radius: 10px !important;
   transition: all 0.2s ease !important;
@@ -606,6 +548,27 @@ export default {
 }
 
 @media (max-width: 600px) {
+  .selection-chips {
+    gap: 0.5rem;
+  }
+
+  :deep(.selection-chip) {
+    border-radius: 20px !important;
+  }
+
+  .chip-content {
+    padding: 6px 12px 6px 10px;
+    gap: 0.4rem;
+  }
+
+  .chip-content .q-icon {
+    font-size: 18px !important;
+  }
+
+  .chip-text {
+    font-size: 0.85rem;
+  }
+
   .options-grid .option-card {
     flex: 0 0 100%;
     max-width: 100%;
@@ -622,33 +585,7 @@ export default {
   :deep(.option-card .q-card__section) {
     padding: 1.25rem !important;
   }
-}
 
-/* Кнопки управления (Назад, Сбросить) */
-.selection-actions {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-/* Кнопка Назад */
-:deep(.back-btn) {
-  border-radius: 10px !important;
-  transition: all 0.2s ease !important;
-  padding: 6px 16px !important;
-}
-
-:deep(.back-btn:hover) {
-  background-color: rgba(0, 0, 0, 0.05) !important;
-  transform: translateX(-2px);
-}
-
-:deep(.back-btn .q-icon) {
-  font-size: 1.3rem !important;
-  margin-right: 4px !important;
-}
-
-@media (max-width: 600px) {
   :deep(.selection-card) {
     max-width: 100% !important;
     margin-left: 0 !important;
@@ -658,14 +595,15 @@ export default {
   :deep(.selection-card .q-card__section) {
     padding: 1rem !important;
   }
+}
 
-  .selection-chips {
-    gap: 0.3rem;
+@media (max-width: 400px) {
+  .chip-content {
+    padding: 5px 10px 5px 8px;
   }
 
-  :deep(.selection-chip) {
-    padding: 6px 12px !important;
-    font-size: 0.85rem !important;
+  .chip-text {
+    font-size: 0.8rem;
   }
 }
 </style>

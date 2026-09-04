@@ -1,18 +1,9 @@
 <template>
   <div class="q-mt-lg">
     <div class="tasks-grid">
-      <q-card
-        v-for="task in tasks"
-        :key="task.id"
-        class="task-card cursor-pointer"
-        @click="fetchTaskDetails(task.id)"
-      >
+      <q-card v-for="task in tasks" :key="task.id" class="task-card cursor-pointer" @click="fetchTaskDetails(task.id)">
         <q-card-section class="text-center q-pa-lg">
-          <q-icon 
-            name="sym_o_assignment" 
-            size="2.5rem" 
-            class="text-primary q-mb-md" 
-          />
+          <q-icon name="sym_o_assignment" size="2.5rem" class="text-primary q-mb-md" />
           <div class="text-subtitle1 text-weight-medium text-grey-9">
             Вариант {{ task.exam.number }}
           </div>
@@ -28,14 +19,13 @@
 <script>
 import { useExamStore } from '../stores/exam.store'
 import { router } from '../router/router'
-
+import FipiSource from './fipi-source.vue'
 export default {
   name: 'TasksList',
+  components: { FipiSource },
   props: {
-    tasks: {
-      type: Array,
-      default: () => []
-    }
+    tasks: { type: Array, default: () => [] },
+    examType: { type: String, default: null }   
   },
   methods: {
     fetchTaskDetails(id) {

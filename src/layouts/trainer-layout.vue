@@ -1,11 +1,11 @@
 <template>
   <!-- q-layout должен быть КОРНЕВЫМ элементом, без обертки в div -->
   <q-layout view="lHh Lpr lFf">
-    
+
     <!-- Хедер: наш пастельный primary цвет -->
     <q-header elevated class="bg-primary text-white">
-      <q-toolbar class="q-px-md md:q-px-lg">
-        <!-- Кнопка "Назад" с иконкой стрелки -->
+      <q-toolbar class="q-px-md md:q-px-lg justify-center">
+        <!-- Кнопка "Назад" с иконкой стрелки, по центру -->
         <q-btn
           flat
           dense
@@ -46,7 +46,6 @@ export default {
 
 :deep(.back-btn:hover) {
   background-color: rgba(255, 255, 255, 0.15) !important;
-  transform: translateX(-2px);
 }
 
 :deep(.back-btn .q-icon) {

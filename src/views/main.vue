@@ -26,13 +26,14 @@
           <span class="mark mark-blue">в формате настоящего экзамена</span>:
           привыкать к таймеру, учиться быстро собираться с мыслями, записывать
           свои ответы и постепенно чувствовать себя
-          <span class="mark mark-green">увереннее</span> перед компьютером
+          увереннее перед компьютером
           на ОГЭ или ЕГЭ.
         </p>
 
         <p class="hero-quote">
-          Экзамен не должен впервые случиться с тобой
-          <span class="mark mark-pink">в день экзамена</span>. Чем чаще ты
+          <span class="mark mark-pink">Экзамен не должен впервые случиться с тобой в день экзамена</span>. 
+        </br>
+          Чем чаще ты
           работаешь в знакомом формате, тем меньше волнения остаётся и тем
           больше внимания можно уделить самому английскому.
         </p>
@@ -150,18 +151,14 @@
         </div>
       </div>
 
-      <q-banner class="tip-banner" rounded>
-        <template v-slot:avatar>
-          <q-icon name="sym_o_lightbulb" color="primary" size="2rem" />
-        </template>
-        <span>
-          <strong class="text-blue">Регулярные короткие тренировки</strong>
-          эффективнее одной большой тренировки накануне экзамена.
-        </span>
-      </q-banner>
+
 
       <p class="section-note">
-        Начни с <span class="mark mark-yellow">одного задания сегодня</span>.
+        <span>
+          <span class="mark mark-yellow">Регулярные короткие тренировки</span>
+          эффективнее одной большой тренировки накануне экзамена.
+        </span>
+        Начни с одного задания сегодня.
         Через несколько недель то, что сейчас кажется сложным, станет
         привычным.
       </p>
@@ -172,16 +169,11 @@
       <h2 class="section-title">Кто создал тренажёр?</h2>
 
       <q-card class="author-card">
-        <q-icon name="sym_o_workspace_premium" class="mini-doodle ad1" aria-hidden="true" />
 
         <q-card-section class="author-layout">
           <!-- БЛОК ПОД ФОТО ПРЕПОДАВАТЕЛЯ -->
           <div class="author-photo">
             <img src="/images/teacher.jpg" alt="Татьяна Захарова" class="photo-img" />
-            <!-- <div class="photo-placeholder">
-              <q-icon name="sym_o_person" size="72px" />
-              <span>Фото преподавателя</span>
-            </div> -->
           </div>
 
           <div class="author-text">
@@ -197,8 +189,7 @@
               сталкиваются во время подготовки.
             </p>
             <p>
-              Я вижу, как часто ученику мешает не отсутствие знаний, а
-              <span class="mark mark-orange">непривычный формат</span>: таймер,
+              Я вижу, как часто ученику мешает не отсутствие знаний, а непривычный формат: таймер,
               запись голоса, необходимость быстро сформулировать мысль и
               отсутствие преподавателя рядом. Поэтому мне хотелось создать
               пространство, где всё это можно заранее сделать знакомым.
@@ -253,10 +244,23 @@ export default {
 </script>
 
 <style scoped>
+/* ═══════════ БАЗА ═══════════ */
 .landing {
   background-color: #F7F8FB;
   overflow-x: hidden;
-  /* страховка от горизонтального скролла */
+}
+
+/* ═══════════ ОБЩИЙ КОНТЕЙНЕР (одинаковая ширина всех блоков) ═══════════ */
+.hero-content,
+.section,
+.section-grey > * {
+  width: 100%;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  box-sizing: border-box;
 }
 
 /* ═══════════ HERO ═══════════ */
@@ -264,10 +268,13 @@ export default {
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg, #EEF3FB 0%, #E1EAF8 100%);
-  padding: 4.5rem 1.5rem 4rem;
+  padding: 4.5rem 0 4rem;
 }
 
-/* Школьные каракули */
+/* Каракули живут ТОЛЬКО в боковых полях и никогда под текстом:
+   контент 1000px центрирован, его край — calc(50% - 500px);
+   дудлы стоят за этой границей, а на узких экранах calc даёт
+   минус и overflow: hidden просто обрезает их. */
 .doodles {
   position: absolute;
   inset: 0;
@@ -275,105 +282,33 @@ export default {
   overflow: hidden;
 }
 
-.doodle {
+.doodle,
+.doodle-letter {
   position: absolute;
   color: #1F3C88;
   opacity: 0.07;
-}
-
-.d1 {
-  top: 10%;
-  left: 4%;
-  font-size: 90px;
-  transform: rotate(-12deg);
-}
-
-.d2 {
-  top: 16%;
-  right: 5%;
-  font-size: 110px;
-  transform: rotate(10deg);
-}
-
-.d3 {
-  bottom: 14%;
-  left: 8%;
-  font-size: 80px;
-  transform: rotate(8deg);
-}
-
-.d4 {
-  bottom: 10%;
-  right: 10%;
-  font-size: 95px;
-  transform: rotate(-8deg);
-}
-
-.d5 {
-  top: 42%;
-  left: 44%;
-  font-size: 140px;
-  transform: rotate(-4deg);
-  opacity: 0.05;
+  pointer-events: none;
 }
 
 .doodle-letter {
-  position: absolute;
   font-family: Georgia, 'Times New Roman', serif;
   font-weight: 800;
-  color: #1F3C88;
   opacity: 0.08;
 }
 
-.dl1 {
-  top: 14%;
-  left: 24%;
-  font-size: 64px;
-  transform: rotate(-10deg);
-}
-
-.dl2 {
-  top: 58%;
-  right: 24%;
-  font-size: 72px;
-  transform: rotate(12deg);
-}
-
-.dl3 {
-  bottom: 22%;
-  left: 32%;
-  font-size: 56px;
-  transform: rotate(-6deg);
-}
+.d1  { top: 10%;    left:  calc(50% - 620px); font-size: 90px;  transform: rotate(-12deg); }
+.d2  { top: 16%;    right: calc(50% - 640px); font-size: 110px; transform: rotate(10deg); }
+.d3  { bottom: 14%; left:  calc(50% - 600px); font-size: 80px;  transform: rotate(8deg); }
+.d4  { bottom: 10%; right: calc(50% - 610px); font-size: 95px;  transform: rotate(-8deg); }
+.d5  { top: 42%;    left:  calc(50% - 680px); font-size: 120px; opacity: 0.05; transform: rotate(-4deg); }
+.dl1 { top: 6%;     left:  calc(50% - 560px); font-size: 64px;  transform: rotate(-10deg); }
+.dl2 { top: 58%;    right: calc(50% - 560px); font-size: 72px;  transform: rotate(12deg); }
+.dl3 { bottom: 6%;  left:  calc(50% - 590px); font-size: 56px;  transform: rotate(-6deg); }
 
 .hero-content {
   position: relative;
   z-index: 1;
-  max-width: 1000px;
-  width: 100%;
-  margin: 0 auto;
   text-align: left;
-}
-
-.hero-icons {
-  display: flex;
-  gap: 1rem;
-}
-
-.hero-icon-circle {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: white;
-  color: var(--q-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 6px 20px rgba(124, 147, 195, 0.25);
-}
-
-.hero-icon-circle.accent {
-  color: #EF5350;
 }
 
 .hero-title {
@@ -422,92 +357,54 @@ export default {
   box-shadow: 0 10px 28px rgba(124, 147, 195, 0.5) !important;
 }
 
-/* ═══════════ МАРКЕРЫ И ЦВЕТА ═══════════ */
+/* ═══════════ МАРКЕРЫ И ЦВЕТОВЫЕ АКЦЕНТЫ ═══════════ */
 .mark {
   padding: 0 4px;
   border-radius: 4px;
   font-weight: 600;
 }
 
-.mark-blue {
-  background: linear-gradient(180deg, transparent 62%, #BBDEFB 62%);
-  color: #1565C0;
-}
+.mark-blue   { background: linear-gradient(180deg, transparent 62%, #BBDEFB 62%); color: #1565C0; }
+.mark-green  { background: linear-gradient(180deg, transparent 62%, #C8E6C9 62%); color: #2E7D32; }
+.mark-pink   { background: linear-gradient(180deg, transparent 62%, #F8BBD0 62%); color: #C2185B; }
+.mark-yellow { background: linear-gradient(180deg, transparent 62%, #FFF59D 62%); color: #8D6E00; }
+.mark-orange { background: linear-gradient(180deg, transparent 62%, #FFE0B2 62%); color: #E65100; }
+.mark-white  { background: rgba(255, 255, 255, 0.25); color: white; }
 
-.mark-green {
-  background: linear-gradient(180deg, transparent 62%, #C8E6C9 62%);
-  color: #2E7D32;
-}
-
-.mark-pink {
-  background: linear-gradient(180deg, transparent 62%, #F8BBD0 62%);
-  color: #C2185B;
-}
-
-.mark-yellow {
-  background: linear-gradient(180deg, transparent 62%, #FFF59D 62%);
-  color: #8D6E00;
-}
-
-.mark-orange {
-  background: linear-gradient(180deg, transparent 62%, #FFE0B2 62%);
-  color: #E65100;
-}
-
-.mark-white {
-  background: rgba(255, 255, 255, 0.25);
-  color: white;
-}
-
-.text-blue {
-  color: #1976D2;
-  font-weight: 600;
-}
-
-.text-red {
-  color: #EF5350;
-  font-weight: 600;
-}
-
-.text-green {
-  color: #34A853;
-  font-weight: 600;
-}
-
-.text-orange {
-  color: #F59E0B;
-  font-weight: 600;
-}
-
-.text-purple {
-  color: #8E44C8;
-  font-weight: 600;
-}
+.text-blue   { color: #1976D2; font-weight: 600; }
+.text-red    { color: #EF5350; font-weight: 600; }
+.text-green  { color: #34A853; font-weight: 600; }
+.text-orange { color: #F59E0B; font-weight: 600; }
+.text-purple { color: #8E44C8; font-weight: 600; }
 
 /* ═══════════ СЕКЦИИ ═══════════ */
 .section {
-  padding: 4rem 1.5rem;
-  max-width: 1000px;
-  width: 100%;
-  margin: 0 auto;
-  box-sizing: border-box;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
 }
 
-/* Фон «тетрадный лист в линейку» */
+/* «Тетрадный лист в линейку» */
 .section-grey {
   max-width: none;
+  padding-left: 0;
+  padding-right: 0;
   background:
-    repeating-linear-gradient(transparent,
-      transparent 31px,
-      rgba(124, 147, 195, 0.12) 31px,
-      rgba(124, 147, 195, 0.12) 32px),
+    repeating-linear-gradient(transparent, transparent 31px,
+      rgba(124, 147, 195, 0.12) 31px, rgba(124, 147, 195, 0.12) 32px),
     #EEF1F7;
 }
 
-.section-grey>* {
-  max-width: 1000px;
-  margin-left: auto;
-  margin-right: auto;
+/* Тетрадь с красным полем — только на широких экранах */
+@media (min-width: 601px) {
+  .section-grey {
+    background:
+      linear-gradient(90deg, transparent 70px,
+        rgba(239, 83, 80, 0.25) 70px, rgba(239, 83, 80, 0.25) 72px,
+        transparent 72px),
+      repeating-linear-gradient(transparent, transparent 31px,
+        rgba(124, 147, 195, 0.12) 31px, rgba(124, 147, 195, 0.12) 32px),
+      #EEF1F7;
+  }
 }
 
 .section-title {
@@ -520,6 +417,7 @@ export default {
   position: relative;
 }
 
+/* Цветная полоска слева от заголовка */
 .section-title::before {
   content: '';
   position: absolute;
@@ -532,11 +430,29 @@ export default {
   background: linear-gradient(180deg, var(--q-primary), #8E44C8);
 }
 
+/* Маркер-подчёркивание под заголовком */
+.section-title::after {
+  content: '';
+  position: absolute;
+  left: 1.1rem;
+  bottom: -8px;
+  width: 140px;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #FFF59D, #FFE082);
+}
+
 .section-subtitle {
   text-align: left;
   color: #5A6178;
   font-size: 1.05rem;
   margin-bottom: 2.5rem;
+}
+
+.section-note {
+  color: #5A6178;
+  font-size: 1.05rem;
+  line-height: 1.8;
 }
 
 /* Выравнивание абзацев по ширине */
@@ -552,10 +468,23 @@ export default {
   hyphens: auto;
 }
 
-/* ═══════════ ВОЗМОЖНОСТИ ═══════════ */
+/* ═══════════ ШКОЛЬНАЯ ЛИНЕЙКА-РАЗДЕЛИТЕЛЬ ═══════════ */
+.ruler-divider {
+  height: 18px;
+  background:
+    repeating-linear-gradient(90deg, rgba(43, 45, 66, 0.4) 0 2px, transparent 2px 20px)
+      left top / 100% 60% no-repeat,
+    linear-gradient(180deg, #FFD54F, #FBC02D);
+  border-top: 2px solid rgba(43, 45, 66, 0.12);
+  border-bottom: 2px solid rgba(43, 45, 66, 0.12);
+}
+
+/* ═══════════ КАРТОЧКИ ВОЗМОЖНОСТЕЙ ═══════════ */
 .features-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: 1fr;
+  align-items: stretch;
   gap: 1.5rem;
   margin-top: 2.5rem;
   width: 100%;
@@ -565,6 +494,7 @@ export default {
   grid-column: span 2;
   min-width: 0;
   width: 100%;
+  flex-direction: column;
   border-radius: 20px !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
   border: 1px solid rgba(0, 0, 0, 0.03) !important;
@@ -582,24 +512,20 @@ export default {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
 }
 
-.card-blue {
-  border-top-color: #1976D2;
-}
+.card-blue   { border-top-color: #1976D2; }
+.card-red    { border-top-color: #EF5350; }
+.card-green  { border-top-color: #34A853; }
+.card-orange { border-top-color: #F59E0B; }
+.card-purple { border-top-color: #8E44C8; }
 
-.card-red {
-  border-top-color: #EF5350;
-}
-
-.card-green {
-  border-top-color: #34A853;
-}
-
-.card-orange {
-  border-top-color: #F59E0B;
-}
-
-.card-purple {
-  border-top-color: #8E44C8;
+/* Контент карточки: одинаковая высота, центр */
+.feature-card :deep(.q-card__section) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .feature-icon {
@@ -609,33 +535,14 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.25rem;
+  margin: 0 auto 1.1rem;
 }
 
-.feature-icon.blue {
-  background: #E3F2FD;
-  color: #1976D2;
-}
-
-.feature-icon.red {
-  background: #FDE7E7;
-  color: #EF5350;
-}
-
-.feature-icon.green {
-  background: #E6F4EA;
-  color: #34A853;
-}
-
-.feature-icon.orange {
-  background: #FEF3E0;
-  color: #F59E0B;
-}
-
-.feature-icon.purple {
-  background: #F0E7FB;
-  color: #8E44C8;
-}
+.feature-icon.blue   { background: #E3F2FD; color: #1976D2; }
+.feature-icon.red    { background: #FDE7E7; color: #EF5350; }
+.feature-icon.green  { background: #E6F4EA; color: #34A853; }
+.feature-icon.orange { background: #FEF3E0; color: #F59E0B; }
+.feature-icon.purple { background: #F0E7FB; color: #8E44C8; }
 
 .feature-card h3 {
   font-size: 1.15rem;
@@ -643,6 +550,17 @@ export default {
   margin-bottom: 0.6rem;
 }
 
+.feature-card p {
+  color: #5A6178;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  text-align: center;
+  margin: 0;
+}
+
+@media (min-width: 901px) {
+  .feature-card { min-height: 320px; }
+}
 
 /* ═══════════ ШАГИ ═══════════ */
 .steps-grid {
@@ -692,55 +610,17 @@ export default {
   margin: 0.5rem auto 0.9rem;
 }
 
-.step-icon.blue {
-  background: #E3F2FD;
-  color: #1976D2;
-}
-
-.step-icon.orange {
-  background: #FEF3E0;
-  color: #F59E0B;
-}
-
-.step-icon.yellow {
-  background: #FFF8E1;
-  color: #FBC02D;
-}
-
-.step-icon.red {
-  background: #FDE7E7;
-  color: #EF5350;
-}
-
-.step-icon.green {
-  background: #E6F4EA;
-  color: #34A853;
-}
-
-.step-icon.purple {
-  background: #F0E7FB;
-  color: #8E44C8;
-}
+.step-icon.blue   { background: #E3F2FD; color: #1976D2; }
+.step-icon.orange { background: #FEF3E0; color: #F59E0B; }
+.step-icon.yellow { background: #FFF8E1; color: #FBC02D; }
+.step-icon.red    { background: #FDE7E7; color: #EF5350; }
+.step-icon.green  { background: #E6F4EA; color: #34A853; }
+.step-icon.purple { background: #F0E7FB; color: #8E44C8; }
 
 .step-label {
   font-weight: 600;
   color: #2B2D42;
   font-size: 0.92rem;
-}
-
-.tip-banner {
-  background: #E3F2FD !important;
-  border: 1px solid #90CAF9 !important;
-  font-size: 1.02rem;
-  color: #2B2D42;
-  margin-bottom: 1.5rem;
-}
-
-.section-note {
-  text-align: justify;
-  color: #5A6178;
-  font-size: 1.05rem;
-  line-height: 1.8;
 }
 
 /* ═══════════ АВТОР ═══════════ */
@@ -764,28 +644,13 @@ export default {
   min-width: 0;
 }
 
-.photo-placeholder {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  border-radius: 20px;
-  background: linear-gradient(160deg, #EEF3FB, #DCE6F5);
-  border: 2px dashed #B9C8E4;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  color: #8A9BC0;
-  font-size: 0.9rem;
-}
-
-/* Когда появится фото:
 .photo-img {
   width: 100%;
   aspect-ratio: 3 / 4;
   object-fit: cover;
   border-radius: 20px;
-} */
+  display: block;
+}
 
 .author-text {
   flex: 1;
@@ -829,8 +694,6 @@ export default {
 }
 
 .cta-card {
-  position: relative;
-  overflow: hidden;
   background: linear-gradient(135deg, var(--q-primary) 0%, #5B79B8 100%);
   border-radius: 24px;
   padding: 3.5rem 3rem;
@@ -839,33 +702,6 @@ export default {
   box-shadow: 0 12px 40px rgba(91, 121, 184, 0.35);
   width: 100%;
   box-sizing: border-box;
-}
-
-.cta-doodle {
-  position: absolute;
-  color: white;
-  opacity: 0.1;
-  pointer-events: none;
-}
-
-.cd1 {
-  top: -25px;
-  right: -20px;
-  font-size: 150px;
-  transform: rotate(15deg);
-}
-
-.cd2 {
-  bottom: -30px;
-  left: -20px;
-  font-size: 130px;
-  transform: rotate(-12deg);
-}
-
-/* Контент поверх каракулей */
-.cta-card> :not(.cta-doodle) {
-  position: relative;
-  z-index: 1;
 }
 
 .cta-title {
@@ -902,7 +738,6 @@ export default {
 
 /* ═══════════ ПЛАНШЕТ ═══════════ */
 @media (max-width: 900px) {
-
   .feature-card,
   .feature-card:nth-child(4),
   .feature-card:nth-child(5) {
@@ -930,19 +765,17 @@ export default {
   }
 }
 
-/* ═══════════ МОБИЛЬНЫЕ (компактно, всё влезает) ═══════════ */
+/* ═══════════ МОБИЛЬНЫЕ ═══════════ */
 @media (max-width: 600px) {
+  .hero-content,
+  .section,
+  .section-grey > * {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
   .hero-section {
-    padding: 2.5rem 1rem 2.25rem;
-  }
-
-  .hero-icon-circle {
-    width: 48px;
-    height: 48px;
-  }
-
-  .hero-icon-circle .q-icon {
-    font-size: 22px !important;
+    padding: 2.5rem 0 2.25rem;
   }
 
   .hero-title {
@@ -964,33 +797,9 @@ export default {
     width: 100%;
   }
 
-  /* Каракули мельче, чтобы не мешали */
-  .d1 {
-    font-size: 60px;
-  }
-
-  .d2 {
-    font-size: 70px;
-  }
-
-  .d3 {
-    font-size: 55px;
-  }
-
-  .d4 {
-    font-size: 60px;
-  }
-
-  .d5 {
-    display: none;
-  }
-
-  .doodle-letter {
-    font-size: 40px !important;
-  }
-
   .section {
-    padding: 2.5rem 1rem;
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
   }
 
   .section-subtitle {
@@ -1008,14 +817,13 @@ export default {
     grid-column: span 6;
   }
 
-  .feature-card :deep(.q-card-section) {
+  .feature-card :deep(.q-card__section) {
     padding: 1.1rem;
   }
 
   .feature-icon {
     width: 46px;
     height: 46px;
-    margin-bottom: 0.9rem;
   }
 
   .steps-grid {
@@ -1035,10 +843,6 @@ export default {
 
   .step-label {
     font-size: 0.8rem;
-  }
-
-  .tip-banner {
-    font-size: 0.92rem;
   }
 
   .section-note {
@@ -1083,122 +887,5 @@ export default {
   .cta-note {
     text-align: left;
   }
-}
-/* ═══════════ ОДИНАКОВАЯ ШИРИНА ВСЕХ БЛОКОВ ═══════════ */
-.hero-section { padding: 4.5rem 0 4rem; }
-
-.hero-content,
-.section,
-.section-grey > * {
-  width: 100%;
-  max-width: 1000px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-  box-sizing: border-box;
-}
-
-/* ═══════════ КАРТОЧКИ: ОДИНАКОВАЯ ВЫСОТА + ЦЕНТР ═══════════ */
-.features-grid {
-  grid-auto-rows: 1fr;          /* все ряды одной высоты */
-  align-items: stretch;
-}
-
-
-.feature-card :deep(.q-card__section) {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;      /* контент по центру карточки */
-  align-items: center;
-  text-align: center;
-}
-
-.feature-icon { margin: 0 auto 1.1rem; }
-
-.feature-card p { text-align: center; }
-
-@media (min-width: 901px) {
-  .feature-card { min-height: 320px; }
-}
-
-/* ═══════════ ШКОЛЬНАЯ ЛИНЕЙКА-РАЗДЕЛИТЕЛЬ ═══════════ */
-.ruler-divider {
-  height: 18px;
-  background:
-    repeating-linear-gradient(90deg, rgba(43, 45, 66, .4) 0 2px, transparent 2px 20px)
-      left top / 100% 60% no-repeat,
-    linear-gradient(180deg, #FFD54F, #FBC02D);
-  border-top: 2px solid rgba(43, 45, 66, .12);
-  border-bottom: 2px solid rgba(43, 45, 66, .12);
-}
-
-/* ═══════════ МАРКЕР ПОД ЗАГОЛОВКАМИ ═══════════ */
-.section-title::after {
-  content: '';
-  position: absolute;
-  left: 1.1rem;
-  bottom: -8px;
-  width: 140px;
-  height: 8px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #FFF59D, #FFE082);
-}
-
-/* ═══════════ ТЕТРАДЬ С КРАСНЫМ ПОЛЕМ ═══════════ */
-@media (min-width: 601px) {
-  .section-grey {
-    background:
-      linear-gradient(90deg,
-        transparent 70px,
-        rgba(239, 83, 80, .25) 70px,
-        rgba(239, 83, 80, .25) 72px,
-        transparent 72px),
-      repeating-linear-gradient(transparent, transparent 31px,
-        rgba(124, 147, 195, .12) 31px, rgba(124, 147, 195, .12) 32px),
-      #EEF1F7;
-  }
-}
-
-/* ═══════════ БАННЕР-СОВЕТ = КЛАССНАЯ ДОСКА ═══════════ */
-.tip-banner {
-  background: #2E5B4F !important;              /* зелёная доска */
-  border: 8px solid #C89B6B !important;        /* деревянная рамка */
-  color: #FDFDF6 !important;                   /* мел */
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, .25), 0 4px 16px rgba(0, 0, 0, .1);
-}
-
-.tip-banner :deep(.q-banner__avatar .q-icon) {
-  color: #FFE082 !important;                   /* жёлтый мел */
-}
-
-.tip-banner .text-blue { color: #FFE082; }
-
-/* ═══════════ МЕЛКИЕ ДУДЛЫ ═══════════ */
-.features-section,
-.author-card { position: relative; }
-
-.mini-doodle {
-  position: absolute;
-  color: #1F3C88;
-  opacity: 0.06;
-  pointer-events: none;
-}
-
-.md1 { top: 3.5rem; right: 2rem;  font-size: 70px; transform: rotate(20deg); }
-.md2 { bottom: 2.5rem; left: 1.5rem; font-size: 60px; transform: rotate(-15deg); }
-.ad1 { top: 1.2rem; right: 1.4rem; font-size: 54px; transform: rotate(12deg); }
-
-/* ═══════════ МОБИЛЬНЫЕ ПОПРАВКИ ═══════════ */
-@media (max-width: 600px) {
-  .hero-content,
-  .section,
-  .section-grey > * {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .md1, .md2, .ad1 { display: none; }  /* дудлы не мешают на узком экране */
 }
 </style>
