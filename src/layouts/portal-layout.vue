@@ -21,7 +21,13 @@
       <slot />
     </q-page-container>
 
-    <q-footer v-if="shouldShowFooter" reveal elevated class="bg-white text-grey-8">
+    <!-- ИЗМЕНЕНИЕ: убрали 'reveal', добавили 'v-model="footerVisible"' -->
+    <q-footer 
+      v-if="shouldShowFooter" 
+      v-model="footerVisible" 
+      elevated 
+      class="bg-white text-grey-8"
+    >
       <!-- Строка 1: автор + соцсети -->
       <div class="flex items-center justify-center q-py-md q-px-md">
         <p class="q-mr-md text-caption">Автор: Захарова Татьяна</p>
@@ -68,7 +74,9 @@ export default {
     return {
       store: useUserStore(),
       footerPath: ['/', '/profile'],
-      showLogin: false
+      showLogin: false,
+      footerVisible: false, // По умолчанию подвал скрыт
+      lastScrollY: 0        // Для отслеживания предыдущей позиции скролла
     }
   },
   methods: {
@@ -76,6 +84,20 @@ export default {
       this.$q.dialog({
         component: Agreement
       })
+    },
+    handleScroll() {
+      const currentScrollY = window.scrollY
+      
+      // Если скроллим вверх
+      if (currentScrollY < this.lastScrollY) {
+        this.footerVisible = true
+      } 
+      // Если скроллим вниз
+      else if (currentScrollY > this.lastScrollY) {
+        this.footerVisible = false
+      }
+      
+      this.lastScrollY = currentScrollY
     }
   },
   computed: {
@@ -87,26 +109,32 @@ export default {
       const hiddenRoutes = ['/login', '/register', '/profile']
       return !hiddenRoutes.includes(this.$route.path)
     }
+  },
+  mounted() {
+    // Добавляем слушатель скролла. { passive: true } улучшает производительность прокрутки
+    window.addEventListener('scroll', this.handleScroll, { passive: true })
+  },
+  beforeUnmount() {
+    // Обязательно удаляем слушатель при уничтожении компонента во избежание утечек памяти
+    // (Если вы используете Vue 2 / Quasar v1, замените beforeUnmount на beforeDestroy)
+    window.removeEventListener('scroll', this.handleScroll)
   }
 }
 </script>
 
 <style scoped>
-/* Стили для иконок соцсетей */
+/* Стили остаются без изменений */
 .social-icons a {
   color: #9E9E9E;
-  /* Серый цвет по умолчанию */
   margin: 0 8px;
   transition: all 0.2s ease;
 }
 
 .social-icons a:hover {
   color: var(--q-primary);
-  /* Наш пастельный синий при наведении */
   transform: translateY(-2px);
 }
 
-/* Сами иконки (SVG маски) */
 .mdi--vk,
 .ic--baseline-telegram,
 .mdi--youtube {
@@ -138,7 +166,6 @@ export default {
   mask-image: var(--svg);
 }
 
-/* Дисклеймер в футере */
 .disclaimer-line {
   max-width: 900px;
   font-size: 0.65rem;
