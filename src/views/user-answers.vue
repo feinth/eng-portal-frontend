@@ -25,9 +25,9 @@
               <q-icon name="sym_o_calendar_month" size="18px" />
               <span>{{ formatDate(answer.created_at) }}</span>
             </div>
-            <q-badge v-if="answer.exam_type" :color="answer.exam_type === 'ege' ? 'primary' : 'secondary'"
+            <q-badge v-if="answer.exam_type" :color="answer.exam_type === 1 ? 'primary' : 'secondary'"
               class="answer-badge">
-              {{ answer.exam_type === 'ege' ? 'ЕГЭ' : 'ОГЭ' }}
+              {{ answer.exam_type === 1 ? 'ЕГЭ' : 'ОГЭ' }}
             </q-badge>
             <q-badge v-if="answer.variant_type" :color="answer.variant_type === 'random' ? 'accent' : 'grey-7'"
               class="answer-badge">

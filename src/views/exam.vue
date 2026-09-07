@@ -62,7 +62,7 @@
       </div>
 
       <!-- ЭКРАН 2: Процесс экзамена -->
-      <div v-if="checkedMicrophone" class="exam-container">
+      <div v-if="checkedMicrophone && !isSavingAnswers" class="exam-container">
 
         <!-- Индикатор загрузки -->
         <q-inner-loading v-if="examStarted && !examData && !audioGuidance" :showing="!examData"
@@ -74,9 +74,22 @@
         </div>
       </div>
 
-      <!-- ЭКРАН 3: Сохранение результатов -->
-      <q-inner-loading v-if="createdAnswerData && !createdArchiveUrl" :showing="!createdArchiveUrl"
-        label="Сохранение задания, пожалуйста, подождите..." label-class="text-grey-7" />
+      <!-- ЭКРАН 3: Сохранение результатов (полноэкранный fixed overlay) -->
+      <div v-if="isSavingAnswers" class="saving-overlay">
+        <div class="saving-card">
+          <q-spinner-dots color="primary" size="4rem" />
+          <p class="saving-title q-mt-lg">Сохранение экзамена</p>
+          <p class="saving-subtitle">Пожалуйста, не закрывайте страницу...</p>
+        </div>
+      </div>
+
+      <!-- Старый внутренний лоадер на время опроса archive URL -->
+      <q-inner-loading
+        v-if="createdAnswerData && !createdArchiveUrl && !isSavingAnswers"
+        :showing="true"
+        label="Формируем архив с записью..."
+        label-class="text-grey-7"
+      />
 
       <!-- ЭКРАН 4: Результаты экзамена -->
       <div v-if="createdArchiveUrl" class="results-container">
@@ -158,6 +171,7 @@ import Task4Content from '../components/tasks/Task4Content.vue'
 import { useExamStore } from '../stores/exam.store'
 import MicrophoneFooterTest from '../components/microphone/microphone-footer-test.vue'
 import { useAudioStore } from '../stores/audio.store'
+
 export default {
   components: {
     Task1,
@@ -186,7 +200,8 @@ export default {
       checkedMicrophone: false,
       audioChunks: [],
       audioBlob: null,
-      isRandomExam: false
+      isRandomExam: false,
+      isSavingAnswers: false   // НОВОЕ: флаг сохранения
     }
   },
   computed: {
@@ -212,8 +227,8 @@ export default {
     },
     urlForDownload() {
       const originalUrl = this.createdAnswerData?.answer_archive
+      if (!originalUrl) return ''
       const newBaseUrl = 'https://englishportal.ru/media'
-
       const updatedUrl = `${newBaseUrl}${originalUrl.split('/media').pop()}`
       return updatedUrl
     },
@@ -237,20 +252,23 @@ export default {
   },
   methods: {
     async startExam() {
-      // ← Разблокируем аудио СИНХРОННО в момент клика
+      // Разблокируем аудио СИНХРОННО в момент клика
       this.audioStore.unlockAudio()
 
       this.checkedMicrophone = true
       this.examStarted = true
       this.examStore.taskAnswers = []
       this.isRandomExam = localStorage.getItem('isRandomExam') === 'true'
-      this.examData = this.examStore.currentExam.sort((a, b) => a.type - b.type)
+
+      // Безопасная сортировка
+      this.examData = (this.examStore.currentExam || []).slice().sort(
+        (a, b) => (a.number || a.type) - (b.number || b.type)
+      )
     },
     playEndAudio() {
       if (!this.audioStore.audioContext) {
         this.audioStore.initAudioContext()
       }
-
       this.audioStore.fetchAndPlayAudio(this.audioGuidance?.end_exam_audio)
     },
     nextTask() {
@@ -263,24 +281,45 @@ export default {
         this.finishExam()
       }
     },
-    finishExam() {
+    async finishExam() {
+      // ВАЖНО: включаем overlay СРАЗУ, до запроса к API
+      this.isSavingAnswers = true
+
       this.playEndAudio()
       this.currentTaskIndex++
+
       const variantType = this.isRandomExam ? 'random' : 'author'
 
-      this.examStore.setExamAnswers(variantType).then((result) => {
+      try {
+        const result = await this.examStore.setExamAnswers(variantType)
         this.createdAnswerData = result
-        this.pollForAnswerArchive(this.createdAnswerData.id)
-      })
+
+        // Запуск опроса archive URL — уже в фоне, без overlay
+        this.isSavingAnswers = false
+        this.pollForAnswerArchive(result.id)
+      } catch (error) {
+        console.error('Save exam error:', error)
+        this.isSavingAnswers = false
+        this.$q.notify({
+          color: 'negative',
+          message: 'Ошибка при сохранении. Попробуйте обновить страницу.',
+          icon: 'sym_o_error',
+          timeout: 5000
+        })
+      }
     },
     pollForAnswerArchive(id) {
       this.pollingInterval = setInterval(async () => {
-        this.examStore.getExamAnswers(id).then((result) => {
+        try {
+          const result = await this.examStore.getExamAnswers(id)
           this.createdAnswerData = result
           if (this.createdArchiveUrl) {
             clearInterval(this.pollingInterval)
+            this.pollingInterval = null
           }
-        })
+        } catch (error) {
+          console.error('Poll error:', error)
+        }
       }, 1000)
     },
     loadAnswers() {
@@ -313,7 +352,6 @@ export default {
       }
     },
     async checkMicrophonePermission() {
-      // Разблокируем аудио
       this.audioStore.unlockAudio()
 
       try {
@@ -323,9 +361,7 @@ export default {
           this.audioStore.initAudioContext()
         }
 
-        // ← ВАЖНО: предзагружаем audioGuidance И intro аудио в память
         await this.audioStore.preloadAudioGuidance()
-
       } catch (e) {
         this.$q.notify({
           message: 'Доступ к микрофону отклонен',
@@ -375,6 +411,61 @@ export default {
 </script>
 
 <style scoped>
+/* ═══════════ НОВОЕ: полноэкранный overlay сохранения ═══════════ */
+.saving-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(247, 248, 251, 0.95);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.saving-card {
+  background: white;
+  border-radius: 24px;
+  padding: 3rem 3.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 320px;
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.saving-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #2B2D42;
+  margin: 0;
+}
+
+.saving-subtitle {
+  font-size: 0.95rem;
+  color: #5A6178;
+  margin: 0.5rem 0 0;
+}
+
 /* Карточка проверки микрофона */
 .microphone-check-card :deep(.q-card) {
   border-radius: 20px !important;
@@ -382,7 +473,7 @@ export default {
   border: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Шаги инструкций - ИСПРАВЛЕНО ЦЕНТРИРОВАНИЕ */
+/* Шаги инструкций */
 .instructions {
   max-width: 500px;
   margin: 0 auto;
@@ -519,6 +610,12 @@ export default {
     padding: 10px 12px;
     gap: 8px;
   }
+
+  .saving-card {
+    padding: 2rem 2rem;
+    min-width: auto;
+    width: 90%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -534,6 +631,14 @@ export default {
 
   .instruction-step span {
     font-size: 0.85rem;
+  }
+
+  .saving-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .saving-title {
+    font-size: 1.2rem;
   }
 }
 </style>

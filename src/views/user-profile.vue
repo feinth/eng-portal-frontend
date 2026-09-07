@@ -2,7 +2,6 @@
   <q-page class="profile-page">
     <div class="profile-container">
 
-
       <!-- Сетка: профиль слева, табы справа -->
       <div class="profile-grid">
 
@@ -84,48 +83,6 @@ export default {
   margin: 0 auto;
 }
 
-.page-header {
-  margin-bottom: 2.5rem;
-}
-
-.page-title {
-  font-size: clamp(1.6rem, 4vw, 2.2rem);
-  font-weight: 800;
-  color: #2B2D42;
-  margin: 0 0 0.5rem;
-  padding-left: 1.1rem;
-  position: relative;
-}
-
-.page-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 6px;
-  height: 70%;
-  border-radius: 3px;
-  background: linear-gradient(180deg, var(--q-primary), #8E44C8);
-}
-
-.page-title::after {
-  content: '';
-  position: absolute;
-  left: 1.1rem;
-  bottom: -6px;
-  width: 100px;
-  height: 6px;
-  border-radius: 3px;
-  background: linear-gradient(90deg, #FFF59D, #FFE082);
-}
-
-.page-subtitle {
-  color: #5A6178;
-  font-size: 1.05rem;
-  margin: 0;
-}
-
 .profile-grid {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -141,25 +98,28 @@ export default {
   overflow: hidden;
 }
 
-.tabs-header {
-  background: white;
-}
-
 .tabs-panels {
   background: white;
 }
 
-.stats-empty {
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
+/* ═══════════ МОБИЛЬНАЯ АДАПТАЦИЯ ═══════════ */
 @media (max-width: 900px) {
   .profile-page {
     padding: 1.5rem 1rem 3rem;
   }
+
   .profile-grid {
     grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  /* На мобильных: история тренировок сверху, профиль снизу */
+  .profile-main {
+    order: 1;
+  }
+
+  .profile-sidebar {
+    order: 2;
   }
 }
 </style>
