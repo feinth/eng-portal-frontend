@@ -1,20 +1,30 @@
 <template>
-  <div class="timer-container">
-    <p class="timer-header">{{ `Be ready for the ${type} ` }}</p>
-    <div class="timer-countdown">
-      <span class="timer-number">{{ timeLeft }}</span>
+  <div class="timer-overlay">
+    <div class="timer-card">
+      <p class="timer-header">
+        Be ready for the {{ type }}
+      </p>
+
+      <div class="timer-circle">
+        <span class="timer-number" :class="{ 'pulse': timeLeft <= 3 }">
+          {{ timeLeft }}
+        </span>
+      </div>
+
+      <p class="timer-footer">seconds</p>
     </div>
-    <p class="timer-footer">seconds</p>
   </div>
 </template>
 
 <script>
 import { useAudioStore } from '../../stores/audio.store'
+
 export default {
+  name: 'Timer',
   props: {
     duration: {
       type: Number,
-      default: 5 // По умолчанию 5 секунд
+      default: 5
     },
     audioSrc: {
       type: String,
@@ -28,7 +38,6 @@ export default {
   data() {
     return {
       timeLeft: this.duration,
-      audio: null,
       audioStore: useAudioStore()
     }
   },
@@ -36,6 +45,7 @@ export default {
     async startCountdown() {
       const countdown = setInterval(async () => {
         this.timeLeft--
+
         if (this.timeLeft <= 0) {
           clearInterval(countdown)
 
@@ -55,43 +65,115 @@ export default {
 }
 </script>
 
-<style>
-.countdown-container {
+<style scoped>
+.timer-overlay {
+  position: fixed;
+  inset: 0;
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 100vh;
-  font-size: 2rem;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  padding: 1rem;
 }
 
-.timer-container {
+.timer-card {
+  background: white;
+  border-radius: 28px;
+  padding: 2.5rem 3.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100%;
+  min-width: 320px;
+  animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .timer-header {
-  font-size: 1.5em;
-  margin-bottom: 20px;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #2B2D42;
+  margin: 0 0 1.5rem;
+  text-align: center;
 }
 
-.timer-countdown {
+.timer-circle {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #EEF3FB 0%, #E1EAF8 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3em;
-  font-weight: bold;
+  box-shadow:
+    0 8px 24px rgba(124, 147, 195, 0.3),
+    inset 0 2px 8px rgba(255, 255, 255, 0.8);
+  border: 4px solid white;
 }
 
 .timer-number {
-  font-size: 3em;
-  font-weight: bold;
+  font-size: 4.5rem;
+  font-weight: 800;
+  color: var(--q-primary);
+  line-height: 1;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.timer-number.pulse {
+  color: #EF5350;
+  animation: pulseBeat 1s ease-in-out infinite;
+}
+
+@keyframes pulseBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
 }
 
 .timer-footer {
-  font-size: 1.5em;
-  margin-top: 10px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #8A94A6;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 1.25rem 0 0;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 480px) {
+  .timer-card {
+    padding: 2rem 2rem;
+    min-width: auto;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .timer-circle {
+    width: 130px;
+    height: 130px;
+  }
+
+  .timer-number {
+    font-size: 3.5rem;
+  }
+
+  .timer-header {
+    font-size: 1.1rem;
+  }
 }
 </style>

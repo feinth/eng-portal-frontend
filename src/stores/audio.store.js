@@ -100,7 +100,7 @@ export const useAudioStore = defineStore('audio', () => {
       audio.play().catch(err => {
         Notify.create({
           message: 'Не удалось воспроизвести аудио',
-          color: 'warning'
+          color: 'red'
         })
         reject(err)
       })
@@ -131,7 +131,7 @@ export const useAudioStore = defineStore('audio', () => {
     } catch (err) {
       Notify.create({
         message: 'Не удалось загрузить аудио сопровождение',
-        color: 'negative'
+        color: 'red'
       })
       throw err
     }

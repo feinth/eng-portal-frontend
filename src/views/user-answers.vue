@@ -155,7 +155,7 @@ export default {
         this.nextOffset = response.nextOffset
       } catch {
         this.$q.notify({
-          color: 'negative',
+          color: 'red',
           message: 'Не удалось загрузить ещё',
           timeout: 2000,
           icon: 'sym_o_error'

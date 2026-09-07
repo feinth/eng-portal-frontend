@@ -37,8 +37,6 @@
           <div class="selection-actions">
             <q-btn flat dense no-caps icon="sym_o_arrow_back" label="Назад" color="grey-7" @click="goBack"
               class="back-btn q-mr-sm" />
-            <!-- <q-btn flat dense no-caps icon="sym_o_refresh" label="Сбросить" color="grey-7" @click="resetSelection"
-              class="reset-btn" /> -->
           </div>
 
         </q-card-section>
@@ -89,17 +87,19 @@
 
       </div>
 
-      <!-- Сообщение об отсутствии данных -->
+      <!-- Сообщение об отсутствии данных (ИСПРАВЛЕНО: выровнено по центру) -->
       <q-banner
         v-else-if="!isLoading && ((selectedTaskType?.id === 2 && tasks && tasks.length === 0) || (selectedTaskType?.id === 1 && exams && exams.length === 0))"
-        class="no-data-banner q-mb-lg" rounded>
-        <template v-slot:avatar>
-          <q-icon name="sym_o_info" color="warning" size="2rem" />
-        </template>
-        <span class="text-body1">
-          <span v-if="selectedTaskType?.id === 2">Нет доступных заданий для выбранного типа</span>
-          <span v-else-if="selectedTaskType?.id === 1">Нет доступных экзаменов для выбранного типа</span>
-        </span>
+        class="no-data-banner q-mb-lg text-center"
+        rounded
+      >
+        <div class="flex flex-center q-pa-md">
+          <q-icon name="sym_o_info" color="warning" size="2rem" class="q-mr-sm" />
+          <span class="text-body1 text-weight-medium">
+            <span v-if="selectedTaskType?.id === 2">Нет доступных заданий для выбранного типа</span>
+            <span v-else-if="selectedTaskType?.id === 1">Нет доступных экзаменов для выбранного типа</span>
+          </span>
+        </div>
       </q-banner>
 
       <!-- Список заданий -->
@@ -138,7 +138,6 @@ export default {
         { id: 1, label: 'Экзамен' },
         { id: 2, label: 'По заданиям' }
       ],
-      // Полный список типов экзаменов
       allExamTypes: [
         { id: 1, label: 'Авторские варианты', type: 'author' },
         { id: 2, label: 'На основе открытого банка ФИПИ', type: 'fipi' },
@@ -167,10 +166,8 @@ export default {
   computed: {
     examTypes() {
       if (this.selectedMainType?.type === 'ege') {
-        // Для ЕГЭ только авторские и случайные
         return this.allExamTypes.filter(t => t.type !== 'fipi')
       }
-      // Для ОГЭ все три типа
       return this.allExamTypes
     },
 
@@ -178,19 +175,16 @@ export default {
       if (!this.selectedMainType) return 'Выберите тип экзамена'
       if (!this.selectedTaskType) return 'Выберите тип задания'
 
-      // Для режима "По заданиям"
       if (this.selectedTaskType.id === 2) {
         if (this.selectedMainType.id === 1) return 'Выберите тип задания (ОГЭ)'
         if (this.selectedMainType.id === 2) return 'Выберите тип задания (ЕГЭ)'
       }
 
-      // Для режима "Экзамен"
       if (this.selectedTaskType.id === 1) {
         if (!this.selectedExamType) {
           const examName = this.selectedMainType.label
           return `Выберите тип варианта (${examName})`
         }
-        // Если выбрали тип варианта — но экзамены ещё не загружены
         return `Выберите конкретный вариант (${this.selectedMainType.label})`
       }
 
@@ -201,7 +195,6 @@ export default {
       if (!this.selectedMainType) return this.mainTypes
       if (!this.selectedTaskType) return this.taskTypes
 
-      // Режим "По заданиям"
       if (this.selectedMainType.id === 1 && this.selectedTaskType.id === 2) {
         return this.ogeTaskSubTypes
       }
@@ -209,7 +202,6 @@ export default {
         return this.egeTaskSubTypes
       }
 
-      // Режим "Экзамен" - показываем выбор типа для обоих экзаменов
       if (this.selectedTaskType.id === 1 && !this.selectedExamType) {
         return this.examTypes
       }
@@ -260,29 +252,24 @@ export default {
     },
 
     async handleStepSelection(type) {
-      // Генерация случайного варианта
       if (type.type === 'random') {
         await this.generateRandomExam()
         return
       }
 
-      // Шаг 1: Выбор типа задания (Экзамен / По заданиям)
       if (!this.selectedTaskType) {
         this.selectedTaskType = type
         return
       }
 
-      // Режим "По заданиям"
       if (this.selectedTaskType.id === 2) {
         this.fetchTasksByType(this.selectedMainType.type, type.taskType)
         return
       }
 
-      // Режим "Экзамен" - выбор типа варианта
       if (this.selectedTaskType.id === 1 && !this.selectedExamType) {
         this.selectedExamType = type
 
-        // Авторские варианты или ФИПИ - загружаем список экзаменов
         if (type.type === 'author' || type.type === 'fipi') {
           localStorage.setItem('isRandomExam', 'false')
           this.fetchExams()
@@ -304,14 +291,7 @@ export default {
             timeout: 3000
           })
         }
-
-        this.$q.notify({
-          color: 'positive',
-          message: 'Случайный вариант успешно создан',
-          icon: 'sym_o_check_circle',
-          timeout: 2000
-        })
-
+        
         this.$router.push('/exam')
       } catch (error) {
         const errMsg = error.response?.data?.error || 'Ошибка генерации варианта'
@@ -340,12 +320,10 @@ export default {
       this.isLoading = true
       let fipi = null
 
-      // Для ОГЭ определяем тип (авторские = 0, ФИПИ = 1)
       if (this.selectedMainType?.type === 'oge' && this.selectedExamType) {
         fipi = this.selectedExamType.type === 'fipi' ? 1 : 0
       }
 
-      // Для ЕГЭ только авторские варианты
       if (this.selectedMainType?.type === 'ege' && this.selectedExamType) {
         fipi = 0
       }
@@ -414,30 +392,6 @@ export default {
 }
 
 :deep(.selection-chip) {
-  border-radius: 20px !important;
-  font-weight: 500 !important;
-  padding: 8px 16px !important;
-  margin: 0 !important;
-}
-
-:deep(.reset-btn) {
-  border-radius: 12px !important;
-  font-weight: 500 !important;
-  transition: all 0.2s ease !important;
-}
-
-:deep(.reset-btn:hover) {
-  background-color: rgba(0, 0, 0, 0.05) !important;
-}
-
-.selection-chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
-}
-
-:deep(.selection-chip) {
   border-radius: 24px !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -501,13 +455,16 @@ export default {
   transform: translateY(-2px);
 }
 
+/* Стили для баннера отсутствия данных */
 :deep(.no-data-banner) {
   background-color: #FFF9E6 !important;
   border: 1px solid #FFE082 !important;
+  text-align: center !important;
 }
 
 :deep(.no-data-banner .q-banner__content) {
   color: #856404 !important;
+  padding: 0 !important; /* Убираем лишние отступы, так как используем свой q-pa-md */
 }
 
 .selection-actions {

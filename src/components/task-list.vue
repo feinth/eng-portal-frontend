@@ -34,7 +34,7 @@ export default {
         router.push('/exam')
       }).catch(() => {
         this.$q.notify({
-          color: 'negative',
+          color: 'red',
           message: 'Не удалось загрузить вариант',
           icon: 'sym_o_warning'
         })

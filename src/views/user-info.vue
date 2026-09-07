@@ -79,7 +79,7 @@
         <q-btn
           flat
           no-caps
-          color="negative"
+          color="red"
           icon="sym_o_logout"
           label="Выйти из аккаунта"
           @click="logout"
@@ -137,7 +137,7 @@ export default {
           this.$q.notify({
             progress: true,
             position: 'top-right',
-            color: 'negative',
+            color: 'red',
             message: 'Не удалось обновить данные',
             timeout: 2000,
             icon: 'sym_o_error'
@@ -149,7 +149,7 @@ export default {
         title: 'Выход из аккаунта',
         message: 'Вы уверены, что хотите выйти?',
         cancel: { label: 'Отмена', flat: true },
-        ok: { label: 'Выйти', color: 'negative' }
+        ok: { label: 'Выйти', color: 'red' }
       }).onOk(() => {
         this.store.logout().then(() => {
           this.$router.push('/')
