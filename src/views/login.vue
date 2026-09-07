@@ -3,7 +3,6 @@
     <q-card class="login-card">
       <q-card-section class="q-pa-xl">
         
-        <!-- Заголовок -->
         <div class="text-center q-mb-xl">
           <h1 class="text-h5 text-weight-bold text-grey-9 q-mb-sm">
             Форма входа
@@ -16,30 +15,30 @@
         <!-- Форма -->
         <q-form @submit.stop="onSubmit" class="q-gutter-md">
           
-          <!-- Email -->
           <q-input
             v-model="email"
             type="email"
             label="Почта"
             outlined
             lazy-rules
+            hide-bottom-space
             :rules="emailRules"
-            class="no-autofill"
+            class="full-width no-autofill"
           >
             <template v-slot:prepend>
               <q-icon name="sym_o_mail" />
             </template>
           </q-input>
 
-          <!-- Password -->
           <q-input
             v-model="password"
             :type="isPwd ? 'password' : 'text'"
             label="Пароль"
             outlined
             lazy-rules
+            hide-bottom-space
             :rules="passwordRules"
-            class="no-autofill"
+            class="full-width no-autofill"
           >
             <template v-slot:prepend>
               <q-icon name="sym_o_lock" />
@@ -60,7 +59,6 @@
             class="full-width q-mt-md login-btn"
             label="Войти"
             type="submit"
-            size="lg"
           />
 
           <!-- Ссылка на регистрацию -->
@@ -160,16 +158,14 @@ export default {
 </script>
 
 <style scoped>
-/* Контейнер для центрирования карточки */
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 120px); /* Высота экрана минус хедер и футер */
+  min-height: calc(100vh - 120px);
   padding: 1rem;
 }
 
-/* Карточка логина */
 :deep(.login-card) {
   width: 100%;
   max-width: 450px;
@@ -183,6 +179,13 @@ export default {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
 }
 
+:deep(.q-field),
+.login-btn {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important; /* Учитываем границы и отступы в общей ширине */
+}
+
 /* Инпуты */
 :deep(.q-field__control) {
   border-radius: 12px !important;
@@ -193,25 +196,31 @@ export default {
   height: 56px !important;
 }
 
+:deep(.q-field__bottom) {
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
 /* Кнопка входа */
-:deep(.login-btn) {
+.login-btn {
   border-radius: 12px !important;
+  height: 56px !important;
+  min-height: 56px !important;
   font-weight: 600 !important;
   letter-spacing: 0.5px !important;
   transition: all 0.2s ease !important;
   box-shadow: 0 4px 12px rgba(124, 147, 195, 0.3) !important;
 }
 
-:deep(.login-btn:hover) {
+.login-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(124, 147, 195, 0.4) !important;
 }
 
-:deep(.login-btn:active) {
+.login-btn:active {
   transform: translateY(0);
 }
 
-/* Ссылка на регистрацию */
 .register-link {
   color: var(--q-primary) !important;
   font-weight: 500;
@@ -224,13 +233,11 @@ export default {
   opacity: 0.8;
 }
 
-/* Иконки в инпутах */
 :deep(.q-icon) {
   color: #9E9E9E;
   font-size: 1.3rem;
 }
 
-/* Адаптивность */
 @media (max-width: 600px) {
   .login-container {
     min-height: calc(100vh - 100px);

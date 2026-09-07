@@ -185,7 +185,8 @@ export default {
       microphonePermission: false,
       checkedMicrophone: false,
       audioChunks: [],
-      audioBlob: null
+      audioBlob: null,
+      isRandomExam: false
     }
   },
   computed: {
@@ -242,7 +243,7 @@ export default {
       this.checkedMicrophone = true
       this.examStarted = true
       this.examStore.taskAnswers = []
-
+      this.isRandomExam = localStorage.getItem('isRandomExam') === 'true'
       this.examData = this.examStore.currentExam.sort((a, b) => a.type - b.type)
     },
     playEndAudio() {
@@ -265,7 +266,9 @@ export default {
     finishExam() {
       this.playEndAudio()
       this.currentTaskIndex++
-      this.examStore.setExamAnswers().then((result) => {
+      const variantType = this.isRandomExam ? 'random' : 'author'
+
+      this.examStore.setExamAnswers(variantType).then((result) => {
         this.createdAnswerData = result
         this.pollForAnswerArchive(this.createdAnswerData.id)
       })

@@ -61,15 +61,22 @@ export const useExamStore = defineStore({
         }
       })
     },
-    setExamAnswers() {
+
+    setExamAnswers(variantType = 'author') {
       return new Promise(async (resolve, reject) => {
         try {
-          const answers = this.transformSavedAnswers(this.taskAnswers)
+          const tasksData = this.transformSavedAnswers(this.taskAnswers)
+
+          // ↓↓↓ Формируем объект вместо простого массива ↓↓↓
+          const payload = {
+            variant_type: variantType,
+            tasks: tasksData
+          }
 
           let res = await api({
             method: 'POST',
             url: `answers/`,
-            data: answers
+            data: payload // Отправляем объект
           })
 
           this.answerParams = res.data
@@ -78,6 +85,29 @@ export const useExamStore = defineStore({
             JSON.stringify(this.answerParams)
           )
           resolve(this.answerParams)
+        } catch (err) {
+          reject(err)
+        }
+      })
+    },
+    generateRandomExam(typeExam) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          // Делаем запрос к эндпоинту генерации (например, ege/generated-exams/generate/)
+          const res = await api({
+            method: 'POST',
+            url: `${typeExam}/generated-exams/generate/`
+          })
+
+          // Сохраняем тип экзамена и полученные задания в стейт
+          this.typeExam = typeExam
+          this.currentExam = res.data.tasks
+
+          // Сохраняем в localStorage, чтобы exam.vue мог прочитать их после редиректа
+          localStorage.setItem('currentExam', JSON.stringify(this.currentExam))
+
+          // Возвращаем весь объект ответа, чтобы компонент мог прочитать warnings
+          resolve(res.data)
         } catch (err) {
           reject(err)
         }
@@ -130,25 +160,73 @@ export const useExamStore = defineStore({
       })
       return result
     },
-    getAnswers(id = null, withTasks = false) {
+    getAnswers(params = {}) {
       return new Promise(async (resolve, reject) => {
         try {
-          // Формируем URL в зависимости от переданных параметров
+          // Формируем URL с параметрами
           let url = '/answers/'
-          if (id) {
-            url += `${id}`
-          }
-          if (withTasks) {
-            url += '?with_tasks=1'
+
+          // Если передан ID - получаем конкретный ответ
+          if (params.id) {
+            url += `${params.id}/`
+            if (params.withTasks) {
+              url += '?with_tasks=1'
+            }
+
+            const res = await api({
+              method: 'GET',
+              url
+            })
+            resolve(res.data)
+            return
           }
 
-          // Выполняем запрос к API
+          // Для списка ответов - формируем query параметры
+          const queryParams = new URLSearchParams()
+
+          if (params.status !== undefined && params.status !== null) {
+            queryParams.append('status', params.status)
+          }
+
+          if (params.offset !== undefined && params.offset !== null) {
+            queryParams.append('offset', params.offset)
+          }
+
+          if (params.limit !== undefined && params.limit !== null) {
+            queryParams.append('limit', params.limit)
+          }
+
+          if (params.withTasks) {
+            queryParams.append('with_tasks', 1)
+          }
+
+          const queryString = queryParams.toString()
+          if (queryString) {
+            url += `?${queryString}`
+          }
+
           const res = await api({
             method: 'GET',
             url
           })
 
-          resolve(res.data)
+          // Для пагинации возвращаем структурированный объект
+          if (params.offset !== undefined || params.limit !== undefined) {
+            const data = res.data
+            resolve({
+              results: data.results || [],
+              count: data.count || 0,
+              next: data.next,
+              previous: data.previous,
+              hasMore: !!data.next,
+              nextOffset: data.next
+                ? new URL(data.next).searchParams.get('offset')
+                : 0
+            })
+          } else {
+            // Старый формат для обратной совместимости
+            resolve(res.data)
+          }
         } catch (err) {
           reject(err)
         }
@@ -194,6 +272,6 @@ export const useExamStore = defineStore({
       localStorage.removeItem('exams')
       localStorage.removeItem('currentExam')
       localStorage.removeItem('answerParams')
-    },
-  },
+    }
+  }
 })

@@ -284,6 +284,7 @@ export default {
 
         // Авторские варианты или ФИПИ - загружаем список экзаменов
         if (type.type === 'author' || type.type === 'fipi') {
+          localStorage.setItem('isRandomExam', 'false')
           this.fetchExams()
         }
       }
@@ -293,7 +294,7 @@ export default {
       this.isGeneratingRandom = true
       try {
         const result = await this.store.generateRandomExam(this.selectedMainType.type)
-
+        localStorage.setItem('isRandomExam', 'true')
         if (result.warnings && result.warnings.length > 0) {
           this.$q.notify({
             color: 'warning',
