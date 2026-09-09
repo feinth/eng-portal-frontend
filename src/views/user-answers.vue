@@ -1,11 +1,11 @@
 <template>
   <div class="answers-stack">
 
-    <!-- Заголовок + счётчик -->
-    <div class="answers-header">
+    <!-- Заголовок + счётчик (скрыт, пока идёт загрузка) -->
+    <div class="answers-header" v-if="!isLoading">
       <h2 class="section-title">
         <q-icon name='sym_o_task_alt' class="title-icon" />
-        {{ 'Выполненные задания' }}
+        Выполненные задания
       </h2>
       <p class="section-subtitle" v-if="totalCount > 0">
         Всего: <strong>{{ totalCount }}</strong>
@@ -13,7 +13,7 @@
     </div>
 
     <!-- Индикатор первичной загрузки -->
-    <q-inner-loading v-if="isLoading && answers.length === 0" :showing="true" label="Загружаем историю..."
+    <q-inner-loading v-if="isLoading" :showing="true" label="Загружаем историю..."
       label-class="text-grey-7" />
 
     <!-- Список карточек -->
@@ -29,18 +29,14 @@
               class="answer-badge">
               {{ answer.exam_type === 1 ? 'ЕГЭ' : 'ОГЭ' }}
             </q-badge>
-            <q-badge v-if="answer.variant_type" :color="answer.variant_type === 'random' ? 'accent' : 'grey-7'"
+            <q-badge v-if="answer.variant_type" :color="getVariantColor(answer.variant_type)"
               class="answer-badge">
-              {{ answer.variant_type === 'random' ? 'Случайный' : 'Из банка' }}
+              {{ getVariantLabel(answer.variant_type) }}
             </q-badge>
           </div>
 
           <h3 class="answer-title">
-            {{
-              answer.variant_type === 'random'
-                ? 'Случайный вариант'
-                : 'Вариант из банка'
-            }}
+            {{ getVariantTitle(answer.variant_type) }}
           </h3>
         </q-card-section>
 
@@ -64,10 +60,10 @@
           <q-icon :name="status === 3 ? 'sym_o_assignment' : 'sym_o_hourglass_empty'" size="64px" />
         </div>
         <h3 class="empty-title">
-          {{ 'Пока нет выполненных заданий' }}
+          Пока нет выполненных заданий
         </h3>
         <p class="empty-text">
-          {{ 'Начните с одного задания — это займёт немного времени' }}
+          Начните с одного задания — это займёт немного времени
         </p>
         <q-btn unelevated no-caps color="primary" icon="sym_o_play_arrow" label="Начать тренировку" class="empty-btn"
           @click="$router.push('/select')" />
@@ -75,7 +71,7 @@
     </q-card>
 
     <!-- Кнопка «Загрузить ещё» -->
-    <div v-if="hasMore" class="load-more-wrapper">
+    <div v-if="hasMore && !isLoading" class="load-more-wrapper">
       <q-btn unelevated no-caps color="primary" :loading="isLoadingMore" icon="sym_o_expand_more" label="Загрузить ещё"
         class="load-more-btn" @click="loadMore" />
       <p class="load-more-hint">
@@ -167,6 +163,25 @@ export default {
 
     formatDate(dateStr) {
       return date.formatDate(dateStr, 'DD MMM YYYY, HH:mm')
+    },
+
+    // --- Новые вспомогательные методы для variant_type ---
+    getVariantColor(type) {
+      if (type === 'random') return 'accent'
+      if (type === 'fipi') return 'primary' // Можно изменить на 'grey-7' или 'deep-purple' по вкусу
+      return 'grey-7'
+    },
+    
+    getVariantLabel(type) {
+      if (type === 'random') return 'Случайный'
+      if (type === 'fipi') return 'Из банка ФИПИ'
+      return 'Из банка'
+    },
+    
+    getVariantTitle(type) {
+      if (type === 'random') return 'Случайный вариант'
+      if (type === 'fipi') return 'Вариант из банка ФИПИ'
+      return 'Вариант из банка'
     }
   },
   mounted() {
@@ -176,6 +191,7 @@ export default {
 </script>
 
 <style scoped>
+/* Стили остались без изменений */
 .answers-stack {
   display: flex;
   flex-direction: column;

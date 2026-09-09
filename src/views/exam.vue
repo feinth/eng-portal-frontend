@@ -70,7 +70,8 @@
 
         <!-- Текущее задание -->
         <div v-else-if="currentTaskComponent">
-          <component v-show="!createdAnswerData" :is="currentTaskComponent" :task="currentTask" @next-task="nextTask" />
+          <component v-show="!createdAnswerData" :is="currentTaskComponent" :exam-type="examStore.typeExam"
+            :task="currentTask" @next-task="nextTask" />
         </div>
       </div>
 
@@ -84,12 +85,8 @@
       </div>
 
       <!-- Старый внутренний лоадер на время опроса archive URL -->
-      <q-inner-loading
-        v-if="createdAnswerData && !createdArchiveUrl && !isSavingAnswers"
-        :showing="true"
-        label="Формируем архив с записью..."
-        label-class="text-grey-7"
-      />
+      <q-inner-loading v-if="createdAnswerData && !createdArchiveUrl && !isSavingAnswers" :showing="true"
+        label="Формируем архив с записью..." label-class="text-grey-7" />
 
       <!-- ЭКРАН 4: Результаты экзамена -->
       <div v-if="createdArchiveUrl" class="results-container">
@@ -147,7 +144,7 @@
           <div class="tasks-grid">
             <q-card v-for="(task, index) in completedTasks" :key="index" class="completed-task-card">
               <q-card-section>
-                <component :is="getTaskContent(task)" :task="task" />
+                <component :is="getTaskContent(task)" :task="task" :exam-type="examStore.typeExam"/>
               </q-card-section>
             </q-card>
           </div>
@@ -425,8 +422,13 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .saving-card {
@@ -447,6 +449,7 @@ export default {
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);

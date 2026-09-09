@@ -6,7 +6,7 @@
       @countdown-finished="startRecord" />
 
     <div v-if="prepareStarted || recordStarted">
-      <Task4Content :task="task" />
+      <Task4Content :task="task" :exam-type="examType" />
     </div>
     <div v-if="prepareStarted" class="pt-10">
       <MicrophoneFooterPrepare :timeout="task.preparation_seconds" @prepare-completed="prepareStop" />
@@ -35,6 +35,10 @@ export default {
     task: {
       type: Object,
       required: true
+    },
+    examType: {
+      type: String,
+      default: 'ege'
     }
   },
   data() {

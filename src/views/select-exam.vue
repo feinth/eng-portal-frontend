@@ -11,33 +11,48 @@
 
           <!-- Чипы с текущим выбором -->
           <div class="selection-chips q-mb-md">
-            <q-chip v-if="selectedMainType" color="primary" text-color="white" class="selection-chip" square>
+            <q-chip v-if="selectedMainType" color="primary" text-color="white"
+              class="selection-chip selection-chip--clickable" square clickable @click="editMainType">
+              <q-tooltip anchor="bottom middle" self="top middle" :offset="[0, 8]">
+                Нажмите, чтобы изменить тип экзамена
+              </q-tooltip>
               <div class="chip-content">
                 <q-icon name="sym_o_school" size="20px" />
                 <span class="chip-text">{{ selectedMainType.label }}</span>
+                <q-icon name="sym_o_edit" size="16px" class="chip-edit-icon" />
               </div>
             </q-chip>
 
-            <q-chip v-if="selectedTaskType" color="secondary" text-color="white" class="selection-chip" square>
+            <q-chip v-if="selectedTaskType" color="secondary" text-color="white"
+              class="selection-chip selection-chip--clickable" square clickable @click="editTaskType">
+              <q-tooltip anchor="bottom middle" self="top middle" :offset="[0, 8]">
+                Нажмите, чтобы изменить тип задания
+              </q-tooltip>
               <div class="chip-content">
                 <q-icon name="sym_o_assignment" size="20px" />
                 <span class="chip-text">{{ selectedTaskType.label }}</span>
+                <q-icon name="sym_o_edit" size="16px" class="chip-edit-icon" />
               </div>
             </q-chip>
 
-            <q-chip v-if="selectedExamType" color="accent" text-color="white" class="selection-chip" square>
+            <q-chip v-if="selectedExamType" color="accent" text-color="white"
+              class="selection-chip selection-chip--clickable" square clickable @click="editExamType">
+              <q-tooltip anchor="bottom middle" self="top middle" :offset="[0, 8]">
+                Нажмите, чтобы изменить тип варианта
+              </q-tooltip>
               <div class="chip-content">
                 <q-icon name="sym_o_description" size="20px" />
                 <span class="chip-text">{{ selectedExamType.label }}</span>
+                <q-icon name="sym_o_edit" size="16px" class="chip-edit-icon" />
               </div>
             </q-chip>
           </div>
 
           <!-- Кнопки управления -->
-          <div class="selection-actions">
+          <!-- <div class="selection-actions">
             <q-btn flat dense no-caps icon="sym_o_arrow_back" label="Назад" color="grey-7" @click="goBack"
               class="back-btn q-mr-sm" />
-          </div>
+          </div> -->
 
         </q-card-section>
       </q-card>
@@ -90,9 +105,7 @@
       <!-- Сообщение об отсутствии данных (ИСПРАВЛЕНО: выровнено по центру) -->
       <q-banner
         v-else-if="!isLoading && ((selectedTaskType?.id === 2 && tasks && tasks.length === 0) || (selectedTaskType?.id === 1 && exams && exams.length === 0))"
-        class="no-data-banner q-mb-lg text-center"
-        rounded
-      >
+        class="no-data-banner q-mb-lg text-center" rounded>
         <div class="flex flex-center q-pa-md">
           <q-icon name="sym_o_info" color="warning" size="2rem" class="q-mr-sm" />
           <span class="text-body1 text-weight-medium">
@@ -111,7 +124,40 @@
       <div v-else-if="!isLoading && selectedTaskType?.id === 1 && exams && exams.length > 0">
         <exams-list :exams="exams" />
       </div>
+    </div>
+    <!-- PDF-сборники для скачивания -->
+    <div class="pdf-section q-mt-xl">
+      <div class="row items-center q-mb-md">
+        <q-separator class="col" />
+        <div class="text-overline text-grey-6 q-px-md">Материалы для скачивания</div>
+        <q-separator class="col" />
+      </div>
 
+      <div class="pdf-cards">
+        <q-card v-for="res in pdfResources" :key="res.path" class="pdf-card">
+          <q-card-section horizontal class="items-center q-pa-md text-left">
+
+            <div class="pdf-icon-wrap bg-primary-1 flex flex-center q-mr-md">
+              <q-icon name="sym_o_picture_as_pdf" size="28px" color="primary" />
+            </div>
+
+            <div class="pdf-info col">
+              <div class="text-subtitle1 text-weight-medium text-grey-9">
+                {{ res.title }}
+              </div>
+              <div class="text-caption text-grey-6">{{ res.description }}</div>
+              <div class="pdf-meta text-caption text-grey-5 q-mt-xs">
+                <q-icon name="sym_o_description" size="14px" class="q-mr-xs" />
+                PDF · {{ res.size }}
+              </div>
+            </div>
+
+            <q-btn unelevated no-caps color="primary" icon="sym_o_download" label="Скачать"
+              class="pdf-download-btn q-ml-md" @click="downloadPdf(res)" />
+
+          </q-card-section>
+        </q-card>
+      </div>
     </div>
   </q-page>
 </template>
@@ -129,6 +175,7 @@ export default {
   },
   data() {
     return {
+      pdfResources: [],
       store: useExamStore(),
       mainTypes: [
         { id: 1, label: 'ОГЭ', type: 'oge' },
@@ -219,18 +266,21 @@ export default {
         this.selectedExamType = null
         this.exams = null
         this.tasks = null
+        this.store.setVariantType(null) // Сброс при возврате назад
         return
       }
       if (this.selectedTaskType) {
         this.selectedTaskType = null
         this.exams = null
         this.tasks = null
+        this.store.setVariantType(null)
         return
       }
       if (this.selectedMainType) {
         this.selectedMainType = null
         this.exams = null
         this.tasks = null
+        this.store.setVariantType(null)
         return
       }
     },
@@ -252,7 +302,9 @@ export default {
     },
 
     async handleStepSelection(type) {
+      // Если выбран случайный вариант
       if (type.type === 'random') {
+        this.store.setVariantType('random') // Сохраняем в store
         await this.generateRandomExam()
         return
       }
@@ -271,7 +323,7 @@ export default {
         this.selectedExamType = type
 
         if (type.type === 'author' || type.type === 'fipi') {
-          localStorage.setItem('isRandomExam', 'false')
+          this.store.setVariantType(type.type) // Сохраняем 'author' или 'fipi' в store
           this.fetchExams()
         }
       }
@@ -281,7 +333,7 @@ export default {
       this.isGeneratingRandom = true
       try {
         const result = await this.store.generateRandomExam(this.selectedMainType.type)
-        localStorage.setItem('isRandomExam', 'true')
+        
         if (result.warnings && result.warnings.length > 0) {
           this.$q.notify({
             color: 'warning',
@@ -291,7 +343,7 @@ export default {
             timeout: 3000
           })
         }
-        
+
         this.$router.push('/exam')
       } catch (error) {
         const errMsg = error.response?.data?.error || 'Ошибка генерации варианта'
@@ -314,6 +366,7 @@ export default {
       this.selectedExamType = null
       this.tasks = null
       this.exams = null
+      this.store.setVariantType(null) // Полный сброс типа варианта
     },
 
     fetchExams() {
@@ -368,8 +421,97 @@ export default {
         .finally(() => {
           this.isLoading = false
         })
+    },
+    
+    editMainType() {
+      this.selectedMainType = null
+      this.selectedTaskType = null
+      this.selectedExamType = null
+      this.tasks = null
+      this.exams = null
+      this.store.setVariantType(null) // Сброс при изменении основного типа
+    },
+
+    editTaskType() {
+      this.selectedTaskType = null
+      this.selectedExamType = null
+      this.tasks = null
+      this.exams = null
+      this.store.setVariantType(null) // Сброс при изменении типа задания
+    },
+
+    editExamType() {
+      this.selectedExamType = null
+      this.exams = null
+      this.store.setVariantType(null) // Сброс только типа варианта
+    },
+    
+    buildPdfList() {
+      const files = import.meta.glob(
+        '../assets/downloads/*.pdf',
+        { eager: true, query: '?url', import: 'default' }
+      )
+
+      this.pdfResources = Object.entries(files)
+        .map(([filePath, url]) => {
+          const fileName = decodeURIComponent(filePath.split('/').pop())
+          return {
+            title: this.fileNameToTitle(fileName),
+            fileName,
+            url,
+            size: null
+          }
+        })
+        .sort((a, b) => a.title.localeCompare(b.title, 'ru'))
+
+      this.loadPdfSizes()
+    },
+
+    fileNameToTitle(fileName) {
+      return fileName
+        .replace(/\.pdf$/i, '')
+        .replace(/[-_]+/g, ' ')
+        .trim()
+    },
+
+    async loadPdfSizes() {
+      await Promise.all(
+        this.pdfResources.map(async (res) => {
+          try {
+            const resp = await fetch(res.url, { method: 'HEAD' })
+            const len = resp.headers.get('Content-Length')
+            if (len) res.size = this.formatBytes(Number(len))
+          } catch (e) { /* размер — не критично */ }
+        })
+      )
+    },
+
+    formatBytes(bytes) {
+      if (bytes < 1024) return `${bytes} Б`
+      if (bytes < 1024 ** 2) return `${Math.round(bytes / 1024)} КБ`
+      return `${(bytes / 1024 ** 2).toFixed(1)} МБ`
+    },
+
+    downloadPdf(resource) {
+      const link = document.createElement('a')
+      link.href = resource.url
+      link.setAttribute('download', resource.fileName)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+
+      this.$q.notify({
+        color: 'positive',
+        icon: 'sym_o_download_done',
+        message: `Загрузка началась: ${resource.title}`,
+        position: 'bottom',
+        timeout: 2000
+      })
     }
-  }
+  },
+  created() {
+    this.buildPdfList()
+  },
 }
 </script>
 
@@ -464,7 +606,8 @@ export default {
 
 :deep(.no-data-banner .q-banner__content) {
   color: #856404 !important;
-  padding: 0 !important; /* Убираем лишние отступы, так как используем свой q-pa-md */
+  padding: 0 !important;
+  /* Убираем лишние отступы, так как используем свой q-pa-md */
 }
 
 .selection-actions {
@@ -527,6 +670,31 @@ export default {
     font-size: 0.85rem;
   }
 
+  /* Кликабельные чипы */
+  :deep(.selection-chip--clickable) {
+    cursor: pointer !important;
+    position: relative;
+  }
+
+  :deep(.selection-chip--clickable:hover) {
+    filter: brightness(1.1);
+  }
+
+  :deep(.selection-chip--clickable:active) {
+    transform: scale(0.97) translateY(0) !important;
+  }
+
+  .chip-edit-icon {
+    opacity: 0.6;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    margin-left: 2px;
+  }
+
+  :deep(.selection-chip--clickable:hover) .chip-edit-icon {
+    opacity: 1;
+    transform: rotate(-12deg);
+  }
+
   .options-grid .option-card {
     flex: 0 0 100%;
     max-width: 100%;
@@ -562,6 +730,73 @@ export default {
 
   .chip-text {
     font-size: 0.8rem;
+  }
+}
+
+/* === PDF-секция === */
+.pdf-section {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.pdf-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+:deep(.pdf-card) {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.3s ease !important;
+  overflow: hidden;
+}
+
+:deep(.pdf-card:hover) {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+  border-color: var(--q-primary) !important;
+}
+
+.pdf-icon-wrap {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  border-radius: 16px;
+}
+
+:deep(.pdf-download-btn) {
+  border-radius: 12px !important;
+  padding: 4px 18px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+
+.pdf-meta {
+  display: flex;
+  align-items: center;
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+  :deep(.pdf-card .q-card__section--horiz) {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .pdf-icon-wrap {
+    margin: 0 auto 0.75rem auto !important;
+  }
+
+  .pdf-meta {
+    justify-content: center;
+  }
+
+  :deep(.pdf-download-btn) {
+    margin-left: 0 !important;
+    width: 100%;
   }
 }
 </style>

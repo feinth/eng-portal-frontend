@@ -10,9 +10,8 @@
     </div>
 
     <div v-show="showTask">
-      <Task1Content :task="task" />
+      <Task1Content :task="task" :exam-type="examType" />
     </div>
-
     <div v-if="currentState === 'prepare' && taskStarted" class="pt-10">
       <MicrophoneFooterPrepare :timeout="task.preparation_seconds" @prepare-completed="prepareStop" />
     </div>
@@ -41,6 +40,10 @@ export default {
     task: {
       type: Object,
       required: true
+    },
+    examType: {
+      type: String,
+      default: 'ege'
     }
   },
   data() {

@@ -13,9 +13,10 @@ export default {
 <style scoped>
 .fipi-source {
   margin-top: 0.75rem;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: #8A94A6;
   line-height: 1.5;
+  text-align: right;
 }
 
 .fipi-link {

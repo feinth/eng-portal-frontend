@@ -2,11 +2,15 @@
   <div class="task-container">
     <div class="task-layout">
       <div class="task-text">
-        <!-- Заголовок и текст задания в одну строку -->
+        <!-- Заголовок и плашка тайминга -->
         <div class="task-intro">
           <span class="task-title">{{ `Task ${task.number}.` }}</span>
-          <MarkdownView class="task-header" :content="task.header" />
+          <task-timing :exam-type="examType" :task-type="task.type" class="task-timing-right" />
         </div>
+
+        <!-- Текст задания во всю ширину -->
+        <MarkdownView class="task-header" :content="task.header" />
+
         <q-separator spaced class="my-2" />
         <MarkdownView class="task-description" :content="task.description" />
         <div class="questions-list">
@@ -18,7 +22,6 @@
         <MarkdownView class="text-h6 font-bold text-gray-800 mt-4"
           :content="'**You have 20 seconds to ask each question.**'" />
       </div>
-
       <div class="task-image">
         <q-item>
           <q-item-section>
@@ -35,15 +38,21 @@
 
 <script>
 import MarkdownView from '../utils/markdown-view.vue'
+import TaskTiming from './task-timing.vue'
 
 export default {
   components: {
-    MarkdownView
+    MarkdownView,
+    TaskTiming
   },
   props: {
     task: {
       type: Object,
       required: true
+    },
+    examType: {
+      type: String,
+      default: 'ege'
     }
   }
 }
@@ -69,30 +78,39 @@ export default {
   align-items: start;
 }
 
-/* Заголовок + текст в одну строку */
+/* Заголовок и плашка */
 .task-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap; /* Перенос плашки под заголовок, если не хватает места */
   margin-bottom: 1.5rem;
-  line-height: 1.9;
 }
 
 .task-title {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--q-primary);
-  margin-right: 0.5rem;
   line-height: 1.3;
 }
 
-/* Текст задания продолжается в строку после заголовка */
+/* Плашка с таймингом */
+.task-timing-right {
+  flex-shrink: 0;
+}
+
+/* Текст задания во всю ширину */
 .task-header {
-  display: inline;
+  display: block;
+  margin-bottom: 1rem;
 }
 
 .task-header :deep(p) {
-  display: inline;
-  font-size: 1.3rem;
+  font-size: 1rem;
   line-height: 1.9;
   color: #2B2D42;
+  margin-bottom: 0;
 }
 
 /* Описание задания */
@@ -113,6 +131,11 @@ export default {
   line-height: 1.6;
   color: #3D3D3D;
   margin-bottom: 0.5rem;
+}
+
+/* Правая колонка с картинкой — опущена ниже заголовка */
+.task-image {
+  margin-top: 3rem; /* Опускаем картинку ниже строки "Task 2." */
 }
 
 /* Рамка-заголовок над изображением */
@@ -136,9 +159,24 @@ export default {
   }
 
   .task-image {
+    margin-top: 0; /* На узких экранах убираем отступ — картинка идёт сразу после текста */
     max-width: 500px;
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: auto;
     width: 100%;
+  }
+}
+
+/* На мобильных: плашка переносится ПОД заголовок */
+@media (max-width: 600px) {
+  .task-intro {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .task-timing-right {
+    width: 100%;
+    margin-top: 0.5rem;
   }
 }
 

@@ -9,62 +9,44 @@
         </h3>
 
         <q-form class="profile-form" @submit.prevent="updateUserData">
+          <q-input :model-value="user.email" readonly filled label="Email" class="form-field email-field">
+            <template v-slot:prepend>
+              <q-icon name="sym_o_email" color="grey-6" />
+            </template>
+            <template v-slot:append>
+              <q-icon name="sym_o_lock" color="grey-5" size="18px" />
+            </template>
+          </q-input>
           <div class="form-row">
-            <q-input
-              filled
-              v-model="user.first_name"
-              label="Имя"
-              class="form-field"
-            >
+
+            <q-input filled v-model="user.first_name" label="Имя" class="form-field" lazy-rules :rules="[requiredRule]">
               <template v-slot:prepend>
                 <q-icon name="sym_o_person" color="grey-6" />
               </template>
             </q-input>
 
-            <q-input
-              filled
-              v-model="user.second_name"
-              label="Фамилия"
-              class="form-field"
-            >
+            <q-input filled v-model="user.second_name" label="Фамилия" class="form-field" lazy-rules
+              :rules="[requiredRule]">
               <template v-slot:prepend>
                 <q-icon name="sym_o_person_outline" color="grey-6" />
               </template>
             </q-input>
           </div>
 
-          <q-input
-            filled
-            v-model="user.birthdate"
-            type="date"
-            label="Дата рождения"
-            class="form-field no-autofill"
-          >
+          <q-input filled v-model="user.birthdate" type="date" label="Дата рождения" class="form-field no-autofill">
             <template v-slot:prepend>
               <q-icon name="sym_o_cake" color="grey-6" />
             </template>
           </q-input>
 
-          <q-input
-            filled
-            v-model="user.phone"
-            label="Телефон"
-            class="form-field"
-          >
+          <q-input filled v-model="user.phone" label="Телефон" class="form-field">
             <template v-slot:prepend>
               <q-icon name="sym_o_phone" color="grey-6" />
             </template>
           </q-input>
 
-          <q-btn
-            unelevated
-            no-caps
-            color="primary"
-            icon="sym_o_save"
-            label="Сохранить изменения"
-            type="submit"
-            class="save-btn full-width"
-          />
+          <q-btn unelevated no-caps color="primary" icon="sym_o_save" label="Сохранить изменения" type="submit"
+            class="save-btn full-width" />
         </q-form>
       </q-card-section>
     </q-card>
@@ -76,15 +58,8 @@
           <q-icon name="sym_o_info" color="grey-6" size="20px" />
           <span>Завершить текущий сеанс</span>
         </div>
-        <q-btn
-          flat
-          no-caps
-          color="red"
-          icon="sym_o_logout"
-          label="Выйти из аккаунта"
-          @click="logout"
-          class="logout-btn"
-        />
+        <q-btn flat no-caps color="negative" icon="sym_o_logout" label="Выйти из аккаунта" @click="logout"
+          class="logout-btn" />
       </q-card-section>
     </q-card>
 
@@ -120,6 +95,48 @@ export default {
     }
   },
   methods: {
+    /** Имя/фамилия обязательны; пробелы не считаются заполнением */
+    requiredRule(val) {
+      return (val && String(val).trim().length > 0) || 'Обязательное поле'
+    },
+
+    updateUserData() {
+      // Дополнительная защита поверх правил формы
+      if (!this.user.first_name?.trim() || !this.user.second_name?.trim()) {
+        this.$q.notify({
+          progress: true,
+          position: 'top-right',
+          color: 'negative',
+          message: 'Имя и фамилия не могут быть пустыми',
+          timeout: 2000,
+          icon: 'sym_o_error'
+        })
+        return
+      }
+
+      this.store
+        .updateUserData(this.user)
+        .then(() => {
+          this.$q.notify({
+            progress: true,
+            position: 'top-right',
+            color: 'positive',
+            message: 'Данные успешно обновлены',
+            timeout: 2000,
+            icon: 'sym_o_check_circle'
+          })
+        })
+        .catch(() => {
+          this.$q.notify({
+            progress: true,
+            position: 'top-right',
+            color: 'negative',
+            message: 'Не удалось обновить данные',
+            timeout: 2000,
+            icon: 'sym_o_error'
+          })
+        })
+    },
     updateUserData() {
       this.store
         .updateUserData(this.user)
@@ -137,7 +154,7 @@ export default {
           this.$q.notify({
             progress: true,
             position: 'top-right',
-            color: 'red',
+            color: 'negative',
             message: 'Не удалось обновить данные',
             timeout: 2000,
             icon: 'sym_o_error'
@@ -149,7 +166,7 @@ export default {
         title: 'Выход из аккаунта',
         message: 'Вы уверены, что хотите выйти?',
         cancel: { label: 'Отмена', flat: true },
-        ok: { label: 'Выйти', color: 'red' }
+        ok: { label: 'Выйти', color: 'negative' }
       }).onOk(() => {
         this.store.logout().then(() => {
           this.$router.push('/')
@@ -213,6 +230,9 @@ export default {
 }
 
 .profile-email {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 0.95rem;
   color: #5A6178;
   margin: 0;
@@ -260,6 +280,24 @@ export default {
 
 .form-field {
   width: 100%;
+}
+
+/* Email: визуально отличается — серое, нередактируемое */
+.email-field :deep(.q-field__control) {
+  background: #F1F3F7;
+}
+
+.email-field :deep(.q-field__native) {
+  color: #5A6178;
+  cursor: default;
+}
+
+.email-field :deep(.q-field__label) {
+  color: #8A94A6;
+}
+
+.email-field :deep(.q-field__messages) {
+  color: #8A94A6;
 }
 
 .save-btn {

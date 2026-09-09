@@ -8,7 +8,8 @@ export const useExamStore = defineStore({
     exams: JSON.parse(localStorage.getItem('exams')),
     currentExam: JSON.parse(localStorage.getItem('currentExam')),
     answerParams: null,
-    typeExam: null
+    typeExam: null,
+    variantType: JSON.parse(localStorage.getItem('variantType')) || null 
   }),
   actions: {
     addAudioFile(taskAnswer) {
@@ -20,22 +21,30 @@ export const useExamStore = defineStore({
     getAudioFiles() {
       return this.audioFiles
     },
+    
+    // Новое действие для установки и сохранения типа варианта
+    setVariantType(type) {
+      this.variantType = type
+      if (type) {
+        localStorage.setItem('variantType', JSON.stringify(type))
+      } else {
+        localStorage.removeItem('variantType')
+      }
+    },
+
     getExams(typeExam, fipi = null) {
       return new Promise(async (resolve, reject) => {
         try {
-          // Формируем URL в зависимости от переданных параметров
           let url = `${typeExam}/exams/`
           if (fipi !== null) {
-            url += `?fipi=${fipi}` // Добавляем параметр fipi, если он передан
+            url += `?fipi=${fipi}`
           }
 
-          // Выполняем запрос к API
           let res = await api({
             method: 'get',
             url: url
           })
 
-          // Сохраняем данные в хранилище
           this.exams = res.data
           this.typeExam = typeExam
           localStorage.setItem('exams', JSON.stringify(this.exams))
@@ -66,24 +75,19 @@ export const useExamStore = defineStore({
       return new Promise(async (resolve, reject) => {
         try {
           const tasksData = this.transformSavedAnswers(this.taskAnswers)
-
-          // ↓↓↓ Формируем объект вместо простого массива ↓↓↓
           const payload = {
-            variant_type: variantType,
+            variant_type: this.variantType || variantType ||  'author', // Используем тип из store, если не передан
             tasks: tasksData
           }
 
           let res = await api({
             method: 'POST',
             url: `answers/`,
-            data: payload // Отправляем объект
+            data: payload
           })
 
           this.answerParams = res.data
-          localStorage.setItem(
-            'answerParams',
-            JSON.stringify(this.answerParams)
-          )
+          localStorage.setItem('answerParams', JSON.stringify(this.answerParams))
           resolve(this.answerParams)
         } catch (err) {
           reject(err)
@@ -93,20 +97,15 @@ export const useExamStore = defineStore({
     generateRandomExam(typeExam) {
       return new Promise(async (resolve, reject) => {
         try {
-          // Делаем запрос к эндпоинту генерации (например, ege/generated-exams/generate/)
           const res = await api({
             method: 'POST',
             url: `${typeExam}/generated-exams/generate/`
           })
 
-          // Сохраняем тип экзамена и полученные задания в стейт
           this.typeExam = typeExam
           this.currentExam = res.data.tasks
 
-          // Сохраняем в localStorage, чтобы exam.vue мог прочитать их после редиректа
           localStorage.setItem('currentExam', JSON.stringify(this.currentExam))
-
-          // Возвращаем весь объект ответа, чтобы компонент мог прочитать warnings
           resolve(res.data)
         } catch (err) {
           reject(err)
@@ -124,10 +123,7 @@ export const useExamStore = defineStore({
           })
 
           this.answerParams = res.data
-          localStorage.setItem(
-            'answerParams',
-            JSON.stringify(this.answerParams)
-          )
+          localStorage.setItem('answerParams', JSON.stringify(this.answerParams))
           resolve(this.answerParams)
         } catch (err) {
           reject(err)
@@ -163,10 +159,8 @@ export const useExamStore = defineStore({
     getAnswers(params = {}) {
       return new Promise(async (resolve, reject) => {
         try {
-          // Формируем URL с параметрами
           let url = '/answers/'
 
-          // Если передан ID - получаем конкретный ответ
           if (params.id) {
             url += `${params.id}/`
             if (params.withTasks) {
@@ -181,7 +175,6 @@ export const useExamStore = defineStore({
             return
           }
 
-          // Для списка ответов - формируем query параметры
           const queryParams = new URLSearchParams()
 
           if (params.status !== undefined && params.status !== null) {
@@ -210,7 +203,6 @@ export const useExamStore = defineStore({
             url
           })
 
-          // Для пагинации возвращаем структурированный объект
           if (params.offset !== undefined || params.limit !== undefined) {
             const data = res.data
             resolve({
@@ -224,7 +216,6 @@ export const useExamStore = defineStore({
                 : 0
             })
           } else {
-            // Старый формат для обратной совместимости
             resolve(res.data)
           }
         } catch (err) {
@@ -267,11 +258,14 @@ export const useExamStore = defineStore({
       this.currentExam = null
       this.answerParams = null
       this.typeExam = null
+      this.variantType = null // Очищаем тип варианта
 
       // Очищаем localStorage
       localStorage.removeItem('exams')
       localStorage.removeItem('currentExam')
       localStorage.removeItem('answerParams')
+      localStorage.removeItem('variantType') // Очищаем тип варианта
+      localStorage.removeItem('isRandomExam') // Убираем старый костыль
     }
   }
 })
