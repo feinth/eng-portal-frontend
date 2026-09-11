@@ -42,7 +42,13 @@
           @click="goToSelect" />
       </div>
     </section>
-    <div class="ruler-divider" aria-hidden="true"></div>
+
+    <!-- ═══════════ НОВЫЙ РАЗДЕЛИТЕЛЬ ═══════════ -->
+    <div class="section-divider" aria-hidden="true">
+      <span class="divider-line"></span>
+      <q-icon name="sym_o_school" class="divider-icon" size="26px" />
+      <span class="divider-line"></span>
+    </div>
 
     <!-- ═══════════ ВОЗМОЖНОСТИ ═══════════ -->
     <section class="section">
@@ -67,7 +73,7 @@
             <div class="feature-icon red"><q-icon name="sym_o_mic" size="26px" /></div>
             <h3>Записывать свои ответы</h3>
             <p>
-              Говори вслух, <span class="text-red">переслушивай себя</span> и
+              Говори вслух, <span class="text-blue">переслушивай себя</span> и
               замечай, что уже получается хорошо, а над чем ещё стоит
               поработать.
             </p>
@@ -79,7 +85,7 @@
             <div class="feature-icon green"><q-icon name="sym_o_headphones" size="26px" /></div>
             <h3>Воспринимать задания на слух</h3>
             <p>
-              <span class="text-green">Разные голоса и интонации</span> помогут
+              <span class="text-blue">Разные голоса и интонации</span> помогут
               чувствовать себя увереннее, когда вопросы задаёт не знакомый
               преподаватель.
             </p>
@@ -92,7 +98,7 @@
             <h3>Отрабатывать отдельные задания и темы</h3>
             <p>
               Необязательно каждый раз проходить весь вариант целиком. Можно
-              выбрать <span class="text-orange">именно тот тип задания или
+              выбрать <span class="text-blue">именно тот тип задания или
                 тему</span>, которые сейчас требуют больше практики.
             </p>
           </q-card-section>
@@ -104,7 +110,7 @@
             <h3>Готовиться в экзаменационном формате</h3>
             <p>
               Здесь важно не просто знать английский, а научиться использовать
-              свои знания <span class="text-purple">в условиях реального
+              свои знания <span class="text-blue">в условиях реального
                 экзамена</span>: услышать задание, быстро сориентироваться,
               подготовить ответ и уложиться во время.
             </p>
@@ -271,10 +277,6 @@ export default {
   padding: 4.5rem 0 4rem;
 }
 
-/* Каракули живут ТОЛЬКО в боковых полях и никогда под текстом:
-   контент 1000px центрирован, его край — calc(50% - 500px);
-   дудлы стоят за этой границей, а на узких экранах calc даёт
-   минус и overflow: hidden просто обрезает их. */
 .doodles {
   position: absolute;
   inset: 0;
@@ -365,17 +367,10 @@ export default {
 }
 
 .mark-blue   { background: linear-gradient(180deg, transparent 62%, #BBDEFB 62%); color: #1565C0; }
-.mark-green  { background: linear-gradient(180deg, transparent 62%, #C8E6C9 62%); color: #2E7D32; }
-.mark-pink   { background: linear-gradient(180deg, transparent 62%, #F8BBD0 62%); color: #C2185B; }
-.mark-yellow { background: linear-gradient(180deg, transparent 62%, #FFF59D 62%); color: #8D6E00; }
-.mark-orange { background: linear-gradient(180deg, transparent 62%, #FFE0B2 62%); color: #E65100; }
 .mark-white  { background: rgba(255, 255, 255, 0.25); color: white; }
 
-.text-blue   { color: #1976D2; font-weight: 600; }
-.text-red    { color: #EF5350; font-weight: 600; }
-.text-green  { color: #34A853; font-weight: 600; }
-.text-orange { color: #F59E0B; font-weight: 600; }
-.text-purple { color: #8E44C8; font-weight: 600; }
+/* Универсальный цвет выделения текста — теперь везде синий */
+.text-blue { color: #1565C0; font-weight: 700; }
 
 /* ═══════════ СЕКЦИИ ═══════════ */
 .section {
@@ -394,7 +389,6 @@ export default {
     #EEF1F7;
 }
 
-/* Тетрадь с красным полем — только на широких экранах */
 @media (min-width: 601px) {
   .section-grey {
     background:
@@ -417,7 +411,6 @@ export default {
   position: relative;
 }
 
-/* Цветная полоска слева от заголовка */
 .section-title::before {
   content: '';
   position: absolute;
@@ -430,7 +423,6 @@ export default {
   background: linear-gradient(180deg, var(--q-primary), #8E44C8);
 }
 
-/* Маркер-подчёркивание под заголовком */
 .section-title::after {
   content: '';
   position: absolute;
@@ -455,7 +447,6 @@ export default {
   line-height: 1.8;
 }
 
-/* Выравнивание абзацев по ширине */
 .hero-text,
 .hero-quote,
 .section-note,
@@ -468,15 +459,37 @@ export default {
   hyphens: auto;
 }
 
-/* ═══════════ ШКОЛЬНАЯ ЛИНЕЙКА-РАЗДЕЛИТЕЛЬ ═══════════ */
-.ruler-divider {
-  height: 18px;
-  background:
-    repeating-linear-gradient(90deg, rgba(43, 45, 66, 0.4) 0 2px, transparent 2px 20px)
-      left top / 100% 60% no-repeat,
-    linear-gradient(180deg, #FFD54F, #FBC02D);
-  border-top: 2px solid rgba(43, 45, 66, 0.12);
-  border-bottom: 2px solid rgba(43, 45, 66, 0.12);
+/* ═══════════ НОВЫЙ РАЗДЕЛИТЕЛЬ ═══════════ */
+.section-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 3rem;
+  gap: 1.25rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent 0%, #BBDEFB 30%, var(--q-primary) 50%, #BBDEFB 70%, transparent 100%);
+  border-radius: 1px;
+  opacity: 0.9;
+}
+
+.divider-icon {
+  color: var(--q-primary);
+  background: white;
+  padding: 0.55rem;
+  border-radius: 50%;
+  box-shadow: 0 4px 14px rgba(124, 147, 195, 0.25);
+  border: 2px solid #BBDEFB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ═══════════ КАРТОЧКИ ВОЗМОЖНОСТЕЙ ═══════════ */
@@ -518,7 +531,6 @@ export default {
 .card-orange { border-top-color: #F59E0B; }
 .card-purple { border-top-color: #8E44C8; }
 
-/* Контент карточки: одинаковая высота, центр */
 .feature-card :deep(.q-card__section) {
   flex: 1;
   display: flex;
@@ -763,6 +775,10 @@ export default {
     width: 100%;
     max-width: 320px;
   }
+
+  .section-divider {
+    padding: 1rem 2rem;
+  }
 }
 
 /* ═══════════ МОБИЛЬНЫЕ ═══════════ */
@@ -877,7 +893,6 @@ export default {
     width: 100%;
   }
 
-  /* На узких экранах justify даёт дыры — возвращаем левое выравнивание */
   .hero-text,
   .hero-quote,
   .section-note,
@@ -886,6 +901,15 @@ export default {
   .cta-text,
   .cta-note {
     text-align: left;
+  }
+
+  .section-divider {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .divider-icon {
+    padding: 0.4rem;
   }
 }
 </style>

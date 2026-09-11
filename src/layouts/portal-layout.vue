@@ -22,20 +22,35 @@
     </q-page-container>
 
     <!-- ИЗМЕНЕНИЕ: убрали 'reveal', добавили 'v-model="footerVisible"' -->
-    <q-footer 
-      v-if="shouldShowFooter" 
-      v-model="footerVisible" 
-      elevated 
-      class="bg-white text-grey-8"
-    >
+    <q-footer v-if="shouldShowFooter" v-model="footerVisible" elevated class="bg-white text-grey-8">
       <!-- Строка 1: автор + соцсети -->
       <div class="flex items-center justify-center q-py-md q-px-md">
         <p class="q-mr-md text-caption">Автор: Захарова Татьяна</p>
 
         <div class="flex items-center social-icons">
-          <a class="mdi--vk" href="https://vk.ru" target="_blank" />
-          <a class="ic--baseline-telegram" href="https://t.me/TA_eng_teacher" target="_blank" />
-          <a class="mdi--youtube" href="https://youtube.com" target="_blank" />
+          <span class="social-link">
+            <a class="ic--baseline-telegram" href="https://t.me/TA_eng_teacher" target="_blank"
+              aria-label="Написать мне в Telegram" />
+            <q-tooltip class="social-tooltip" anchor="top middle" self="bottom middle" :delay="150">
+              Написать мне в Telegram
+            </q-tooltip>
+          </span>
+
+          <span class="social-link">
+            <a class="mdi--vk" href="https://vk.ru/id11068353" target="_blank" aria-label="Написать мне в ВКонтакте" />
+            <q-tooltip class="social-tooltip" anchor="top middle" self="bottom middle" :delay="150">
+              Написать мне в ВКонтакте
+            </q-tooltip>
+          </span>
+
+
+
+          <span class="social-link">
+            <a class="ic--max-messenger" href="https://max.ru/" target="_blank" aria-label="Написать мне в MAX" />
+            <q-tooltip class="social-tooltip" anchor="top middle" self="bottom middle" :delay="150">
+              Написать мне в MAX
+            </q-tooltip>
+          </span>
         </div>
       </div>
 
@@ -75,8 +90,9 @@ export default {
       store: useUserStore(),
       footerPath: ['/', '/profile'],
       showLogin: false,
-      footerVisible: false, // По умолчанию подвал скрыт
-      lastScrollY: 0        // Для отслеживания предыдущей позиции скролла
+      footerVisible: false,
+      lastScrollY: 0,
+      isPinnedToBottom: false // находимся ли мы сейчас в самом низу страницы
     }
   },
   methods: {
@@ -87,17 +103,49 @@ export default {
     },
     handleScroll() {
       const currentScrollY = window.scrollY
-      
-      // Если скроллим вверх
-      if (currentScrollY < this.lastScrollY) {
+
+      // Полная высота страницы и проверка "в самом ли мы низу"
+      const scrollHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+      )
+      const isAtBottom = window.innerHeight + currentScrollY >= scrollHeight - 1
+
+      if (isAtBottom) {
+        // У самого низа подвал всегда виден
+        this.isPinnedToBottom = true
         this.footerVisible = true
-      } 
-      // Если скроллим вниз
-      else if (currentScrollY > this.lastScrollY) {
-        this.footerVisible = false
+      } else {
+        this.isPinnedToBottom = false
+
+        // Скроллим вверх — показываем
+        if (currentScrollY < this.lastScrollY) {
+          this.footerVisible = true
+        }
+        // Скроллим вниз — прячем
+        else if (currentScrollY > this.lastScrollY) {
+          this.footerVisible = false
+        }
       }
-      
+
       this.lastScrollY = currentScrollY
+    }
+  },
+  watch: {
+    // Когда подвал появляется, находясь у самого низа,
+    // докручиваем страницу до нового упора — так он не заезжает на контент
+    footerVisible(visible) {
+      if (visible && this.isPinnedToBottom) {
+        this.$nextTick(() => {
+          requestAnimationFrame(() => {
+            const maxScroll = Math.max(
+              document.body.scrollHeight,
+              document.documentElement.scrollHeight
+            )
+            window.scrollTo({ top: maxScroll })
+          })
+        })
+      }
     }
   },
   computed: {
@@ -105,25 +153,22 @@ export default {
       return !!this.store.token
     },
     shouldShowFooter() {
-      // Скрываем футер на странице логина и регистрации
       const hiddenRoutes = ['/login', '/register', '/profile']
       return !hiddenRoutes.includes(this.$route.path)
     }
   },
   mounted() {
-    // Добавляем слушатель скролла. { passive: true } улучшает производительность прокрутки
     window.addEventListener('scroll', this.handleScroll, { passive: true })
+    // Начальная проверка: если страница короткая, подвал виден сразу
+    this.handleScroll()
   },
   beforeUnmount() {
-    // Обязательно удаляем слушатель при уничтожении компонента во избежание утечек памяти
-    // (Если вы используете Vue 2 / Quasar v1, замените beforeUnmount на beforeDestroy)
     window.removeEventListener('scroll', this.handleScroll)
   }
 }
 </script>
 
 <style scoped>
-/* Стили остаются без изменений */
 .social-icons a {
   color: #9E9E9E;
   margin: 0 8px;
@@ -137,7 +182,7 @@ export default {
 
 .mdi--vk,
 .ic--baseline-telegram,
-.mdi--youtube {
+.ic--max-messenger {
   display: inline-block;
   width: 1.5em;
   height: 1.5em;
@@ -160,8 +205,8 @@ export default {
   mask-image: var(--svg);
 }
 
-.mdi--youtube {
-  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='m10 15l5.19-3L10 9zm11.56-7.83c.13.47.22 1.1.28 1.9c.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83c-.25.9-.83 1.48-1.73 1.73c-.47.13-1.33.22-2.65.28c-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44c-.9-.25-1.48-.83-1.73-1.73c-.13-.47-.22-1.1-.28-1.9c-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83c.25-.9.83-1.48 1.73-1.73c.47-.13 1.33-.22 2.65-.28c1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44c.9.25 1.48.83 1.73 1.73'/%3E%3C/svg%3E");
+.ic--max-messenger {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M5.1 20.8Q6.2 19.4 8.4 18.8A8.3 8.3 0 1 0 4.4 13.2Q5.2 17 5.1 20.8Z M12.5 6.95a4.55 4.55 0 1 1 0 9.1a4.55 4.55 0 1 1 0-9.1Z'/%3E%3C/svg%3E");
   -webkit-mask-image: var(--svg);
   mask-image: var(--svg);
 }
@@ -183,5 +228,34 @@ export default {
 
 .disclaimer-line a:hover {
   border-bottom-style: solid;
+}
+
+/* Обёртка иконки: к ней цепляется тултип, отступы переезжают сюда */
+.social-link {
+  display: inline-flex;
+  margin: 0 8px;
+}
+
+/* У самих ссылок отступы больше не нужны */
+.social-icons a {
+  color: #9E9E9E;
+  margin: 0;
+  transition: all 0.2s ease;
+}
+
+.social-icons a:hover {
+  color: var(--q-primary);
+  transform: translateY(-2px);
+}
+
+/* Оформление подсказки */
+.social-tooltip {
+  background: #2B2D42;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(43, 45, 66, 0.3);
 }
 </style>

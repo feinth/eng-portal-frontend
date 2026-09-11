@@ -126,7 +126,7 @@
       </div>
     </div>
     <!-- PDF-сборники для скачивания -->
-    <div class="pdf-section q-mt-xl">
+    <div v-if="!selectedMainType && !isLoading && !tasks && !exams" class="pdf-section q-mt-xl">
       <div class="row items-center q-mb-md">
         <q-separator class="col" />
         <div class="text-overline text-grey-6 q-px-md">Материалы для скачивания</div>
